@@ -300,12 +300,13 @@ Functions
 
 **Exceptions**
 
-: throws RAISE_EXCEPTION if the table does not exist
-: throws RAISE_EXCEPTION if the table is already versioned
-: throws RAISE_EXCEPTION if the table does not have a unique non-compostite integer column
+* throws RAISE_EXCEPTION if the table does not exist
+* throws RAISE_EXCEPTION if the table is already versioned
+* throws RAISE_EXCEPTION if the table does not have a unique non-compostite integer column
 
 This function enable versioning for a table. Versioning a table will do the
 following things:
+
 1. A revision table with the schema_name_revision naming convention will be
    created in the table_version schema.
 2. Any data in the table will be inserted into the revision data table. If
