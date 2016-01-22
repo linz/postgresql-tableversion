@@ -193,64 +193,62 @@ easily done with this revision system. Here the steps:
 
 1. First you need to determine which tables are versioned:
 
-    SELECT * FROM table_version.ver_get_versioned_tables();
-
-     schema_name | table_name | key_column
-    -------------+------------+------------
-     foo         | bar        | id
-    (1 row)
+        SELECT * FROM table_version.ver_get_versioned_tables();
+    
+         schema_name | table_name | key_column
+        -------------+------------+------------
+         foo         | bar        | id
+        (1 row)
     
 2. Next you need to determine which revisions you what to replicate to your
 system:
 
-    SELECT table_version.ver_get_table_base_revision('foo', 'bar');
-
-     ver_get_table_base_revision
-    -----------------------------
-                             1001
-    (1 row)
+        SELECT table_version.ver_get_table_base_revision('foo', 'bar');
+    
+         ver_get_table_base_revision
+        -----------------------------
+                                 1001
+        (1 row)
 
 3. Now determine all of the revisions have been applied to the table.
 
-    SELECT
-        id,
-        revision_time
-    FROM
-        table_version.ver_get_revisions(
-            ARRAY(
-                SELECT generate_series(
-                    table_version.ver_get_table_base_revision('foo', 'bar'),
-                    table_version.ver_get_last_revision()
+        SELECT
+            id,
+            revision_time
+        FROM
+            table_version.ver_get_revisions(
+                ARRAY(
+                    SELECT generate_series(
+                        table_version.ver_get_table_base_revision('foo', 'bar'),
+                        table_version.ver_get_last_revision()
+                    )
                 )
             )
-        )
-    ORDER BY
-       id ASC;
-
-      id  |      revision_time
-    ------+-------------------------
-     1001 | 2011-03-11 16:14:49.062
-     1002 | 2011-03-11 16:15:22.578
-    (2 rows)
+        ORDER BY
+           id ASC;
+    
+          id  |      revision_time
+        ------+-------------------------
+         1001 | 2011-03-11 16:14:49.062
+         1002 | 2011-03-11 16:15:22.578
+        (2 rows)
 
 5. The first data copy operation is to create a base snapshot of the table data:
 
-    CREATE TABLE foo_bar_copy AS
-    SELECT * FROM table_version.ver_get_foo_bar_revision(
-        table_version.ver_get_table_base_revision('foo', 'bar')
-    );
-
+        CREATE TABLE foo_bar_copy AS
+        SELECT * FROM table_version.ver_get_foo_bar_revision(
+            table_version.ver_get_table_base_revision('foo', 'bar')
+        );
 
 4. Now to maintain your base copy you can select an difference change set and
 then apply that to your base copy:
     
-    -- Where 'my_last_revision' is the last revision that your dataset has on
-    -- your remote system
-    SELECT * FROM table_version.ver_get_foo_bar_diff(
-        my_last_revision,
-        table_version.ver_get_table_last_revision('foo', 'bar')
-    );
-
+        -- Where 'my_last_revision' is the last revision that your dataset has on
+        -- your remote system
+        SELECT * FROM table_version.ver_get_foo_bar_diff(
+            my_last_revision,
+            table_version.ver_get_table_last_revision('foo', 'bar')
+        );
 
 Configuration tables
 --------------------
@@ -285,7 +283,7 @@ following command:
 Functions
 ---------
 
-## `ver_enable_versioning()` ##
+### `ver_enable_versioning()` ###
 
 This function enable versioning for a table.
 
@@ -334,7 +332,7 @@ Versioning a table will do the following things:
 
     SELECT table_version.ver_enable_versioning('foo', 'bar');
 
-## `ver_disable_versioning()` ##
+### `ver_disable_versioning()` ###
 
 Disables versioning on a table
 
