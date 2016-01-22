@@ -285,7 +285,9 @@ following command:
 Functions
 ---------
 
-### `ver_enable_versioning()` ###
+## `ver_enable_versioning()` ##
+
+This function enable versioning for a table.
 
     FUNCTION ver_enable_versioning(p_schema NAME, p_table NAME) 
     RETURNS BOOLEAN
@@ -298,14 +300,20 @@ Functions
 `p_table`
 : The table name
 
+**Returns**
+
+`true` or `false` if versioning the table was successful
+
 **Exceptions**
 
-* throws RAISE_EXCEPTION if the table does not exist
-* throws RAISE_EXCEPTION if the table is already versioned
-* throws RAISE_EXCEPTION if the table does not have a unique non-compostite integer column
+throws exception if the source table:
+* does not exist
+* is already versioned
+* does not have a unique non-compostite integer column
 
-This function enable versioning for a table. Versioning a table will do the
-following things:
+**Description**
+
+Versioning a table will do the following things:
 
 1. A revision table with the schema_name_revision naming convention will be
    created in the table_version schema.
@@ -322,14 +330,41 @@ following things:
    convention in the table_version schema that allow you to get a specific revision
    of the table.
 
-For example:
+**Example**
 
     SELECT table_version.ver_enable_versioning('foo', 'bar');
 
-### `ver_enable_versioning()` ###
+## `ver_disable_versioning()` ##
 
-    FUNCTION ver_enable_versioning(p_schema NAME, p_table NAME) 
+Disables versioning on a table
+
+    FUNCTION ver_disable_versioning( p_schema NAME, p_table NAME) 
     RETURNS BOOLEAN
+
+**Parameters**
+
+`p_schema`
+: The table schema
+
+`p_table`
+: The table name
+
+**Returns**
+
+`true` or `false` if disabling versioning on the table was successful
+
+**Exceptions**
+
+throws exception if the source table:
+* is not versioned
+
+**Description**
+
+All assoicated objects created for the versioning will be dropped.
+
+**Example**
+
+    SELECT table_version.ver_disable_versioning('foo', 'bar');
     
 Support
 -------
