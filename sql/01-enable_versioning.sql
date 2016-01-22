@@ -1,0 +1,250 @@
+/**
+* Enable versioning for a table. Versioning a table will do the following things:
+*   1. A revision table with the schema_name_revision naming convention will be
+*        created in the table_version schema.
+*   2. Any data in the table will be inserted into the revision data table. If
+*      SQL session is not currently in an active revision, a revision will be
+*      will be automatically created, then completed once the data has been
+*      inserted.
+*   3. A trigger will be created on the versioned table that will maintain the changes
+*      in the revision table.
+*   4. A function will be created with the ver_schema_name_revision_diff naming 
+*      convention in the table_version schema that allow you to get changeset data
+*      for a range of revisions.
+*   5. A function will be created with the ver_schema_name_revision_revision naming 
+*      convention in the table_version schema that allow you to get a specific revision
+*      of the table.
+*
+* @param p_schema         The table schema
+* @param p_table          The table name
+* @return                 If versioning the table was successful.
+* @throws RAISE_EXCEPTION If the table does not exist
+* @throws RAISE_EXCEPTION If the table is already versioned
+* @throws RAISE_EXCEPTION If the table does not have a unique non-compostite integer column
+*/
+CREATE OR REPLACE FUNCTION ver_enable_versioning(
+    p_schema NAME,
+    p_table  NAME
+) 
+RETURNS BOOLEAN AS
+$$
+DECLARE
+    v_table_oid       REGCLASS;
+    v_key_col         NAME;
+    v_revision_table  TEXT;
+    v_sql             TEXT;
+    v_table_id        table_version.versioned_tables.id%TYPE;
+    v_revision        table_version.revision.id%TYPE;
+    v_revision_exists BOOLEAN;
+    v_table_has_data  BOOLEAN;
+BEGIN
+    IF NOT EXISTS (SELECT * FROM pg_tables WHERE tablename = p_table AND schemaname = p_schema) THEN
+        RAISE EXCEPTION 'Table %.% does not exists', quote_ident(p_schema), quote_ident(p_table);
+    END IF;
+
+    IF table_version.ver_is_table_versioned(p_schema, p_table) THEN
+        RAISE EXCEPTION 'Table %.% is already versioned', quote_ident(p_schema), quote_ident(p_table);
+    END IF;
+
+    SELECT
+        CLS.oid
+    INTO
+        v_table_oid
+    FROM
+        pg_namespace NSP,
+        pg_class CLS
+    WHERE
+        NSP.nspname = p_schema AND
+        CLS.relname = p_table AND
+        NSP.oid     = CLS.relnamespace;
+
+    SELECT
+        ATT.attname as col
+    INTO
+        v_key_col
+    FROM
+        pg_index IDX,
+        pg_attribute ATT
+    WHERE
+        IDX.indrelid = v_table_oid AND
+        ATT.attrelid = v_table_oid AND
+        ATT.attnum = ANY(IDX.indkey) AND
+        ATT.attnotnull = TRUE AND
+        IDX.indisunique = TRUE AND
+        IDX.indexprs IS NULL AND
+        IDX.indpred IS NULL AND
+        format_type(ATT.atttypid, ATT.atttypmod) IN ('integer', 'bigint') AND
+        array_length(IDX.indkey::INTEGER[], 1) = 1
+    ORDER BY
+        IDX.indisprimary DESC
+    LIMIT 1;
+
+    IF v_key_col IS NULL THEN
+        RAISE EXCEPTION 'Table %.% does not have a unique non-compostite integer column', quote_ident(p_schema), quote_ident(p_table);
+    END IF;
+
+    v_revision_table := table_version.ver_get_version_table_full(p_schema, p_table);
+    
+    v_sql :=
+    'CREATE TABLE ' || v_revision_table || '(' ||
+        '_revision_created INTEGER NOT NULL REFERENCES table_version.revision,' ||
+        '_revision_expired INTEGER REFERENCES table_version.revision,' ||
+        'LIKE ' || quote_ident(p_schema) || '.' || quote_ident(p_table) ||
+    ');';
+    EXECUTE v_sql;
+    
+    EXECUTE 'GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE ' || v_revision_table || ' TO bde_admin';
+    EXECUTE 'GRANT SELECT ON TABLE ' || v_revision_table || ' TO bde_user';
+
+    v_sql := (
+        SELECT
+            'ALTER TABLE  ' || v_revision_table || ' ALTER COLUMN ' || attname || ' SET STATISTICS ' ||  attstattarget
+        FROM
+            pg_attribute 
+        WHERE
+            attrelid = v_table_oid AND
+            attname = v_key_col AND
+            attisdropped IS FALSE AND
+            attnum > 0 AND
+            attstattarget > 0
+    );
+    IF v_sql IS NOT NULL THEN
+        EXECUTE v_sql;
+    END IF;
+    
+    -- insert base data into table using a revision that is currently in
+    -- progress, or if one does not exist create one.
+    
+    v_revision_exists := FALSE;
+    
+    EXECUTE 'SELECT EXISTS (SELECT * FROM ' || CAST(v_table_oid AS TEXT) || ' LIMIT 1)'
+    INTO v_table_has_data;
+    
+    IF v_table_has_data THEN
+        IF table_version._ver_get_reversion_temp_table('_changeset_revision') THEN
+            SELECT
+                max(VER.revision)
+            INTO
+                v_revision
+            FROM
+                _changeset_revision VER;
+            
+            v_revision_exists := TRUE;
+        ELSE
+            SELECT table_version.ver_create_revision(
+                'Initial revisioning of ' || CAST(v_table_oid AS TEXT)
+            )
+            INTO  v_revision;
+        END IF;
+    
+        v_sql :=
+            'INSERT INTO ' || v_revision_table ||
+            ' SELECT ' || v_revision || ', NULL, * FROM ' || CAST(v_table_oid AS TEXT);
+        EXECUTE v_sql;
+        
+        IF NOT v_revision_exists THEN
+            PERFORM table_version.ver_complete_revision();
+        END IF;
+    
+    END IF;
+
+    v_sql := 'ALTER TABLE  ' || v_revision_table || ' ADD CONSTRAINT ' ||
+        quote_ident('pkey_' || v_revision_table) || ' PRIMARY KEY(_revision_created, ' ||
+        quote_ident(v_key_col) || ')';
+    EXECUTE v_sql;
+    
+    v_sql := 'CREATE INDEX ' || quote_ident('idx_' || p_table) || '_' || quote_ident(v_key_col) || ' ON ' || v_revision_table ||
+        '(' || quote_ident(v_key_col) || ')';
+    EXECUTE v_sql;
+
+    v_sql := 'CREATE INDEX ' || quote_ident('fk_' || p_table) || '_expired ON ' || v_revision_table ||
+        '(_revision_expired)';
+    EXECUTE v_sql;
+
+    v_sql := 'CREATE INDEX ' || quote_ident('fk_' || p_table) || '_created ON ' || v_revision_table ||
+        '(_revision_created)';
+    EXECUTE v_sql;
+    
+    EXECUTE 'ANALYSE ' || v_revision_table;
+
+    -- Add dependency of the revision table on the newly versioned table 
+    -- to avoid simple drop. Some people might forget that the table is
+    -- versioned!
+    
+    INSERT INTO pg_catalog.pg_depend(
+        classid,
+        objid,
+        objsubid,
+        refclassid,
+        refobjid,
+        refobjsubid,
+        deptype
+    )
+    SELECT
+        cat.oid,
+        fobj.oid,
+        0,
+        cat.oid,
+        tobj.oid,
+        0,
+        'n'
+    FROM
+        pg_class cat, 
+        pg_namespace fnsp, 
+        pg_class fobj,
+        pg_namespace tnsp,
+        pg_class tobj
+    WHERE
+        cat.relname = 'pg_class' AND
+        fnsp.nspname = 'table_version' AND
+        fnsp.oid = fobj.relnamespace AND
+        fobj.relname = table_version.ver_get_version_table(p_schema, p_table) AND
+        tnsp.nspname = p_schema AND
+        tnsp.oid = tobj.relnamespace AND
+        tobj.relname   = p_table;
+
+    SELECT
+        id
+    INTO
+        v_table_id
+    FROM
+        table_version.versioned_tables
+    WHERE
+        schema_name = p_schema AND
+        table_name = p_table;
+    
+    IF v_table_id IS NOT NULL THEN
+        UPDATE table_version.versioned_tables
+        SET    versioned = TRUE
+        WHERE  schema_name = p_schema
+        AND    table_name = p_table;
+    ELSE
+        INSERT INTO table_version.versioned_tables(schema_name, table_name, key_column, versioned)
+        VALUES (p_schema, p_table, v_key_col, TRUE)
+        RETURNING id INTO v_table_id;
+    END IF;
+    
+    IF v_table_id IS NOT NULL AND v_table_has_data THEN
+        INSERT INTO table_version.tables_changed(
+            revision,
+            table_id
+        )
+        SELECT
+            v_revision,
+            v_table_id
+        WHERE
+            NOT EXISTS (
+                SELECT *
+                FROM   table_version.tables_changed
+                WHERE  table_id = v_table_id
+                AND    revision = v_revision
+        );
+    END IF;
+
+    PERFORM table_version.ver_create_table_functions(p_schema, p_table, v_key_col);
+    PERFORM table_version.ver_create_version_trigger(p_schema, p_table, v_key_col);
+    
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+

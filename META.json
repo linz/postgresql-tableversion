@@ -1,0 +1,53 @@
+{
+    "name": "table_version",
+    "abstract": "PostgreSQL table versioning extension, recording row modifications and its history",
+    "description": "PostgreSQL table versioning extension, recording row modifications and its history. The extension provides APIs for accessing snapshots of a table at certain revisions and the difference generated between any two given revisions. The extension uses a PL/PgSQL trigger based system to record and provide access to the row revisions",
+    "version": "1.0.0",
+    "maintainer": "jpalmer@linz.govt.nz",
+    "license": "bsd",
+    "provides": {
+        "table_versions": {
+            "abstract": "PostgreSQL table versioning extension, recording row modifications and its history",
+            "file": "sql/table_version.sql",
+            "docfile": "doc/table_version.md",
+            "version": "1.0.0"
+        }
+    },
+    "prereqs": {
+        "runtime": {
+            "requires": {
+                "plpgsql": 0,
+                "PostgreSQL": "9.1.0"
+            }
+        },
+        "test": {
+                "recommends": {
+                "pgTAP": 0
+            }
+        }
+    },
+    "resources": {
+        "bugtracker": {
+            "web": "http://github.com/linz/postgresql-tableversion/issues/"
+        },
+        "repository": {
+            "url":  "git://github.com/linz/postgresql-tableversion.git",
+            "web":  "http://github.com/linz/postgresql-tableversion/",
+            "type": "git"
+        }
+    },
+    "release_status": "stable",
+    "generated_by": "Jeremy Palmer",
+    "tags": [
+        "table",
+        "version",
+        "diff",
+        "history",
+        "revision"
+    ],
+    "meta-spec": {
+        "version": "1.0.0",
+        "url": "http://pgxn.org/meta/spec.txt"
+    }
+}
+
