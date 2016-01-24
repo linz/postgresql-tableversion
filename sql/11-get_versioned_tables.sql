@@ -1,8 +1,4 @@
-/**
-* Get all versioned tables
-*
-* @return       A tableset of modified table records
-*/
+
 CREATE OR REPLACE FUNCTION ver_get_versioned_tables()
 RETURNS TABLE(
     schema_name NAME,

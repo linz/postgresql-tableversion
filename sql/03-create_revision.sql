@@ -1,13 +1,4 @@
-/**
-* Create a new revision within the curernt SQL session. This must be called before INSERTS, UPDATES OR DELETES
-* can occur on a versioned table.
-*
-* @param p_comment        A comment for revision.
-* @param p_revision_time  The the datetime of the revision in terms of a business context.
-* @param p_schema_change  Does this revision implement a schema change.
-* @return                 The identifier for the new revision.
-* @throws RAISE_EXCEPTION If a revision is still in progress within the current SQL session.
-*/
+
 CREATE OR REPLACE FUNCTION ver_create_revision(
     p_comment       TEXT, 
     p_revision_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 

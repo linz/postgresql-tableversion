@@ -1,10 +1,4 @@
-/**
-* Get all tables that are modified by a revision.
-*
-* @param p_revision       The revision
-* @return                 A tableset of modified table records
-* @throws RAISE_EXCEPTION If the provided revision does not exist
-*/
+
 CREATE OR REPLACE FUNCTION ver_get_modified_tables(
     p_revision  INTEGER
 )
@@ -34,13 +28,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
-/**
-* Get tables that are modified for a given revision range.
-*
-* @param p_revision1      The start revision for the range
-* @param p_revision2      The end revision for the range
-* @return                 A tableset of records modified tables and revision when the change occured.
-*/
 CREATE OR REPLACE FUNCTION ver_get_modified_tables(
     p_revision1 INTEGER,
     p_revision2 INTEGER

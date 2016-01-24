@@ -1,8 +1,4 @@
-/**
-* Completed a revision. This must be called after a revision is created.
-*
-* @return                 Return if the revision was sucessfully completed.
-*/
+
 CREATE OR REPLACE FUNCTION ver_complete_revision() RETURNS BOOLEAN AS
 $$
 BEGIN

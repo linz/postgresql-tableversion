@@ -1,27 +1,4 @@
-/**
-* Enable versioning for a table. Versioning a table will do the following things:
-*   1. A revision table with the schema_name_revision naming convention will be
-*        created in the table_version schema.
-*   2. Any data in the table will be inserted into the revision data table. If
-*      SQL session is not currently in an active revision, a revision will be
-*      will be automatically created, then completed once the data has been
-*      inserted.
-*   3. A trigger will be created on the versioned table that will maintain the changes
-*      in the revision table.
-*   4. A function will be created with the ver_schema_name_revision_diff naming 
-*      convention in the table_version schema that allow you to get changeset data
-*      for a range of revisions.
-*   5. A function will be created with the ver_schema_name_revision_revision naming 
-*      convention in the table_version schema that allow you to get a specific revision
-*      of the table.
-*
-* @param p_schema         The table schema
-* @param p_table          The table name
-* @return                 If versioning the table was successful.
-* @throws RAISE_EXCEPTION If the table does not exist
-* @throws RAISE_EXCEPTION If the table is already versioned
-* @throws RAISE_EXCEPTION If the table does not have a unique non-compostite integer column
-*/
+
 CREATE OR REPLACE FUNCTION ver_enable_versioning(
     p_schema NAME,
     p_table  NAME

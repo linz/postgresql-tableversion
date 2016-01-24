@@ -1,12 +1,4 @@
-/**
-* Disables versioning on a table. All assoicated objects created for the versioning
-* will be dropped.
-*
-* @param p_schema         The table schema
-* @param p_table          The table name
-* @return                 If disabling versioning on the table was successful.
-* @throws RAISE_EXCEPTION If the table is not versioned
-*/
+
 CREATE OR REPLACE FUNCTION ver_disable_versioning(
     p_schema NAME, 
     p_table  NAME

@@ -1,10 +1,4 @@
-/**
-* Check if table is versioned
-*
-* @param p_schema         The table schema
-* @param p_table          The table name
-* @return                 If the table is versioned
-*/
+
 CREATE OR REPLACE FUNCTION ver_is_table_versioned(
     p_schema NAME,
     p_table  NAME

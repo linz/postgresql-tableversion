@@ -9,7 +9,7 @@ Synopsis
     
     #= CREATE TABLE foo.bar (
         id INTEGER NOT NULL PRIMARY KEY,
-        d1 TEXT
+        baz TEXT
     );
     CREATE TABLE
     
@@ -23,7 +23,7 @@ Synopsis
     ---------------------
                     1001
 
-    #= INSERT INTO foo.bar (id, d1) VALUES
+    #= INSERT INTO foo.bar (id, baz) VALUES
     (1, 'foo bar 1'),
     (2, 'foo bar 2'),
     (3, 'foo bar 3');
@@ -35,7 +35,7 @@ Synopsis
      t
     
     #= SELECT * FROM table_version.ver_get_foo_bar_diff(1001, 1002);
-     _diff_action | id |    d1
+     _diff_action | id |    baz
     --------------+----+-----------
      I            |  3 | foo bar 3
      I            |  1 | foo bar 1
@@ -60,7 +60,7 @@ external system on a daily basis and record all of those daily revisions.
 The design decision to maintain the version history data in a completely separate
 table from the current data table (instead of just having a view) was driven by
 performance reasons. Also note the roots of this extension were developed before
-materialised view were a real option in PostgreSQL. In any case 
+syntactic sugar of materialised views were a real option in PostgreSQL.
 
 Table Prerequisites
 -------------------
@@ -91,10 +91,10 @@ some data:
 
     CREATE TABLE foo.bar (
         id INTEGER NOT NULL PRIMARY KEY,
-        d1 TEXT
+        baz TEXT
     );
 
-    INSERT INTO foo.bar (id, d1) VALUES
+    INSERT INTO foo.bar (id, baz) VALUES
     (1, 'foo bar 1'),
     (2, 'foo bar 2'),
     (3, 'foo bar 3');
@@ -111,7 +111,7 @@ data:
 
     SELECT * FROM table_version.foo_bar_revision;
     
-     _revision_created | _revision_expired | id |    d1
+     _revision_created | _revision_expired | id |    baz
     -------------------+-------------------+----+-----------
                   1001 |                   |  1 | foo bar 1
                   1001 |                   |  2 | foo bar 2
@@ -125,10 +125,10 @@ must first start a revision, do the edits and then complete the revision. i.e:
     SELECT table_version.ver_create_revision('My test edit');
 
     -- now do some edits
-    INSERT INTO foo.bar (id, d1) VALUES (4, 'foo bar 4');
+    INSERT INTO foo.bar (id, baz) VALUES (4, 'foo bar 4');
     
     UPDATE foo.bar
-    SET    d1 = 'foo bar 1 edit'
+    SET    baz = 'foo bar 1 edit'
     WHERE  id = 1;
     
     DELETE FROM foo.bar
@@ -141,7 +141,7 @@ Now you should have some more edits in table_version.foo_bar_revision table:
 
     SELECT * FROM table_version.foo_bar_revision;
 
-     _revision_created | _revision_expired | id |       d1
+     _revision_created | _revision_expired | id |       baz
     -------------------+-------------------+----+----------------
                   1001 |                   |  2 | foo bar 2
                   1002 |                   |  4 | foo bar 4
@@ -155,7 +155,7 @@ from 1001 to 1002) we run:
 
     SELECT * FROM table_version.ver_get_foo_bar_diff(1001, 1002);
 
-     _diff_action | id |       d1
+     _diff_action | id |       baz
     --------------+----+----------------
      U            |  1 | foo bar 1 edit
      D            |  3 | foo bar 3
@@ -174,7 +174,7 @@ then call the following function:
 
     SELECT * FROM table_version.ver_get_foo_bar_revision(1001);
     
-     id |    d1
+     id |    baz
     ----+-----------
       2 | foo bar 2
       1 | foo bar 1
@@ -309,7 +309,7 @@ throws exception if the source table:
 * is already versioned
 * does not have a unique non-compostite integer column
 
-**Description**
+**Notes**
 
 Versioning a table will do the following things:
 
@@ -356,14 +356,466 @@ Disables versioning on a table
 throws exception if the source table:
 * is not versioned
 
-**Description**
+**Notes**
 
 All assoicated objects created for the versioning will be dropped.
 
 **Example**
 
     SELECT table_version.ver_disable_versioning('foo', 'bar');
+
+### `ver_create_revision()` ###
+
+Create a new revision within the curernt SQL session.
+
+    FUNCTION ver_create_revision(p_comment TEXT, p_revision_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, p_schema_change BOOLEAN DEFAULT FALSE)
+    RETURN INTEGER
+
+**Parameters**
+
+`p_comment`
+: A comment for revision
+
+`p_revision_time`
+: The the datetime of the revision in terms of a business context. Defaults to current date time.
+
+`p_schema_change`
+: The the datetime of the revision in terms of a business context. Defaults to false
+
+**Returns**
+
+The identifier for the new revision.
+
+**Exceptions**
+
+throws exception if:
+* a revision is still in progress within the current SQL session
+
+**Notes**
+
+This function must be called before INSERTS, UPDATES OR DELETES can occur on a
+table versioned table. The first revision ID starts at 1000.
+
+**Example**
+
+    SELECT table_version.ver_create_revision('My edit');
     
+### `ver_complete_revision()` ###
+
+Completed a revision within the current SQL session.
+
+    FUNCTION ver_complete_revision()
+    RETURNS BOOLEAN
+
+**Returns**
+
+Return if the revision was sucessfully completed. WIll return `false` if an
+revision has not been created.
+
+**Notes**
+
+This must be called after a revision is created within the SQL session.
+
+**Example**
+
+    SELECT table_version.ver_complete_revision()
+
+### `ver_delete_revision()` ###
+
+Delete a revision.
+
+    FUNCTION ver_delete_revision(p_revision INTEGER) 
+    RETURNS BOOLEAN
+
+**Parameters**
+
+`p_revision`
+: The revision ID
+
+**Returns**
+
+Returns `true` if the revision was successfully deleted.
+
+**Notes**
+
+This is useful if the revision was allocated, but was not used for any table
+updates.
+
+**Example**
+
+    SELECT table_version.ver_delete_revision(1000)
+
+### `ver_get_revision()` ###
+
+Get the revision information for the given revision ID.
+
+    FUNCTION ver_get_revision(
+        p_revision        INTEGER, 
+        OUT id            INTEGER, 
+        OUT revision_time TIMESTAMP,
+        OUT start_time    TIMESTAMP,
+        OUT schema_change BOOLEAN,
+        OUT comment       TEXT
+    );
+
+**Parameters**
+
+`p_revision`
+: The revision ID
+
+**Returns**
+
+The function has the following out parameters:
+
+`id`
+: The returned revision id
+
+`revision_time`
+: The returned revision datetime
+
+`start_time`
+: The returned start time of when revision record was created
+
+`schema_change`
+: The returned flag if the revision had a schema change
+
+`comment`
+: The returned revision comment
+
+**Example**
+
+    SELECT * FROM table_version.ver_get_revision(1000)
+
+### `ver_get_revision()` ###
+
+Get the last revision for the given datetime. If no revision is recorded at the
+datetime, then the next oldest revision is returned.
+
+    FUNCTION ver_get_revision(p_date_time TIMESTAMP);
+    RETURNS INTEGER
+
+**Parameters**
+
+`p_revision`
+: The revision ID
+
+**Returns**
+
+The revision id
+
+**Example**
+
+    SELECT table_version.ver_get_revision('2016-01-16 00:00:00'::TIMESTAMP)
+
+### `ver_get_revisions()` ###
+
+Get multiple revisions
+
+    FUNCTION ver_get_revisions(p_revisions INTEGER[]) 
+    RETURNS TABLE(
+        id             INTEGER,
+        revision_time  TIMESTAMP,
+        start_time     TIMESTAMP,
+        schema_change  BOOLEAN,
+        comment        TEXT
+    )
+
+**Parameters**
+
+`p_revisions`
+: An array of revision ids
+
+**Returns**
+
+A tableset of revisions records.
+
+**Example**
+
+    SELECT * FROM table_version.ver_get_revisions(ARRAY[1000,1001,1002])
+
+### `ver_get_revisions()` ###
+
+Get revisions for a given date range
+
+    REPLACE FUNCTION ver_get_revisions(p_start_date TIMESTAMP, p_end_date TIMESTAMP)
+    RETURNS TABLE(id INTEGER)
+
+**Parameters**
+
+`p_start_date`
+: The start datetime for the range of revisions
+
+`p_end_date`
+: The end datetime for the range of revisions
+
+**Returns**
+    A tableset of revision records
+
+**Example**
+    SELECT * FROM table_version.ver_get_revisions('2016-01-16 00:00:00', '2016-01-18 00:00:00')
+    
+### `ver_get_last_revision()` ###
+
+Get the last revision
+
+    FUNCTION ver_get_last_revision() 
+    RETURNS INTEGER
+
+**Returns**
+
+The revision id
+
+**Example**
+
+    SELECT ver_get_last_revision()
+
+### `ver_get_table_base_revision()` ###
+
+Get the base revision for a given table.
+
+    FUNCTION ver_get_table_base_revision(p_schema NAME, p_table NAME)
+    RETURNS INTEGER
+
+**Parameters**
+
+`p_schema`
+: The table schema
+
+`p_table`
+: The table name
+
+**Returns**
+
+The revision id
+
+**Exceptions**
+
+throws exception if:
+* the table is not versioned
+
+**Example**
+
+    SELECT table_version.ver_get_table_base_revision('foo', 'bar')
+
+### `ver_get_table_last_revision()` ###
+
+Get the last revision for a given table.
+
+    FUNCTION ver_get_table_last_revision(p_schema NAME, p_table NAME) 
+    RETURNS INTEGER
+
+**Parameters**
+
+`p_schema`
+: The table schema
+
+`p_table`
+: The table name
+
+**Returns**
+
+The revision id
+
+**Exceptions**
+
+throws exception if:
+* the table is not versioned
+
+**Example**
+
+    SELECT table_version.ver_get_table_last_revision('foo', 'bar')
+
+### `ver_get_versioned_tables()` ###
+
+Get all versioned tables
+
+    FUNCTION ver_get_versioned_tables()
+    RETURNS TABLE(schema_name NAME, table_name NAME, key_column VARCHAR(64))
+
+**Returns**
+
+A tableset of modified table records.
+
+**Example**
+
+    SELECT * FROM table_version.ver_get_versioned_tables()
+
+### `ver_get_versioned_table_key()` ###
+
+Get the versioned table key
+
+    FUNCTION ver_get_versioned_table_key(p_schema_name NAME, p_table_name NAME)
+    RETURNS VARCHAR(64)
+
+**Parameters**
+
+`p_schema_name`
+: The table schema
+
+`p_table_name`
+: The table name
+
+**Returns**
+
+The versioned table key.
+
+**Example**
+
+    SELECT table_version.ver_get_versioned_table_key('foo', 'bar')
+
+### `ver_get_modified_tables()` ###
+
+Get all tables that are modified by a revision.
+
+    FUNCTION ver_get_modified_tables(p_revision  INTEGER)
+    RETURNS TABLE(schema_name NAME, table_name NAME)
+
+**Parameters**
+
+`p_revision`
+: The revision
+
+**Returns**
+
+A tableset of modified table records including the schema and table name.
+
+**Exceptions**
+
+throws exception if:
+* the revision does not exist
+
+**Example**
+
+    SELECT * FROM table_version.ver_get_table_last_revision(1000)
+
+### `ver_get_modified_tables()` ###
+
+Get tables that are modified for a given revision range.
+
+    FUNCTION ver_get_modified_tables(p_revision1 INTEGER, p_revision2 INTEGER)
+    RETURNS TABLE(revision INTEGER, schema_name NAME, table_name NAME)
+
+**Parameters**
+
+`p_revision1`
+: The start revision for the range
+
+`p_revision2`
+: The end revision for the range
+
+**Returns**
+
+A tableset of records modified tables and revision when the change occured.
+
+**Example**
+
+    SELECT * FROM table_version.ver_get_modified_tables(1000, 1001)
+    
+### `ver_is_table_versioned()` ###
+
+Check if table is versioned.
+
+    FUNCTION ver_is_table_versioned(p_schema NAME, p_table NAME)
+    RETURNS BOOLEAN
+
+**Parameters**
+
+`p_schema`
+: The table schema
+
+`p_table`
+: If the table is versioned
+
+**Returns**
+
+If the table is versioned
+
+**Example**
+
+    SELECT table_version.ver_is_table_versioned('foo', 'bar')
+
+### `ver_versioned_table_change_column_type()` ###
+
+Modify a column datatype for a versioned table.
+
+    FUNCTION ver_versioned_table_change_column_type(
+        p_schema_name NAME, 
+        p_table_name NAME,
+        p_column_name NAME,
+        p_column_datatype TEXT
+    )
+    RETURNS BOOLEAN
+
+**Parameters**
+
+`p_schema_name`
+: The table schema
+
+`p_table_name`
+: The table name
+
+`p_column_name`
+: The name of the column to modify
+
+`p_column_datatype`
+: The datatype of column to modify
+
+**Returns**
+
+If the column was successfully modified
+
+**Exceptions**
+
+throws exception if:
+* the table is not versioned
+
+**Example**
+
+    SELECT table_version.ver_versioned_table_change_column_type('foo', 'bar', 'baz', 'VARCHAR(100)')
+
+### `ver_versioned_table_add_column()` ###
+
+Add a column to a versioned table.
+
+    FUNCTION ver_versioned_table_add_column(
+        p_schema_name NAME,
+        p_table_name  NAME,
+        p_column_name NAME,
+        p_column_datatype TEXT
+    )
+    RETURNS BOOLEAN
+
+**Parameters**
+
+`p_schema_name`
+: The table schema
+
+`p_table_name`
+: The table name
+
+`p_column_name`
+: The name of the column to add
+
+`p_column_datatype`
+: The datatype of column to add
+
+**Returns**
+
+If the column was added successful
+
+**Exceptions**
+
+throws exception if:
+* the table is not versioned
+
+**Notes**
+
+Column can not have a default values.
+
+**Example**
+
+    SELECT table_version.ver_versioned_table_add_column('foo', 'bar', 'baz', 'VARCHAR(100)')
+
 Support
 -------
 

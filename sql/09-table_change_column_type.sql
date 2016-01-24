@@ -1,13 +1,4 @@
-/**
-* Add a column to a versioned table. Column can not have a default value.
-*
-* @param p_schema_name          The table schema
-* @param p_table_name           The table name
-* @param p_column_name     The name of the column to add
-* @param p_column_datatype The datatype of column to add
-* @return                  If the column was added successful
-* @throws RAISE_EXCEPTION If the table is not versioned
-*/
+
 CREATE OR REPLACE FUNCTION ver_versioned_table_change_column_type(p_schema_name name, p_table_name name, p_column_name name, p_column_datatype text)
   RETURNS boolean AS
 $$
