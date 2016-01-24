@@ -25,7 +25,7 @@ BEGIN;
 CREATE EXTENSION table_version;
 CREATE EXTENSION pgtap;
 
-SELECT plan(55);
+SELECT plan(59);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -53,6 +53,8 @@ SELECT has_function( 'table_version', 'ver_get_version_table_full', ARRAY['name'
 SELECT has_function( 'table_version', 'ver_get_versioned_table_key', ARRAY['name','name'] );
 SELECT has_function( 'table_version', 'ver_get_versioned_tables'::name );
 SELECT has_function( 'table_version', 'ver_is_table_versioned', ARRAY['name','name'] );
+SELECT has_function( 'table_version', 'ver_versioned_table_change_column_type', ARRAY['name','name', 'name', 'text'] );
+SELECT has_function( 'table_version', 'ver_versioned_table_add_column', ARRAY['name','name', 'name', 'text'] );
 
 CREATE SCHEMA foo;
 
@@ -229,6 +231,11 @@ SELECT results_eq(
              ('I'::char, 6, 'foo bar 6')$$,
     'Foo bar diff check re-insert a prevoiusly deleted row #2'
 );
+
+SELECT is(table_version.ver_versioned_table_change_column_type('foo', 'bar', 'd1', 'VARCHAR(100)'), TRUE, 'Change column datatype');
+
+SELECT is(table_version.ver_versioned_table_add_column('foo', 'bar', 'baz', 'TEXT'), TRUE, 'Add column datatype');
+
 SELECT ok(table_version.ver_disable_versioning('foo', 'bar'), 'Disable versioning on foo.bar');
 
 SELECT * FROM finish();
