@@ -322,6 +322,7 @@ This function enable versioning for a table.
 **Exceptions**
 
 throws exception if the source table:
+
 - does not exist
 - is already versioned
 - does not have a unique non-compostite integer column
@@ -370,7 +371,8 @@ Disables versioning on a table
 
 **Exceptions**
 
-throws exception if the source table:
+throws an exception if the source table:
+
 - is not versioned
 
 **Notes**
@@ -405,7 +407,8 @@ The identifier for the new revision.
 
 **Exceptions**
 
-throws exception if:
+throws an exception if:
+
 - a revision is still in progress within the current SQL session
 
 **Notes**
@@ -609,7 +612,8 @@ The revision id
 
 **Exceptions**
 
-throws exception if:
+throws an exception if:
+
 - the table is not versioned
 
 **Example**
@@ -637,7 +641,8 @@ The revision id
 
 **Exceptions**
 
-throws exception if:
+throws an exception if:
+
 - the table is not versioned
 
 **Example**
@@ -700,7 +705,8 @@ A tableset of modified table records including the schema and table name.
 
 **Exceptions**
 
-throws exception if:
+throws an exception if:
+
 - the revision does not exist
 
 **Example**
@@ -785,7 +791,8 @@ Modify a column datatype for a versioned table.
 
 **Exceptions**
 
-throws exception if:
+throws an exception if:
+
 - the table is not versioned
 
 **Example**
@@ -824,7 +831,8 @@ Add a column to a versioned table.
 
 **Exceptions**
 
-throws exception if:
+throws an exception if:
+
 - the table is not versioned
 
 **Notes**
