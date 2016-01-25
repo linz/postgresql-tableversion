@@ -10,7 +10,7 @@
             "abstract": "PostgreSQL table versioning extension, recording row modifications and its history",
             "file": "sql/table_version.sql",
             "docfile": "doc/table_version.md",
-            "version": "1.0.0"
+            "version": "1.0.1"
         }
     },
     "prereqs": {
