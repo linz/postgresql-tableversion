@@ -96,6 +96,8 @@ installed, you can upgrade it to a properly packaged extension with:
 
 
 Dependencies
+------------
+
 The `table_version` extension has no dependencies other than PL/PgSQL.
 
 License
