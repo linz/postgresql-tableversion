@@ -79,6 +79,23 @@ and "_revision_expired" field. A row level trigger is then setup on the original
 table and whenever an insert, update and delete statement is run the change
 is recorded in the table's revision data table. 
 
+Installing the extension
+------------------------
+
+Once table_version is installed, you can add it to a database. If you're running
+PostgreSQL 9.1.0 or greater, it's a simple as connecting to a database as a
+super user and running:
+
+    CREATE EXTENSION table_version;
+
+The extension will install support configuration tables and functions into the
+`table_version` schema.
+
+If you've upgraded your cluster to PostgreSQL 9.1 and already had table_version
+installed, you can upgrade it to a properly packaged extension with:
+
+    CREATE EXTENSION table_version FROM unpackaged;
+
 Usage
 -----
 
@@ -409,8 +426,8 @@ Completed a revision within the current SQL session.
 
 **Returns**
 
-Return if the revision was sucessfully completed. WIll return `false` if an
-revision has not been created.
+`true` or `false` if the revision was sucessfully completed. Will return `false`
+if an revision has not been created.
 
 **Notes**
 
@@ -549,9 +566,11 @@ Get revisions for a given date range
 : The end datetime for the range of revisions
 
 **Returns**
+
     A tableset of revision records
 
 **Example**
+
     SELECT * FROM table_version.ver_get_revisions('2016-01-16 00:00:00', '2016-01-18 00:00:00')
     
 ### `ver_get_last_revision()` ###
@@ -728,7 +747,7 @@ Check if table is versioned.
 
 **Returns**
 
-If the table is versioned
+`true` or `false`if the table is versioned
 
 **Example**
 
@@ -762,7 +781,7 @@ Modify a column datatype for a versioned table.
 
 **Returns**
 
-If the column was successfully modified
+`true` or `false` if the column was successfully modified
 
 **Exceptions**
 
@@ -801,7 +820,7 @@ Add a column to a versioned table.
 
 **Returns**
 
-If the column was added successful
+`true` or `false` if the column was added successful
 
 **Exceptions**
 

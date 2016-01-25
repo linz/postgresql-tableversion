@@ -1,4 +1,4 @@
-postgresql-table_version
+postgresql-tableversion
 ========================
 
 PostgreSQL table versioning extension, recording row modifications and its
