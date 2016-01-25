@@ -1,5 +1,5 @@
-postgresql-tableversion (1.0.0-1) UNRELEASED; urgency=medium
+postgresql-tableversion (1.0.1-1) trusty; urgency=medium
 
   * Initial release.
 
- -- Jeremy <jpalmer@linz.govt.nz>  Thu, 21 Jan 2016 16:17:18 +1300
+ -- Jeremy <jpalmer@linz.govt.nz>  Mon, 25 Jan 2016 14:38:46 +1300
