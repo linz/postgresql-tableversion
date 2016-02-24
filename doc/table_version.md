@@ -297,8 +297,74 @@ following command:
 
     CREATE EXTENSION table_version FROM unpackaged;
 
-Functions
----------
+
+Table Versioning Functions
+--------------------------
+
+These functions get created once an table has been versioned
+
+### `ver_get_{schema_name}_{table_name}_diff()` ###
+
+Generates a difference between any two given revisions for versioned table
+    
+    FUNCTION ver_get_{schema_name}_{table_name}_diff(
+       p_revision1 INTEGER,
+       p_revision2 INTEGER
+    )
+    RETURNS TABLE(_diff_action CHAR(1), [table_column1, table_column2 ...])
+
+**Parameters**
+
+`p_revision1`
+: The start revision to generate the difference
+
+`p_revision2`
+: The end revision to generate the difference
+
+**Returns**
+
+A tableset of changed rows containing the each row that has been inserted,
+updated or deleted between teh start and end revisions. The '_diff_action'
+column contains the type of modification for each row. The _diff_action value
+can be one of:
+
+- 'U' = Update
+- 'D' = Delete
+- 'I' = Insert
+
+**Exceptions**
+
+throws an exception if the source table:
+
+- is not versioned
+- revision 1 is greater than revision 2
+
+**Example**
+
+    SELECT * FROM table_version.ver_get_foo_bar_diff(1001, 1002);
+
+### `ver_get_{schema_name}_{table_name}_revision()` ###
+
+Generates tableset for versioned table at a given revision ID.
+    
+    FUNCTION ver_get_{schema_name}_{table_name}_revision(p_revision INTEGER)
+    RETURNS TABLE([table_column1, table_column2 ...])
+
+**Parameters**
+
+`p_revision`
+: The revision to generate the tableset for
+
+**Returns**
+
+A tableset for the table at a given revision ID.
+
+**Example**
+
+    SELECT * FROM table_version.ver_get_foo_bar_revision(1001);
+
+General Functions
+-----------------
 
 ### `ver_enable_versioning()` ###
 
@@ -321,7 +387,7 @@ This function enable versioning for a table.
 
 **Exceptions**
 
-throws exception if the source table:
+Throws an exception if the source table:
 
 - does not exist
 - is already versioned
