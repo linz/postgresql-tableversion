@@ -5,14 +5,16 @@ CREATE OR REPLACE FUNCTION ver_get_revision(
     OUT revision_time TIMESTAMP,
     OUT start_time    TIMESTAMP,
     OUT schema_change BOOLEAN,
-    OUT comment       TEXT
+    OUT comment       TEXT,
+    OUT user_name     TEXT
 ) AS $$
     SELECT
         id,
         revision_time,
         start_time,
         schema_change,
-        comment
+        comment,
+        user_name
     FROM
         table_version.revision
     WHERE
@@ -25,14 +27,16 @@ RETURNS TABLE(
     revision_time  TIMESTAMP,
     start_time     TIMESTAMP,
     schema_change  BOOLEAN,
-    comment        TEXT
+    comment        TEXT,
+    user_name      TEXT
 ) AS $$
     SELECT
         id,
         revision_time,
         start_time,
         schema_change,
-        comment
+        comment,
+        user_name
     FROM
         table_version.revision
     WHERE

@@ -15,6 +15,7 @@ CREATE TABLE revision (
     id SERIAL NOT NULL PRIMARY KEY,
     revision_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     start_time TIMESTAMP NOT NULL DEFAULT clock_timestamp(),
+    user_name TEXT NOT NULL DEFAULT CURRENT_USER,
     schema_change BOOLEAN NOT NULL,
     comment TEXT
 );
@@ -29,6 +30,8 @@ The revision_time is the datetime of the revision. In the context of LINZ BDE
 this datetime when the data from unloaded from the Landonline database.
 
 The start_time is the datetime of when the revision record was created.
+
+The user_name is the database user who created the revision
 $$;
 
 SELECT pg_catalog.pg_extension_config_dump('revision', '');

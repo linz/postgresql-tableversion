@@ -25,7 +25,7 @@ BEGIN;
 CREATE EXTENSION table_version;
 CREATE EXTENSION pgtap;
 
-SELECT plan(59);
+SELECT plan(66);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -237,6 +237,45 @@ SELECT is(table_version.ver_versioned_table_change_column_type('foo', 'bar', 'd1
 SELECT is(table_version.ver_versioned_table_add_column('foo', 'bar', 'baz', 'TEXT'), TRUE, 'Add column datatype');
 
 SELECT ok(table_version.ver_disable_versioning('foo', 'bar'), 'Disable versioning on foo.bar');
+
+-- test versioning of table with text primary key
+CREATE TABLE foo.bar2 (
+    baz TEXT NOT NULL PRIMARY KEY,
+    qux TEXT NOT NULL
+);
+
+INSERT INTO foo.bar2 (baz, qux) VALUES
+('foo bar 1', 'qux1'),
+('foo bar 2', 'qux2'),
+('foo bar 3', 'qux3');
+
+SELECT ok(table_version.ver_enable_versioning('foo', 'bar2'), 'Enable versioning of text primary key on foo.bar2');
+SELECT ok(table_version.ver_is_table_versioned('foo', 'bar2'), 'Check table is revisioned versioning on foo.bar2');
+SELECT is(table_version.ver_get_versioned_table_key('foo', 'bar2'), 'baz', 'Check table foo.bar table key');
+
+-- Edit 1 insert, update and delete for text primary key
+SELECT is(table_version.ver_create_revision('Foo bar2 edit'), 1008, 'Create edit text PK');
+
+INSERT INTO foo.bar2 (baz, qux) VALUES ('foo bar 4', 'qux4');
+
+UPDATE foo.bar2
+SET    qux = 'qux1 edit'
+WHERE  baz = 'foo bar 1';
+
+DELETE FROM foo.bar2
+WHERE baz = 'foo bar 3';
+
+SELECT ok(table_version.ver_complete_revision(), 'Complete edit text PK');
+
+SELECT results_eq(
+    'SELECT * FROM table_version.ver_get_foo_bar2_diff(1007, 1008) ORDER BY baz',
+    $$VALUES ('U'::char, 'foo bar 1', 'qux1 edit'),
+             ('D'::char, 'foo bar 3', 'qux3'),
+             ('I'::char, 'foo bar 4', 'qux4')$$,
+    'Foo bar2 diff for text PK edit'
+);
+
+SELECT ok(table_version.ver_disable_versioning('foo', 'bar2'), 'Disable versioning on foo.bar2');
 
 SELECT * FROM finish();
 

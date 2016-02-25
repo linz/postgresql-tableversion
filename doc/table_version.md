@@ -67,7 +67,8 @@ Table Prerequisites
 
 To enable versioning on a table the following conditions must be met:
 
-- The table must have a have a unique non-composite integer column
+- The table must have a have a unique non-composite integer, bigint, text or
+  varchar column
 - The table must not be temporary
 
 How it works
@@ -391,7 +392,7 @@ Throws an exception if the source table:
 
 - does not exist
 - is already versioned
-- does not have a unique non-compostite integer column
+- does not have a unique non-compostite integer, bigint, text or varhcar column
 
 **Notes**
 

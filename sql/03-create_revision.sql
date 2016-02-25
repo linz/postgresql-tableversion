@@ -13,8 +13,8 @@ BEGIN
         RAISE EXCEPTION 'A revision changeset is still in progress. Please complete the changeset before starting a new one';
     END IF;
 
-    INSERT INTO table_version.revision (revision_time, schema_change, comment)
-    VALUES (p_revision_time, p_schema_change, p_comment)
+    INSERT INTO table_version.revision (revision_time, schema_change, comment, user_name)
+    VALUES (p_revision_time, p_schema_change, p_comment, CURRENT_USER)
     RETURNING id INTO v_revision;
     
     CREATE TEMP TABLE _changeset_revision(

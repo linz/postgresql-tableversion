@@ -50,14 +50,14 @@ BEGIN
         IDX.indisunique = TRUE AND
         IDX.indexprs IS NULL AND
         IDX.indpred IS NULL AND
-        format_type(ATT.atttypid, ATT.atttypmod) IN ('integer', 'bigint') AND
+        format_type(ATT.atttypid, NULL) IN ('integer', 'bigint', 'text', 'character varying') AND
         array_length(IDX.indkey::INTEGER[], 1) = 1
     ORDER BY
         IDX.indisprimary DESC
     LIMIT 1;
 
     IF v_key_col IS NULL THEN
-        RAISE EXCEPTION 'Table %.% does not have a unique non-compostite integer column', quote_ident(p_schema), quote_ident(p_table);
+        RAISE EXCEPTION 'Table %.% does not have a unique non-compostite integer, bigint, text, or varchar column', quote_ident(p_schema), quote_ident(p_table);
     END IF;
 
     v_revision_table := table_version.ver_get_version_table_full(p_schema, p_table);

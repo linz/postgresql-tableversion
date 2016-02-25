@@ -12,7 +12,7 @@
 -- Provide unit testing for table versioning system using pgTAP
 --------------------------------------------------------------------------------
 \set ECHO none
-1..59
+1..66
 ok 1 - Schema table_version should exist
 ok 2 - Should have revision table
 ok 3 - Should have tables_changed table
@@ -72,3 +72,10 @@ ok 56 - Foo bar diff check re-insert a prevoiusly deleted row #2
 ok 57 - Change column datatype
 ok 58 - Add column datatype
 ok 59 - Disable versioning on foo.bar
+ok 60 - Enable versioning of text primary key on foo.bar2
+ok 61 - Check table is revisioned versioning on foo.bar2
+ok 62 - Check table foo.bar table key
+ok 63 - Create edit text PK
+ok 64 - Complete edit text PK
+ok 65 - Foo bar2 diff for text PK edit
+ok 66 - Disable versioning on foo.bar2
