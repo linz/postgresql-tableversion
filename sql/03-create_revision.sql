@@ -10,7 +10,7 @@ DECLARE
     v_revision table_version.revision.id%TYPE;
 BEGIN
     IF table_version._ver_get_reversion_temp_table('_changeset_revision') THEN
-        RAISE EXCEPTION 'A revision changeset is still in progress. Please complete the changeset before starting a new one';
+        RAISE EXCEPTION 'A revision changeset is still in progress. Please complete the revision before starting a new one';
     END IF;
 
     INSERT INTO table_version.revision (revision_time, schema_change, comment, user_name)
@@ -25,4 +25,4 @@ BEGIN
     
     RETURN v_revision;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;

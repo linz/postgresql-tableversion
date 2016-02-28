@@ -24,5 +24,5 @@ BEGIN
 
     RETURN v_is_versioned;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 

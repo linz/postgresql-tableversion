@@ -139,7 +139,7 @@ CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
         
         RETURN NULL;
     END;
-$TRIGGER$ LANGUAGE plpgsql SECURITY DEFINER;
+$TRIGGER$ LANGUAGE plpgsql;
 
     $template$;
 
@@ -164,5 +164,5 @@ $TRIGGER$ LANGUAGE plpgsql SECURITY DEFINER;
     
     RETURN TRUE;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 

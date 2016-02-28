@@ -38,5 +38,5 @@ BEGIN
     PERFORM table_version.ver_create_version_trigger(p_schema_name, p_table_name, v_key_col);
     RETURN TRUE;
 END;
-$$ LANGUAGE plpgsql VOLATILE SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 

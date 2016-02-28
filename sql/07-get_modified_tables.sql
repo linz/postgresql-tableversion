@@ -26,7 +26,7 @@ BEGIN
             VTB.schema_name,
             VTB.table_name;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION ver_get_modified_tables(
     p_revision1 INTEGER,
@@ -69,5 +69,5 @@ BEGIN
             VTB.schema_name,
             VTB.table_name;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 

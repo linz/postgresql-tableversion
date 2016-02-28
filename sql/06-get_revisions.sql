@@ -19,7 +19,7 @@ CREATE OR REPLACE FUNCTION ver_get_revision(
         table_version.revision
     WHERE
         id = $1
-$$ LANGUAGE sql SECURITY DEFINER;
+$$ LANGUAGE sql;
 
 CREATE OR REPLACE FUNCTION ver_get_revisions(p_revisions INTEGER[]) 
 RETURNS TABLE(
@@ -43,7 +43,7 @@ RETURNS TABLE(
         id = ANY($1)
     ORDER BY
         revision DESC;
-$$ LANGUAGE sql SECURITY DEFINER;
+$$ LANGUAGE sql;
 
 CREATE OR REPLACE FUNCTION ver_get_revisions(
     p_start_date TIMESTAMP,
@@ -61,7 +61,7 @@ RETURNS TABLE(
         revision_time <= $2
     ORDER BY
         revision DESC;
-$$ LANGUAGE sql SECURITY DEFINER;
+$$ LANGUAGE sql;
 
 CREATE OR REPLACE FUNCTION ver_get_revision(
     p_date_time       TIMESTAMP
@@ -78,7 +78,7 @@ $$
             FROM   table_version.revision
             WHERE  revision_time <= $1
         );
-$$ LANGUAGE sql SECURITY DEFINER;
+$$ LANGUAGE sql;
 
 CREATE OR REPLACE FUNCTION ver_get_last_revision() 
 RETURNS INTEGER AS 
@@ -92,7 +92,7 @@ $$
             SELECT max(id) 
             FROM   table_version.revision
         );
-$$ LANGUAGE sql SECURITY DEFINER;
+$$ LANGUAGE sql;
 
 CREATE OR REPLACE FUNCTION ver_get_table_base_revision(
     p_schema          NAME,
@@ -124,7 +124,7 @@ BEGIN
         );
     RETURN v_id;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION ver_get_table_last_revision(
     p_schema          NAME,
@@ -156,5 +156,5 @@ BEGIN
         );
     RETURN v_id;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 

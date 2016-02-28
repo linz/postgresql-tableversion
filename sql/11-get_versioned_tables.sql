@@ -13,7 +13,7 @@ RETURNS TABLE(
         table_version.versioned_tables
     WHERE
         versioned = TRUE;
-$$ LANGUAGE sql SECURITY DEFINER;
+$$ LANGUAGE sql;
 
 /**
 * Get the versioned table key
@@ -34,6 +34,6 @@ AS $$
         versioned = TRUE AND
         schema_name = $1 AND
         table_name = $2;
-$$ LANGUAGE sql SECURITY DEFINER;
+$$ LANGUAGE sql;
 
 

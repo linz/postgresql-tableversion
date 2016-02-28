@@ -18,5 +18,5 @@ BEGIN
     END;
     RETURN v_status;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 

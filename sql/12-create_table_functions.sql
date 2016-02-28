@@ -133,7 +133,7 @@ AS $FUNC$
         );
         RETURN;
     END;
-$FUNC$ LANGUAGE plpgsql SECURITY DEFINER;
+$FUNC$ LANGUAGE plpgsql;
 
     $template$;
     
@@ -179,7 +179,7 @@ BEGIN
         ]
     );
 END;
-$FUNC$ LANGUAGE plpgsql SECURITY DEFINER;
+$FUNC$ LANGUAGE plpgsql;
 
     $template$;
     
@@ -197,5 +197,5 @@ $FUNC$ LANGUAGE plpgsql SECURITY DEFINER;
 
     RETURN TRUE;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 
