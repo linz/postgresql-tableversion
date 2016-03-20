@@ -22,7 +22,7 @@ CREATE TABLE revision (
 
 GRANT SELECT ON TABLE revision TO public;
 
-SELECT setval('table_version.revision_id_seq', 1000, true);
+SELECT setval('@extschema@.revision_id_seq', 1000, true);
 
 COMMENT ON TABLE revision IS $$
 Defines a revision represents a amendment to table or series of tables held 

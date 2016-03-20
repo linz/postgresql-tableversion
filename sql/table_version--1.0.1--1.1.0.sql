@@ -40,7 +40,7 @@ CREATE OR REPLACE FUNCTION ver_get_revision(
         comment,
         user_name
     FROM
-        table_version.revision
+        @extschema@.revision
     WHERE
         id = $1
 $$ LANGUAGE sql;
@@ -62,7 +62,7 @@ RETURNS TABLE(
         comment,
         user_name
     FROM
-        table_version.revision
+        @extschema@.revision
     WHERE
         id = ANY($1)
     ORDER BY
@@ -82,8 +82,8 @@ DECLARE
     v_key_col         NAME;
     v_revision_table  TEXT;
     v_sql             TEXT;
-    v_table_id        table_version.versioned_tables.id%TYPE;
-    v_revision        table_version.revision.id%TYPE;
+    v_table_id        @extschema@.versioned_tables.id%TYPE;
+    v_revision        @extschema@.revision.id%TYPE;
     v_revision_exists BOOLEAN;
     v_table_has_data  BOOLEAN;
 BEGIN
@@ -91,7 +91,7 @@ BEGIN
         RAISE EXCEPTION 'Table %.% does not exists', quote_ident(p_schema), quote_ident(p_table);
     END IF;
 
-    IF table_version.ver_is_table_versioned(p_schema, p_table) THEN
+    IF @extschema@.ver_is_table_versioned(p_schema, p_table) THEN
         RAISE EXCEPTION 'Table %.% is already versioned', quote_ident(p_schema), quote_ident(p_table);
     END IF;
 
@@ -132,12 +132,12 @@ BEGIN
         RAISE EXCEPTION 'Table %.% does not have a unique non-compostite integer, bigint, text, or varchar column', quote_ident(p_schema), quote_ident(p_table);
     END IF;
 
-    v_revision_table := table_version.ver_get_version_table_full(p_schema, p_table);
+    v_revision_table := @extschema@.ver_get_version_table_full(p_schema, p_table);
     
     v_sql :=
     'CREATE TABLE ' || v_revision_table || '(' ||
-        '_revision_created INTEGER NOT NULL REFERENCES table_version.revision,' ||
-        '_revision_expired INTEGER REFERENCES table_version.revision,' ||
+        '_revision_created INTEGER NOT NULL REFERENCES @extschema@.revision,' ||
+        '_revision_expired INTEGER REFERENCES @extschema@.revision,' ||
         'LIKE ' || quote_ident(p_schema) || '.' || quote_ident(p_table) ||
     ');';
     EXECUTE v_sql;
@@ -170,7 +170,7 @@ BEGIN
     INTO v_table_has_data;
     
     IF v_table_has_data THEN
-        IF table_version._ver_get_reversion_temp_table('_changeset_revision') THEN
+        IF @extschema@._ver_get_reversion_temp_table('_changeset_revision') THEN
             SELECT
                 max(VER.revision)
             INTO
@@ -180,7 +180,7 @@ BEGIN
             
             v_revision_exists := TRUE;
         ELSE
-            SELECT table_version.ver_create_revision(
+            SELECT @extschema@.ver_create_revision(
                 'Initial revisioning of ' || CAST(v_table_oid AS TEXT)
             )
             INTO  v_revision;
@@ -192,7 +192,7 @@ BEGIN
         EXECUTE v_sql;
         
         IF NOT v_revision_exists THEN
-            PERFORM table_version.ver_complete_revision();
+            PERFORM @extschema@.ver_complete_revision();
         END IF;
     
     END IF;
@@ -247,7 +247,7 @@ BEGIN
         cat.relname = 'pg_class' AND
         fnsp.nspname = 'table_version' AND
         fnsp.oid = fobj.relnamespace AND
-        fobj.relname = table_version.ver_get_version_table(p_schema, p_table) AND
+        fobj.relname = @extschema@.ver_get_version_table(p_schema, p_table) AND
         tnsp.nspname = p_schema AND
         tnsp.oid = tobj.relnamespace AND
         tobj.relname   = p_table;
@@ -257,24 +257,24 @@ BEGIN
     INTO
         v_table_id
     FROM
-        table_version.versioned_tables
+        @extschema@.versioned_tables
     WHERE
         schema_name = p_schema AND
         table_name = p_table;
     
     IF v_table_id IS NOT NULL THEN
-        UPDATE table_version.versioned_tables
+        UPDATE @extschema@.versioned_tables
         SET    versioned = TRUE
         WHERE  schema_name = p_schema
         AND    table_name = p_table;
     ELSE
-        INSERT INTO table_version.versioned_tables(schema_name, table_name, key_column, versioned)
+        INSERT INTO @extschema@.versioned_tables(schema_name, table_name, key_column, versioned)
         VALUES (p_schema, p_table, v_key_col, TRUE)
         RETURNING id INTO v_table_id;
     END IF;
     
     IF v_table_id IS NOT NULL AND v_table_has_data THEN
-        INSERT INTO table_version.tables_changed(
+        INSERT INTO @extschema@.tables_changed(
             revision,
             table_id
         )
@@ -284,14 +284,14 @@ BEGIN
         WHERE
             NOT EXISTS (
                 SELECT *
-                FROM   table_version.tables_changed
+                FROM   @extschema@.tables_changed
                 WHERE  table_id = v_table_id
                 AND    revision = v_revision
         );
     END IF;
 
-    PERFORM table_version.ver_create_table_functions(p_schema, p_table, v_key_col);
-    PERFORM table_version.ver_create_version_trigger(p_schema, p_table, v_key_col);
+    PERFORM @extschema@.ver_create_table_functions(p_schema, p_table, v_key_col);
+    PERFORM @extschema@.ver_create_version_trigger(p_schema, p_table, v_key_col);
     
     RETURN TRUE;
 END;
@@ -333,18 +333,18 @@ DECLARE
     v_select_columns_diff TEXT;
     v_select_columns_rev  TEXT;
 BEGIN
-    IF NOT table_version.ver_is_table_versioned(p_schema, p_table) THEN
+    IF NOT @extschema@.ver_is_table_versioned(p_schema, p_table) THEN
         RAISE EXCEPTION 'Table %.% is not versioned', quote_ident(p_schema), quote_ident(p_table);
     END IF;
     
-    v_revision_table := table_version.ver_get_version_table_full(p_schema, p_table);
+    v_revision_table := @extschema@.ver_get_version_table_full(p_schema, p_table);
     v_table_columns := '';
     v_select_columns_diff := '';
     v_select_columns_rev := '';
     
     OPEN v_col_cur FOR
     SELECT column_name, column_type
-    FROM table_version._ver_get_table_cols(p_schema, p_table);
+    FROM @extschema@._ver_get_table_cols(p_schema, p_table);
 
     FETCH FIRST IN v_col_cur INTO v_column_name, v_column_type;
     LOOP
@@ -381,7 +381,7 @@ AS $FUNC$
         v_base_version   INTEGER;
         v_revision_table TEXT;
     BEGIN
-        IF NOT table_version.ver_is_table_versioned(%schema_name%, %table_name%) THEN
+        IF NOT @extschema@.ver_is_table_versioned(%schema_name%, %table_name%) THEN
             RAISE EXCEPTION 'Table %full_table_name% is not versioned';
         END IF;
         
@@ -395,14 +395,14 @@ AS $FUNC$
             RAISE EXCEPTION 'Revision 1 (%) is greater than revision 2 (%)', v_revision1, v_revision2;
         END IF;
         
-        SELECT table_version.ver_get_table_base_revision(%schema_name%, %table_name%)
+        SELECT @extschema@.ver_get_table_base_revision(%schema_name%, %table_name%)
         INTO   v_base_version;
         IF v_base_version > v_revision2 THEN
             RETURN;
         END IF;
         
         RETURN QUERY EXECUTE
-        table_version.ver_ExpandTemplate(
+        @extschema@.ver_ExpandTemplate(
             $sql$
             WITH changed_within_range AS (
                 SELECT 
@@ -445,7 +445,7 @@ $FUNC$ LANGUAGE plpgsql;
 
     $template$;
     
-    v_sql := REPLACE(v_sql, '%func_sig%',       table_version._ver_get_diff_function(p_schema, p_table));
+    v_sql := REPLACE(v_sql, '%func_sig%',       @extschema@._ver_get_diff_function(p_schema, p_table));
     v_sql := REPLACE(v_sql, '%table_columns%',  v_table_columns);
     v_sql := REPLACE(v_sql, '%schema_name%',    quote_literal(p_schema));
     v_sql := REPLACE(v_sql, '%table_name%',     quote_literal(p_table));
@@ -454,12 +454,12 @@ $FUNC$ LANGUAGE plpgsql;
     v_sql := REPLACE(v_sql, '%key_col%',        quote_ident(p_key_col));
     v_sql := REPLACE(v_sql, '%revision_table%', v_revision_table);
     
-    EXECUTE 'DROP FUNCTION IF EXISTS ' || table_version._ver_get_diff_function(p_schema, p_table);
+    EXECUTE 'DROP FUNCTION IF EXISTS ' || @extschema@._ver_get_diff_function(p_schema, p_table);
     EXECUTE v_sql;
     
-    EXECUTE 'REVOKE ALL ON FUNCTION ' || table_version._ver_get_diff_function(p_schema, p_table)||' FROM PUBLIC;';
-	EXECUTE 'GRANT EXECUTE ON FUNCTION ' || table_version._ver_get_diff_function(p_schema, p_table)||' TO bde_admin;';
-	EXECUTE 'GRANT EXECUTE ON FUNCTION ' || table_version._ver_get_diff_function(p_schema, p_table)||' TO bde_user;';
+    EXECUTE 'REVOKE ALL ON FUNCTION ' || @extschema@._ver_get_diff_function(p_schema, p_table)||' FROM PUBLIC;';
+	EXECUTE 'GRANT EXECUTE ON FUNCTION ' || @extschema@._ver_get_diff_function(p_schema, p_table)||' TO bde_admin;';
+	EXECUTE 'GRANT EXECUTE ON FUNCTION ' || @extschema@._ver_get_diff_function(p_schema, p_table)||' TO bde_user;';
 
     -- Create get version function for table called: 
     -- ver_get_$schema$_$table$_revision(p_revision integer)
@@ -472,7 +472,7 @@ RETURNS TABLE(
 $FUNC$
 BEGIN
     RETURN QUERY EXECUTE
-    table_version.ver_ExpandTemplate(
+    @extschema@.ver_ExpandTemplate(
         $sql$
             SELECT
 %select_columns%
@@ -491,17 +491,17 @@ $FUNC$ LANGUAGE plpgsql;
 
     $template$;
     
-    v_sql := REPLACE(v_sql, '%func_sig%', table_version._ver_get_revision_function(p_schema, p_table));
+    v_sql := REPLACE(v_sql, '%func_sig%', @extschema@._ver_get_revision_function(p_schema, p_table));
     v_sql := REPLACE(v_sql, '%table_columns%', v_table_columns);
     v_sql := REPLACE(v_sql, '%select_columns%', v_select_columns_rev);
     v_sql := REPLACE(v_sql, '%revision_table%', v_revision_table);
     
-    EXECUTE 'DROP FUNCTION IF EXISTS ' || table_version._ver_get_revision_function(p_schema, p_table);
+    EXECUTE 'DROP FUNCTION IF EXISTS ' || @extschema@._ver_get_revision_function(p_schema, p_table);
     EXECUTE v_sql;
     
-	EXECUTE 'REVOKE ALL ON FUNCTION ' || table_version._ver_get_revision_function(p_schema, p_table) || ' FROM PUBLIC;';
-	EXECUTE 'GRANT EXECUTE ON FUNCTION ' || table_version._ver_get_revision_function(p_schema, p_table) || ' TO bde_admin;';
-	EXECUTE 'GRANT EXECUTE ON FUNCTION ' || table_version._ver_get_revision_function(p_schema, p_table) || ' TO bde_user;';
+	EXECUTE 'REVOKE ALL ON FUNCTION ' || @extschema@._ver_get_revision_function(p_schema, p_table) || ' FROM PUBLIC;';
+	EXECUTE 'GRANT EXECUTE ON FUNCTION ' || @extschema@._ver_get_revision_function(p_schema, p_table) || ' TO bde_admin;';
+	EXECUTE 'GRANT EXECUTE ON FUNCTION ' || @extschema@._ver_get_revision_function(p_schema, p_table) || ' TO bde_user;';
 
     RETURN TRUE;
 END;
@@ -521,16 +521,16 @@ DECLARE
     v_column_name    NAME;
     v_column_update  TEXT;
 BEGIN
-    IF NOT table_version.ver_is_table_versioned(p_schema, p_table) THEN
+    IF NOT @extschema@.ver_is_table_versioned(p_schema, p_table) THEN
         RAISE EXCEPTION 'Table %.% is not versioned', quote_ident(p_schema), quote_ident(p_table);
     END IF;
     
-    v_revision_table := table_version.ver_get_version_table_full(p_schema, p_table);
+    v_revision_table := @extschema@.ver_get_version_table_full(p_schema, p_table);
     
     v_column_update := '';
     FOR v_column_name IN
         SELECT column_name
-        FROM table_version._ver_get_table_cols(p_schema, p_table)
+        FROM @extschema@._ver_get_table_cols(p_schema, p_table)
     LOOP
         IF v_column_name = p_key_col THEN
             CONTINUE;
@@ -547,9 +547,9 @@ BEGIN
 
 CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
     DECLARE
-       v_revision      table_version.revision.id%TYPE;
-       v_last_revision table_version.revision.id%TYPE;
-       v_table_id      table_version.versioned_tables.id%TYPE;
+       v_revision      @extschema@.revision.id%TYPE;
+       v_last_revision @extschema@.revision.id%TYPE;
+       v_table_id      @extschema@.versioned_tables.id%TYPE;
     BEGIN
         BEGIN
             SELECT
@@ -572,7 +572,7 @@ CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
         INTO
             v_table_id
         FROM
-            table_version.versioned_tables VTB
+            @extschema@.versioned_tables VTB
         WHERE
             VTB.table_name = %table_name% AND
             VTB.schema_name = %schema_name%;
@@ -583,12 +583,12 @@ CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
 
         IF NOT EXISTS (
             SELECT TRUE
-            FROM   table_version.tables_changed
+            FROM   @extschema@.tables_changed
             WHERE  table_id = v_table_id
             AND    revision = v_revision
         )
         THEN
-            INSERT INTO table_version.tables_changed(revision, table_id)
+            INSERT INTO @extschema@.tables_changed(revision, table_id)
             VALUES (v_revision, v_table_id);
         END IF;
 
@@ -652,7 +652,7 @@ $TRIGGER$ LANGUAGE plpgsql;
     
     EXECUTE v_sql;
 
-    SELECT table_version._ver_get_version_trigger(p_schema, p_table)
+    SELECT @extschema@._ver_get_version_trigger(p_schema, p_table)
     INTO v_trigger_name;
 
     EXECUTE 'DROP TRIGGER IF EXISTS '  || v_trigger_name|| ' ON ' ||  

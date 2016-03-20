@@ -8,7 +8,7 @@ DECLARE
     v_status BOOLEAN;
 BEGIN
     BEGIN
-        DELETE FROM table_version.revision
+        DELETE FROM @extschema@.revision
         WHERE id = p_revision;
         v_status := FOUND;
     EXCEPTION

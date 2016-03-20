@@ -10,7 +10,7 @@ RETURNS TABLE(
         table_name,
         key_column
     FROM 
-        table_version.versioned_tables
+        @extschema@.versioned_tables
     WHERE
         versioned = TRUE;
 $$ LANGUAGE sql;
@@ -29,7 +29,7 @@ AS $$
     SELECT
         key_column
     FROM 
-        table_version.versioned_tables
+        @extschema@.versioned_tables
     WHERE
         versioned = TRUE AND
         schema_name = $1 AND

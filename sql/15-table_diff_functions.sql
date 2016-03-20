@@ -25,11 +25,11 @@ CREATE OR REPLACE FUNCTION ver_get_table_differences(
 RETURNS SETOF RECORD
 AS $$
 DECLARE
-    v_table_1_cols  table_version.ATTRIBUTE[];
-    v_table_1_uniq  table_version.ATTRIBUTE[];
-    v_table_2_cols  table_version.ATTRIBUTE[];
-    v_common_cols   table_version.ATTRIBUTE[];
-    v_unique_cols   table_version.ATTRIBUTE[];
+    v_table_1_cols  @extschema@.ATTRIBUTE[];
+    v_table_1_uniq  @extschema@.ATTRIBUTE[];
+    v_table_2_cols  @extschema@.ATTRIBUTE[];
+    v_common_cols   @extschema@.ATTRIBUTE[];
+    v_unique_cols   @extschema@.ATTRIBUTE[];
     v_sql           TEXT;
     v_table_cur1    REFCURSOR;
     v_table_cur2    REFCURSOR;
@@ -46,25 +46,25 @@ BEGIN
 
     v_sql := '';
 
-    IF NOT table_version.ver_table_key_is_valid(p_table1, p_compare_key) THEN
+    IF NOT @extschema@.ver_table_key_is_valid(p_table1, p_compare_key) THEN
         RAISE EXCEPTION
             '''%'' is not a unique non-compostite integer, bigint, text, or varchar column for %',
             p_compare_key, CAST(p_table1 AS TEXT);
     END IF;
 
-    IF NOT table_version.ver_table_key_is_valid(p_table2, p_compare_key) THEN
+    IF NOT @extschema@.ver_table_key_is_valid(p_table2, p_compare_key) THEN
         RAISE EXCEPTION
             '''%'' is not a  unique non-compostite integer, bigint, text, or varchar column for %',
             p_compare_key, CAST(p_table2 AS TEXT);
     END IF;
     
-    SELECT table_version._ver_get_table_columns(p_table1)
+    SELECT @extschema@._ver_get_table_columns(p_table1)
     INTO v_table_1_cols;
     
-    SELECT table_version._ver_get_table_columns(p_table2)
+    SELECT @extschema@._ver_get_table_columns(p_table2)
     INTO v_table_2_cols;
     
-    SELECT table_version._ver_get_table_unique_constraint_columns(p_table1)
+    SELECT @extschema@._ver_get_table_unique_constraint_columns(p_table1)
     INTO v_table_1_uniq;
 
     SELECT ARRAY(
@@ -89,13 +89,13 @@ BEGIN
     )
     INTO v_unique_cols;
     
-    SELECT table_version._ver_get_compare_select_sql(
+    SELECT @extschema@._ver_get_compare_select_sql(
         p_table1, p_compare_key, v_common_cols, v_unique_cols
     )
     INTO v_sql;
     OPEN v_table_cur1 NO SCROLL FOR EXECUTE v_sql;
     
-    SELECT table_version._ver_get_compare_select_sql(
+    SELECT @extschema@._ver_get_compare_select_sql(
         p_table2, p_compare_key, v_common_cols, v_unique_cols
     )
     INTO v_sql;
@@ -175,13 +175,13 @@ BEGIN
     
     RAISE NOTICE 'Generating difference data for %', p_original_table;
     
-    PERFORM table_version.ver_ExecuteTemplate( $sql$
+    PERFORM @extschema@.ver_ExecuteTemplate( $sql$
         CREATE TEMP TABLE table_diff AS
         SELECT
             T.id,
             T.action
         FROM
-            table_version.ver_get_table_differences(
+            @extschema@.ver_get_table_differences(
                 '%1%', '%2%', '%3%'
             ) AS T (action CHAR(1), id %4%)
         ORDER BY
@@ -192,7 +192,7 @@ BEGIN
             p_original_table::TEXT,
             p_new_table::TEXT,
             p_key_column::TEXT,
-            table_version.ver_table_key_datatype(p_original_table, p_key_column)
+            @extschema@.ver_table_key_datatype(p_original_table, p_key_column)
         ]
     );
     
@@ -201,7 +201,7 @@ BEGIN
     ALTER TABLE table_diff ADD PRIMARY KEY (id);
     ANALYSE table_diff;
     
-    SELECT * FROM table_version._ver_apply_changes(
+    SELECT * FROM @extschema@._ver_apply_changes(
         p_original_table, p_new_table, 'table_diff', p_key_column
     )
     INTO number_deletes, number_inserts, number_updates;
@@ -247,19 +247,19 @@ BEGIN
         
         RAISE NOTICE 'Deleting from % using difference data', p_original_table;
         
-        number_deletes := table_version._ver_apply_inc_delete(
+        number_deletes := @extschema@._ver_apply_inc_delete(
             p_original_table, p_diff_table, p_key_column
         );
         
         RAISE NOTICE 'Updating % using difference data', p_original_table;
         
-        number_updates :=  table_version._ver_apply_inc_update(
+        number_updates :=  @extschema@._ver_apply_inc_update(
             p_original_table, p_diff_table, p_new_table, p_key_column
         );
         
         RAISE NOTICE 'Inserting into % using difference data', p_original_table;
         
-        number_inserts := table_version._ver_apply_inc_insert(
+        number_inserts := @extschema@._ver_apply_inc_insert(
             p_original_table, p_diff_table, p_new_table, p_key_column
         );
         
@@ -285,7 +285,7 @@ RETURNS
 AS
 $$
 BEGIN
-    RETURN table_version.ver_ExecuteTemplate( $sql$
+    RETURN @extschema@.ver_ExecuteTemplate( $sql$
         DELETE FROM %1% AS T
         USING %2% AS INC
         WHERE T.%3% = INC.id
@@ -310,10 +310,10 @@ $$
 DECLARE
     v_sql TEXT;
     v_update_col_txt TEXT;
-    v_table_cols table_version.ATTRIBUTE[];
-    v_col table_version.ATTRIBUTE;
+    v_table_cols @extschema@.ATTRIBUTE[];
+    v_col @extschema@.ATTRIBUTE;
 BEGIN
-    v_table_cols := table_version._ver_get_table_columns(p_update_table);
+    v_table_cols := @extschema@._ver_get_table_columns(p_update_table);
     IF v_table_cols IS NULL THEN
         RAISE EXCEPTION 'Could not find any table columns for %',
             p_update_table;
@@ -328,7 +328,7 @@ BEGIN
             ' = NEW_DAT.' || quote_ident(v_col.att_name);
     END LOOP;
     
-    RETURN table_version.ver_ExecuteTemplate( $sql$
+    RETURN @extschema@.ver_ExecuteTemplate( $sql$
         UPDATE %1% AS CUR
         SET %2%
         FROM %3% AS NEW_DAT,
@@ -364,14 +364,14 @@ DECLARE
 BEGIN
     SELECT array_to_string(array_agg(quote_ident(att_name)), ',') 
     INTO v_table_cols
-    FROM unnest(table_version._ver_get_table_columns(p_insert_table));
+    FROM unnest(@extschema@._ver_get_table_columns(p_insert_table));
         
     IF v_table_cols = '' THEN
         RAISE EXCEPTION 'Could not find any table columns for %',
             p_insert_table;
     END IF;
     
-    RETURN table_version.ver_ExecuteTemplate( $sql$
+    RETURN @extschema@.ver_ExecuteTemplate( $sql$
         INSERT INTO %1% (%2%)
         SELECT %2% FROM %3%
         WHERE %4% IN
@@ -444,16 +444,16 @@ $$
     );
 $$ LANGUAGE sql;
 
-CREATE OR REPLACE FUNCTION table_version._ver_get_compare_select_sql(
+CREATE OR REPLACE FUNCTION _ver_get_compare_select_sql(
     p_table       REGCLASS,
     p_key_column  NAME,
-    p_columns     table_version.ATTRIBUTE[],
-    p_unique_cols table_version.ATTRIBUTE[]
+    p_columns     @extschema@.ATTRIBUTE[],
+    p_unique_cols @extschema@.ATTRIBUTE[]
 )
 RETURNS TEXT AS 
 $$
 BEGIN
-    RETURN table_version.ver_ExpandTemplate( $sql$
+    RETURN @extschema@.ver_ExpandTemplate( $sql$
         SELECT 
            %1% AS ID,
            CAST(%2% AS TEXT) AS check_sum,
@@ -465,15 +465,15 @@ BEGIN
         $sql$,
         ARRAY[
             quote_ident(p_key_column),
-            table_version._ver_get_compare_sql(p_columns,'T'),
-            table_version._ver_get_compare_sql(p_unique_cols,'T'),
+            @extschema@._ver_get_compare_sql(p_columns,'T'),
+            @extschema@._ver_get_compare_sql(p_unique_cols,'T'),
             p_table::text
             ]);
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION _ver_get_compare_sql(
-    p_columns     table_version.ATTRIBUTE[],
+    p_columns     @extschema@.ATTRIBUTE[],
     p_table_alias TEXT
 )
 RETURNS TEXT AS 
@@ -523,10 +523,10 @@ CREATE OR REPLACE FUNCTION _ver_get_table_unique_constraint_columns(
     p_key_column NAME = NULL,
     p_return_comp_keys BOOLEAN = TRUE
 )
-RETURNS table_version.ATTRIBUTE[] AS
+RETURNS @extschema@.ATTRIBUTE[] AS
 $$
     SELECT array_agg(
-        CAST((attname, type, attnotnull) AS table_version.ATTRIBUTE)
+        CAST((attname, type, attnotnull) AS @extschema@.ATTRIBUTE)
     )
     FROM
         (
@@ -577,11 +577,11 @@ $$ LANGUAGE sql;
 CREATE OR REPLACE FUNCTION _ver_get_table_columns(
     p_table REGCLASS
 )
-RETURNS table_version.ATTRIBUTE[] AS
+RETURNS @extschema@.ATTRIBUTE[] AS
 $$
     SELECT array_agg(
         CAST((ATT.attname, format_type(ATT.atttypid, ATT.atttypmod), 
-         ATT.attnotnull) AS table_version.ATTRIBUTE))
+         ATT.attnotnull) AS @extschema@.ATTRIBUTE))
     FROM
         pg_attribute ATT
     WHERE

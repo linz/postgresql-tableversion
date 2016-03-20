@@ -8,7 +8,7 @@ RETURNS TABLE(
 ) 
 AS $$
 BEGIN
-    IF NOT EXISTS(SELECT * FROM table_version.revision WHERE id = p_revision) THEN
+    IF NOT EXISTS(SELECT * FROM @extschema@.revision WHERE id = p_revision) THEN
         RAISE EXCEPTION 'Revision % does not exist', p_revision;
     END IF;
             
@@ -17,8 +17,8 @@ BEGIN
             VTB.schema_name,
             VTB.table_name
         FROM
-            table_version.versioned_tables VTB,
-            table_version.tables_changed TBC
+            @extschema@.versioned_tables VTB,
+            @extschema@.tables_changed TBC
         WHERE
             VTB.id = TBC.table_id AND
             TBC.revision = p_revision
@@ -58,8 +58,8 @@ BEGIN
             VTB.schema_name,
             VTB.table_name
         FROM
-            table_version.versioned_tables VTB,
-            table_version.tables_changed TBC
+            @extschema@.versioned_tables VTB,
+            @extschema@.tables_changed TBC
         WHERE
             VTB.id = TBC.table_id AND
             TBC.revision > v_revision1 AND

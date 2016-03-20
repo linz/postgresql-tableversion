@@ -46,7 +46,7 @@ DECLARE
     v_sql TEXT;
     v_count BIGINT;
 BEGIN
-    v_sql := table_version.ver_ExpandTemplate( p_template, p_params );
+    v_sql := @extschema@.ver_ExpandTemplate( p_template, p_params );
     BEGIN
         EXECUTE v_sql;
     EXCEPTION
@@ -87,7 +87,7 @@ CREATE OR REPLACE FUNCTION ver_get_version_table_full(
     p_table NAME
 ) 
 RETURNS VARCHAR AS $$
-    SELECT 'table_version.' || table_version.ver_get_version_table($1, $2);
+    SELECT '@extschema@.' || @extschema@.ver_get_version_table($1, $2);
 $$ LANGUAGE sql IMMUTABLE;
 
 /**
@@ -117,7 +117,7 @@ CREATE OR REPLACE FUNCTION _ver_get_diff_function(
     p_table NAME
 )
 RETURNS VARCHAR AS $$
-    SELECT ('table_version.' || quote_ident('ver_get_' || $1 || '_' || $2 || '_diff') || '(p_revision1 INTEGER, p_revision2 INTEGER)');
+    SELECT ('@extschema@.' || quote_ident('ver_get_' || $1 || '_' || $2 || '_diff') || '(p_revision1 INTEGER, p_revision2 INTEGER)');
 $$ LANGUAGE sql IMMUTABLE;
 
 /**
@@ -132,7 +132,7 @@ CREATE OR REPLACE FUNCTION _ver_get_revision_function(
     p_table NAME
 )
 RETURNS VARCHAR AS $$
-    SELECT ('table_version.' || quote_ident('ver_get_' || $1 || '_' || $2 || '_revision') || '(p_revision INTEGER)');
+    SELECT ('@extschema@.' || quote_ident('ver_get_' || $1 || '_' || $2 || '_revision') || '(p_revision INTEGER)');
 $$ LANGUAGE sql IMMUTABLE;
 
 /**

@@ -13,7 +13,7 @@ BEGIN
     INTO
         v_is_versioned
     FROM 
-        table_version.versioned_tables 
+        @extschema@.versioned_tables 
     WHERE
         schema_name = p_schema AND
         table_name = p_table;

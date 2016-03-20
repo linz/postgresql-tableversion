@@ -16,7 +16,7 @@ CREATE OR REPLACE FUNCTION ver_get_revision(
         comment,
         user_name
     FROM
-        table_version.revision
+        @extschema@.revision
     WHERE
         id = $1
 $$ LANGUAGE sql;
@@ -38,7 +38,7 @@ RETURNS TABLE(
         comment,
         user_name
     FROM
-        table_version.revision
+        @extschema@.revision
     WHERE
         id = ANY($1)
     ORDER BY
@@ -55,7 +55,7 @@ RETURNS TABLE(
     SELECT
         id
     FROM
-        table_version.revision
+        @extschema@.revision
     WHERE
         revision_time >= $1 AND
         revision_time <= $2
@@ -71,11 +71,11 @@ $$
     SELECT
         id
     FROM
-        table_version.revision
+        @extschema@.revision
     WHERE
         id IN (
             SELECT max(id) 
-            FROM   table_version.revision
+            FROM   @extschema@.revision
             WHERE  revision_time <= $1
         );
 $$ LANGUAGE sql;
@@ -86,11 +86,11 @@ $$
     SELECT
         id
     FROM
-        table_version.revision
+        @extschema@.revision
     WHERE
         id IN (
             SELECT max(id) 
-            FROM   table_version.revision
+            FROM   @extschema@.revision
         );
 $$ LANGUAGE sql;
 
@@ -103,7 +103,7 @@ $$
 DECLARE
     v_id INTEGER;
 BEGIN
-    IF NOT table_version.ver_is_table_versioned(p_schema, p_table) THEN
+    IF NOT @extschema@.ver_is_table_versioned(p_schema, p_table) THEN
         RAISE EXCEPTION 'Table %.% is not versioned', quote_ident(p_schema), quote_ident(p_table);
     END IF;
     
@@ -112,12 +112,12 @@ BEGIN
     INTO
         v_id
     FROM
-        table_version.revision VER
+        @extschema@.revision VER
     WHERE
         VER.id IN (
             SELECT min(TBC.revision)
-            FROM   table_version.versioned_tables VTB,
-                   table_version.tables_changed TBC
+            FROM   @extschema@.versioned_tables VTB,
+                   @extschema@.tables_changed TBC
             WHERE  VTB.schema_name = p_schema
             AND    VTB.table_name = p_table
             AND    VTB.id = TBC.table_id
@@ -135,7 +135,7 @@ $$
 DECLARE
     v_id INTEGER;
 BEGIN
-    IF NOT table_version.ver_is_table_versioned(p_schema, p_table) THEN
+    IF NOT @extschema@.ver_is_table_versioned(p_schema, p_table) THEN
         RAISE EXCEPTION 'Table %.% is not versioned', quote_ident(p_schema), quote_ident(p_table);
     END IF;
     
@@ -144,12 +144,12 @@ BEGIN
     INTO
         v_id
     FROM
-        table_version.revision VER
+        @extschema@.revision VER
     WHERE
         VER.id IN (
             SELECT max(TBC.revision)
-            FROM   table_version.versioned_tables VTB,
-                   table_version.tables_changed TBC
+            FROM   @extschema@.versioned_tables VTB,
+                   @extschema@.tables_changed TBC
             WHERE  VTB.schema_name = p_schema
             AND    VTB.table_name = p_table
             AND    VTB.id = TBC.table_id

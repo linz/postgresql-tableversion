@@ -10,8 +10,8 @@ DECLARE
     v_key_col         NAME;
     v_revision_table  TEXT;
     v_sql             TEXT;
-    v_table_id        table_version.versioned_tables.id%TYPE;
-    v_revision        table_version.revision.id%TYPE;
+    v_table_id        @extschema@.versioned_tables.id%TYPE;
+    v_revision        @extschema@.revision.id%TYPE;
     v_revision_exists BOOLEAN;
     v_table_has_data  BOOLEAN;
     v_role            TEXT;
@@ -21,7 +21,7 @@ BEGIN
         RAISE EXCEPTION 'Table %.% does not exists', quote_ident(p_schema), quote_ident(p_table);
     END IF;
 
-    IF table_version.ver_is_table_versioned(p_schema, p_table) THEN
+    IF @extschema@.ver_is_table_versioned(p_schema, p_table) THEN
         RAISE EXCEPTION 'Table %.% is already versioned', quote_ident(p_schema), quote_ident(p_table);
     END IF;
 
@@ -62,18 +62,18 @@ BEGIN
         RAISE EXCEPTION 'Table %.% does not have a unique non-compostite integer, bigint, text, or varchar column', quote_ident(p_schema), quote_ident(p_table);
     END IF;
 
-    v_revision_table := table_version.ver_get_version_table_full(p_schema, p_table);
+    v_revision_table := @extschema@.ver_get_version_table_full(p_schema, p_table);
     
     v_sql :=
     'CREATE TABLE ' || v_revision_table || '(' ||
-        '_revision_created INTEGER NOT NULL REFERENCES table_version.revision,' ||
-        '_revision_expired INTEGER REFERENCES table_version.revision,' ||
+        '_revision_created INTEGER NOT NULL REFERENCES @extschema@.revision,' ||
+        '_revision_expired INTEGER REFERENCES @extschema@.revision,' ||
         'LIKE ' || quote_ident(p_schema) || '.' || quote_ident(p_table) ||
     ');';
     EXECUTE v_sql;
     
     v_sql := 'ALTER TABLE ' || v_revision_table || ' OWNER TO ' || 
-        table_version._ver_get_table_owner(v_table_oid);
+        @extschema@._ver_get_table_owner(v_table_oid);
     EXECUTE v_sql;
     
     -- replicate permissions from source table to revision history table
@@ -112,7 +112,7 @@ BEGIN
     INTO v_table_has_data;
     
     IF v_table_has_data THEN
-        IF table_version._ver_get_reversion_temp_table('_changeset_revision') THEN
+        IF @extschema@._ver_get_reversion_temp_table('_changeset_revision') THEN
             SELECT
                 max(VER.revision)
             INTO
@@ -122,7 +122,7 @@ BEGIN
             
             v_revision_exists := TRUE;
         ELSE
-            SELECT table_version.ver_create_revision(
+            SELECT @extschema@.ver_create_revision(
                 'Initial revisioning of ' || CAST(v_table_oid AS TEXT)
             )
             INTO  v_revision;
@@ -134,7 +134,7 @@ BEGIN
         EXECUTE v_sql;
         
         IF NOT v_revision_exists THEN
-            PERFORM table_version.ver_complete_revision();
+            PERFORM @extschema@.ver_complete_revision();
         END IF;
     
     END IF;
@@ -189,7 +189,7 @@ BEGIN
         cat.relname = 'pg_class' AND
         fnsp.nspname = 'table_version' AND
         fnsp.oid = fobj.relnamespace AND
-        fobj.relname = table_version.ver_get_version_table(p_schema, p_table) AND
+        fobj.relname = @extschema@.ver_get_version_table(p_schema, p_table) AND
         tnsp.nspname = p_schema AND
         tnsp.oid = tobj.relnamespace AND
         tobj.relname   = p_table;
@@ -199,24 +199,24 @@ BEGIN
     INTO
         v_table_id
     FROM
-        table_version.versioned_tables
+        @extschema@.versioned_tables
     WHERE
         schema_name = p_schema AND
         table_name = p_table;
     
     IF v_table_id IS NOT NULL THEN
-        UPDATE table_version.versioned_tables
+        UPDATE @extschema@.versioned_tables
         SET    versioned = TRUE
         WHERE  schema_name = p_schema
         AND    table_name = p_table;
     ELSE
-        INSERT INTO table_version.versioned_tables(schema_name, table_name, key_column, versioned)
+        INSERT INTO @extschema@.versioned_tables(schema_name, table_name, key_column, versioned)
         VALUES (p_schema, p_table, v_key_col, TRUE)
         RETURNING id INTO v_table_id;
     END IF;
     
     IF v_table_id IS NOT NULL AND v_table_has_data THEN
-        INSERT INTO table_version.tables_changed(
+        INSERT INTO @extschema@.tables_changed(
             revision,
             table_id
         )
@@ -226,14 +226,14 @@ BEGIN
         WHERE
             NOT EXISTS (
                 SELECT *
-                FROM   table_version.tables_changed
+                FROM   @extschema@.tables_changed
                 WHERE  table_id = v_table_id
                 AND    revision = v_revision
         );
     END IF;
 
-    PERFORM table_version.ver_create_table_functions(p_schema, p_table, v_key_col);
-    PERFORM table_version.ver_create_version_trigger(p_schema, p_table, v_key_col);
+    PERFORM @extschema@.ver_create_table_functions(p_schema, p_table, v_key_col);
+    PERFORM @extschema@.ver_create_version_trigger(p_schema, p_table, v_key_col);
     
     RETURN TRUE;
 END;

@@ -25,18 +25,18 @@ DECLARE
     v_select_columns_diff TEXT;
     v_select_columns_rev  TEXT;
 BEGIN
-    IF NOT table_version.ver_is_table_versioned(p_schema, p_table) THEN
+    IF NOT @extschema@.ver_is_table_versioned(p_schema, p_table) THEN
         RAISE EXCEPTION 'Table %.% is not versioned', quote_ident(p_schema), quote_ident(p_table);
     END IF;
     
-    v_revision_table := table_version.ver_get_version_table_full(p_schema, p_table);
+    v_revision_table := @extschema@.ver_get_version_table_full(p_schema, p_table);
     v_table_columns := '';
     v_select_columns_diff := '';
     v_select_columns_rev := '';
     
     OPEN v_col_cur FOR
     SELECT att_name AS column_name, att_type AS column_type
-    FROM unnest(table_version._ver_get_table_columns(p_schema || '.' ||  p_table));
+    FROM unnest(@extschema@._ver_get_table_columns(p_schema || '.' ||  p_table));
 
     FETCH FIRST IN v_col_cur INTO v_column_name, v_column_type;
     LOOP
@@ -73,7 +73,7 @@ AS $FUNC$
         v_base_version   INTEGER;
         v_revision_table TEXT;
     BEGIN
-        IF NOT table_version.ver_is_table_versioned(%schema_name%, %table_name%) THEN
+        IF NOT @extschema@.ver_is_table_versioned(%schema_name%, %table_name%) THEN
             RAISE EXCEPTION 'Table %full_table_name% is not versioned';
         END IF;
         
@@ -87,14 +87,14 @@ AS $FUNC$
             RAISE EXCEPTION 'Revision 1 (%) is greater than revision 2 (%)', v_revision1, v_revision2;
         END IF;
         
-        SELECT table_version.ver_get_table_base_revision(%schema_name%, %table_name%)
+        SELECT @extschema@.ver_get_table_base_revision(%schema_name%, %table_name%)
         INTO   v_base_version;
         IF v_base_version > v_revision2 THEN
             RETURN;
         END IF;
         
         RETURN QUERY EXECUTE
-        table_version.ver_ExpandTemplate(
+        @extschema@.ver_ExpandTemplate(
             $sql$
             WITH changed_within_range AS (
                 SELECT 
@@ -137,7 +137,7 @@ $FUNC$ LANGUAGE plpgsql;
 
     $template$;
     
-    v_sql := REPLACE(v_sql, '%func_sig%',       table_version._ver_get_diff_function(p_schema, p_table));
+    v_sql := REPLACE(v_sql, '%func_sig%',       @extschema@._ver_get_diff_function(p_schema, p_table));
     v_sql := REPLACE(v_sql, '%table_columns%',  v_table_columns);
     v_sql := REPLACE(v_sql, '%schema_name%',    quote_literal(p_schema));
     v_sql := REPLACE(v_sql, '%table_name%',     quote_literal(p_table));
@@ -146,7 +146,7 @@ $FUNC$ LANGUAGE plpgsql;
     v_sql := REPLACE(v_sql, '%key_col%',        quote_ident(p_key_col));
     v_sql := REPLACE(v_sql, '%revision_table%', v_revision_table);
     
-    EXECUTE 'DROP FUNCTION IF EXISTS ' || table_version._ver_get_diff_function(p_schema, p_table);
+    EXECUTE 'DROP FUNCTION IF EXISTS ' || @extschema@._ver_get_diff_function(p_schema, p_table);
     EXECUTE v_sql;
 
     -- Create get version function for table called: 
@@ -160,7 +160,7 @@ RETURNS TABLE(
 $FUNC$
 BEGIN
     RETURN QUERY EXECUTE
-    table_version.ver_ExpandTemplate(
+    @extschema@.ver_ExpandTemplate(
         $sql$
             SELECT
 %select_columns%
@@ -179,12 +179,12 @@ $FUNC$ LANGUAGE plpgsql;
 
     $template$;
     
-    v_sql := REPLACE(v_sql, '%func_sig%', table_version._ver_get_revision_function(p_schema, p_table));
+    v_sql := REPLACE(v_sql, '%func_sig%', @extschema@._ver_get_revision_function(p_schema, p_table));
     v_sql := REPLACE(v_sql, '%table_columns%', v_table_columns);
     v_sql := REPLACE(v_sql, '%select_columns%', v_select_columns_rev);
     v_sql := REPLACE(v_sql, '%revision_table%', v_revision_table);
     
-    EXECUTE 'DROP FUNCTION IF EXISTS ' || table_version._ver_get_revision_function(p_schema, p_table);
+    EXECUTE 'DROP FUNCTION IF EXISTS ' || @extschema@._ver_get_revision_function(p_schema, p_table);
     EXECUTE v_sql;
 
     RETURN TRUE;

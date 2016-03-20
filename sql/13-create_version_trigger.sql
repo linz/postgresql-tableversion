@@ -21,16 +21,16 @@ DECLARE
     v_column_name    NAME;
     v_column_update  TEXT;
 BEGIN
-    IF NOT table_version.ver_is_table_versioned(p_schema, p_table) THEN
+    IF NOT @extschema@.ver_is_table_versioned(p_schema, p_table) THEN
         RAISE EXCEPTION 'Table %.% is not versioned', quote_ident(p_schema), quote_ident(p_table);
     END IF;
     
-    v_revision_table := table_version.ver_get_version_table_full(p_schema, p_table);
+    v_revision_table := @extschema@.ver_get_version_table_full(p_schema, p_table);
     
     v_column_update := '';
     FOR v_column_name IN
         SELECT att_name AS column_name
-        FROM unnest(table_version._ver_get_table_columns(p_schema || '.' ||  p_table))
+        FROM unnest(@extschema@._ver_get_table_columns(p_schema || '.' ||  p_table))
     LOOP
         IF v_column_name = p_key_col THEN
             CONTINUE;
@@ -47,9 +47,9 @@ BEGIN
 
 CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
     DECLARE
-       v_revision      table_version.revision.id%TYPE;
-       v_last_revision table_version.revision.id%TYPE;
-       v_table_id      table_version.versioned_tables.id%TYPE;
+       v_revision      @extschema@.revision.id%TYPE;
+       v_last_revision @extschema@.revision.id%TYPE;
+       v_table_id      @extschema@.versioned_tables.id%TYPE;
     BEGIN
         BEGIN
             SELECT
@@ -72,7 +72,7 @@ CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
         INTO
             v_table_id
         FROM
-            table_version.versioned_tables VTB
+            @extschema@.versioned_tables VTB
         WHERE
             VTB.table_name = %table_name% AND
             VTB.schema_name = %schema_name%;
@@ -83,12 +83,12 @@ CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
 
         IF NOT EXISTS (
             SELECT TRUE
-            FROM   table_version.tables_changed
+            FROM   @extschema@.tables_changed
             WHERE  table_id = v_table_id
             AND    revision = v_revision
         )
         THEN
-            INSERT INTO table_version.tables_changed(revision, table_id)
+            INSERT INTO @extschema@.tables_changed(revision, table_id)
             VALUES (v_revision, v_table_id);
         END IF;
 
@@ -152,7 +152,7 @@ $TRIGGER$ LANGUAGE plpgsql SECURITY DEFINER;
     
     EXECUTE v_sql;
 
-    SELECT table_version._ver_get_version_trigger(p_schema, p_table)
+    SELECT @extschema@._ver_get_version_trigger(p_schema, p_table)
     INTO v_trigger_name;
     
 
@@ -164,7 +164,7 @@ $TRIGGER$ LANGUAGE plpgsql SECURITY DEFINER;
         ' FOR EACH ROW EXECUTE PROCEDURE ' || v_revision_table || '()';
     
     EXECUTE 'ALTER FUNCTION ' || v_revision_table || '() ' ||
-        'OWNER TO ' || table_version._ver_get_table_owner((p_schema || '.' || p_table)::REGCLASS);
+        'OWNER TO ' || @extschema@._ver_get_table_owner((p_schema || '.' || p_table)::REGCLASS);
     
     RETURN TRUE;
 END;
