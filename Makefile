@@ -2,8 +2,6 @@ META         = META.json
 EXTENSION    = $(shell grep -m 1 '"name":' $(META) | sed -e 's/[[:space:]]*"name":[[:space:]]*"\([^"]*\)",/\1/')
 EXTVERSION   = $(shell grep -m 1 '"version":' $(META) | sed -e 's/[[:space:]]*"version":[[:space:]]*"\([^"]*\)",/\1/')
 
-echo 'destdir = $(DESTDIR)'
-    
 SED = sed
 
 SQLSCRIPTS = \
