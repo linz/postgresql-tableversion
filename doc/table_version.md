@@ -298,6 +298,126 @@ following command:
 
     CREATE EXTENSION table_version FROM unpackaged;
 
+Support Functions
+-----------------
+
+### `ver_apply_table_differences()` ###
+
+Generates a difference between any a source orignal table and a new table and
+then applies those differences to the original table. Both table must have a 
+single column primary key. Comparisons are only done between common table
+columns
+    
+    FUNCTION table_version.ver_apply_table_differences(
+        p_original_table REGCLASS,
+        p_new_table REGCLASS,
+        p_key_column NAME,
+        OUT number_inserts BIGINT,
+        OUT number_deletes BIGINT,
+        OUT number_updates BIGINT
+    )
+
+**Parameters**
+
+`p_original_table`
+: The original source table to compare against and then apply the changes to
+
+`p_new_table`
+: The table containing the new data to compare against the original
+
+`p_key_column`
+: The common key column used for comparing rows between tables
+
+**Returns**
+
+Returns a record of 3 values for the changed applied to the original table.:
+
+- 'number_inserts' = The number of row inserted into the original table
+- 'number_deletes' = The number of row deleted from the original table
+- 'number_updates' = The number of row updated in the original table
+
+**Exceptions**
+
+throws an exception if the source table:
+
+- either tables's key column is not a unique non-compostite integer, bigint, 
+text, or varchar column
+- no common columns between tables were found
+
+**Example**
+
+    SELECT * FROM table_version.ver_apply_table_differences('foo.bar1', 'foo.bar2', 'id');
+    
+### `ver_get_table_differences()` ###
+
+Generates a difference between two tables. Both table must have a single column
+primary key. Comparisons are only done between common table columns
+    
+    FUNCTION table_version.ver_get_table_differences(
+        p_table1 regclass,
+        p_table2 regclass,
+        p_compare_key name)
+    RETURNS SETOF record
+
+**Parameters**
+
+`p_table1`
+: The first table
+
+`p_table1`
+: The second table
+
+`p_key_column`
+: The common key column used for comparing rows between tables
+
+**Returns**
+
+Returns a generic set of records. Each row contains the following columns:
+
+- action CHAR(1)
+- id {key's datatype}
+
+Because the function returns a generic set of records the schema type for the
+the returned record needs to be defined. This definition will be dependant on
+the key column's datatype. 
+
+**Exceptions**
+
+throws an exception if the source table:
+
+- either tables's key column is not a unique non-compostite integer, bigint, 
+text, or varchar column
+- no common columns between tables were found
+
+**Example**
+
+    SELECT * FROM table_version.ver_get_table_differences('foo.bar1', 'foo.bar2', 'id') AS
+    (action CHAR(1), ID INTEGER)
+
+### `ver_table_key_datatype()` ###
+
+Returns the table's key column datatype
+    
+    FUNCTION table_version.ver_table_key_datatype(
+        p_table REGCLASS,
+        p_key_column NAME)
+    RETURNS TEXT
+
+**Parameters**
+
+` p_table`
+: The table
+
+`p_key_column`
+: The table's key column
+
+**Returns**
+
+Returns the PostgreSQL datatype for the key column 
+
+**Example**
+
+    SELECT table_version.ver_table_key_datatype('foo.bar', 'id');
 
 Table Versioning Functions
 --------------------------

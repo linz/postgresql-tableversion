@@ -25,7 +25,7 @@ BEGIN;
 CREATE EXTENSION table_version;
 CREATE EXTENSION pgtap;
 
-SELECT plan(66);
+SELECT plan(72);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -276,6 +276,71 @@ SELECT results_eq(
 );
 
 SELECT ok(table_version.ver_disable_versioning('foo', 'bar2'), 'Disable versioning on foo.bar2');
+
+CREATE TABLE foo.bar3 (
+    id INTEGER NOT NULL PRIMARY KEY,
+    d1 TEXT
+);
+
+INSERT INTO foo.bar3 (id, d1) VALUES
+(1, 'foo bar 1'),
+(2, 'foo bar 2'),
+(3, 'foo bar 3');
+
+CREATE TABLE foo.bar4 (
+    id INTEGER NOT NULL PRIMARY KEY,
+    d1 TEXT
+);
+
+INSERT INTO foo.bar4 (id, d1) VALUES
+(1, 'foo bar 1'),
+(2, 'foo bar 2a'),
+(4, 'foo bar 4');
+
+SELECT results_eq(
+    $$SELECT * FROM table_version.ver_get_table_differences('foo.bar3', 'foo.bar4', 'id') AS (action CHAR(1), ID INTEGER)$$,
+    $$VALUES ('U'::CHAR, 2),
+             ('D'::CHAR, 3),
+             ('I'::CHAR, 4)$$,
+    'Diff function between foo3 and foo4'
+);
+
+SELECT results_eq(
+    $$SELECT number_inserts, number_updates, number_deletes FROM table_version.ver_apply_table_differences('foo.bar3', 'foo.bar4', 'id')$$,
+    $$VALUES (1::BIGINT, 1::BIGINT, 1::BIGINT)$$,
+    'Apply diff to table function between foo3 and foo4'
+);
+
+CREATE ROLE test_owner;
+CREATE ROLE test_user;
+
+CREATE TABLE foo.bar5 (
+    baz INTEGER NOT NULL PRIMARY KEY,
+    qux TEXT
+);
+
+ALTER TABLE foo.bar5 OWNER TO test_owner;
+GRANT SELECT, INSERT, UPDATE, DELETE ON foo.bar5 TO test_user;
+
+SELECT ok(table_version.ver_enable_versioning('foo', 'bar5'), 'Enable versioning on table with permissions');
+
+SELECT table_owner_is(
+    'table_version', 'foo_bar5_revision', 'test_owner',
+    'Test foo_bar5_revision ownership'
+);
+
+SELECT table_privs_are(
+    'table_version', 'foo_bar5_revision', 'test_user', ARRAY['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
+    'Test foo_bar5_revision permission for test_user'
+);
+
+SELECT ok(table_version.ver_disable_versioning('foo', 'bar5'), 'Disable versioning on foo.bar5');
+
+DROP TABLE foo.bar;
+DROP TABLE foo.bar2;
+DROP TABLE foo.bar3;
+DROP TABLE foo.bar4;
+DROP TABLE foo.bar5;
 
 SELECT * FROM finish();
 
