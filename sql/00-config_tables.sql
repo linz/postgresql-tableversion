@@ -20,14 +20,15 @@ CREATE TABLE revision (
     comment TEXT
 );
 
+GRANT SELECT ON TABLE revision TO public;
+
 SELECT setval('table_version.revision_id_seq', 1000, true);
 
 COMMENT ON TABLE revision IS $$
 Defines a revision represents a amendment to table or series of tables held 
 within the database. Each revision is identified by an id.  
 
-The revision_time is the datetime of the revision. In the context of LINZ BDE
-this datetime when the data from unloaded from the Landonline database.
+The revision_time is the datetime of the revision.
 
 The start_time is the datetime of when the revision record was created.
 
@@ -45,6 +46,8 @@ CREATE TABLE versioned_tables (
     CONSTRAINT versioned_tables_name_key UNIQUE (schema_name, table_name)
 );
 
+GRANT SELECT ON TABLE versioned_tables TO public;
+
 COMMENT ON TABLE versioned_tables IS $$
 Defines if a table is versioned. Each table is identified by an id. 
 
@@ -61,6 +64,8 @@ CREATE TABLE tables_changed (
     table_id INTEGER NOT NULL REFERENCES versioned_tables,
     PRIMARY KEY (revision, table_id)
 );
+
+GRANT SELECT ON TABLE tables_changed TO public;
 
 COMMENT ON TABLE tables_changed IS $$
 Defines which tables are modified by a given revision.

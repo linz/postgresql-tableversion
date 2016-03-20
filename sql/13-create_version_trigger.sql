@@ -29,8 +29,8 @@ BEGIN
     
     v_column_update := '';
     FOR v_column_name IN
-        SELECT column_name
-        FROM table_version._ver_get_table_cols(p_schema, p_table)
+        SELECT att_name AS column_name
+        FROM unnest(table_version._ver_get_table_columns(p_schema || '.' ||  p_table))
     LOOP
         IF v_column_name = p_key_col THEN
             CONTINUE;
@@ -139,7 +139,7 @@ CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
         
         RETURN NULL;
     END;
-$TRIGGER$ LANGUAGE plpgsql;
+$TRIGGER$ LANGUAGE plpgsql SECURITY DEFINER;
 
     $template$;
 
@@ -154,13 +154,17 @@ $TRIGGER$ LANGUAGE plpgsql;
 
     SELECT table_version._ver_get_version_trigger(p_schema, p_table)
     INTO v_trigger_name;
+    
 
-    EXECUTE 'DROP TRIGGER IF EXISTS '  || v_trigger_name|| ' ON ' ||  
+    EXECUTE 'DROP TRIGGER IF EXISTS '  || v_trigger_name || ' ON ' ||  
         quote_ident(p_schema) || '.' || quote_ident(p_table);
 
     EXECUTE 'CREATE TRIGGER '  || v_trigger_name || ' AFTER INSERT OR UPDATE OR DELETE ON ' ||  
         quote_ident(p_schema) || '.' || quote_ident(p_table) ||
         ' FOR EACH ROW EXECUTE PROCEDURE ' || v_revision_table || '()';
+    
+    EXECUTE 'ALTER FUNCTION ' || v_revision_table || '() ' ||
+        'OWNER TO ' || table_version._ver_get_table_owner((p_schema || '.' || p_table)::REGCLASS);
     
     RETURN TRUE;
 END;

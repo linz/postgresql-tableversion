@@ -25,4 +25,4 @@ BEGIN
     
     RETURN v_revision;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;

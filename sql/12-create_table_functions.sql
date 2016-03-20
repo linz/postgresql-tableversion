@@ -35,8 +35,8 @@ BEGIN
     v_select_columns_rev := '';
     
     OPEN v_col_cur FOR
-    SELECT column_name, column_type
-    FROM table_version._ver_get_table_cols(p_schema, p_table);
+    SELECT att_name AS column_name, att_type AS column_type
+    FROM unnest(table_version._ver_get_table_columns(p_schema || '.' ||  p_table));
 
     FETCH FIRST IN v_col_cur INTO v_column_name, v_column_type;
     LOOP
@@ -148,10 +148,6 @@ $FUNC$ LANGUAGE plpgsql;
     
     EXECUTE 'DROP FUNCTION IF EXISTS ' || table_version._ver_get_diff_function(p_schema, p_table);
     EXECUTE v_sql;
-    
-    EXECUTE 'REVOKE ALL ON FUNCTION ' || table_version._ver_get_diff_function(p_schema, p_table)||' FROM PUBLIC;';
-	EXECUTE 'GRANT EXECUTE ON FUNCTION ' || table_version._ver_get_diff_function(p_schema, p_table)||' TO bde_admin;';
-	EXECUTE 'GRANT EXECUTE ON FUNCTION ' || table_version._ver_get_diff_function(p_schema, p_table)||' TO bde_user;';
 
     -- Create get version function for table called: 
     -- ver_get_$schema$_$table$_revision(p_revision integer)
@@ -190,10 +186,6 @@ $FUNC$ LANGUAGE plpgsql;
     
     EXECUTE 'DROP FUNCTION IF EXISTS ' || table_version._ver_get_revision_function(p_schema, p_table);
     EXECUTE v_sql;
-    
-	EXECUTE 'REVOKE ALL ON FUNCTION ' || table_version._ver_get_revision_function(p_schema, p_table) || ' FROM PUBLIC;';
-	EXECUTE 'GRANT EXECUTE ON FUNCTION ' || table_version._ver_get_revision_function(p_schema, p_table) || ' TO bde_admin;';
-	EXECUTE 'GRANT EXECUTE ON FUNCTION ' || table_version._ver_get_revision_function(p_schema, p_table) || ' TO bde_user;';
 
     RETURN TRUE;
 END;

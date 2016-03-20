@@ -14,6 +14,8 @@ DECLARE
     v_revision        table_version.revision.id%TYPE;
     v_revision_exists BOOLEAN;
     v_table_has_data  BOOLEAN;
+    v_role            TEXT;
+    v_privilege       TEXT;
 BEGIN
     IF NOT EXISTS (SELECT * FROM pg_tables WHERE tablename = p_table AND schemaname = p_schema) THEN
         RAISE EXCEPTION 'Table %.% does not exists', quote_ident(p_schema), quote_ident(p_table);
@@ -70,9 +72,21 @@ BEGIN
     ');';
     EXECUTE v_sql;
     
-    EXECUTE 'GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE ' || v_revision_table || ' TO bde_admin';
-    EXECUTE 'GRANT SELECT ON TABLE ' || v_revision_table || ' TO bde_user';
-
+    v_sql := 'ALTER TABLE ' || v_revision_table || ' OWNER TO ' || 
+        table_version._ver_get_table_owner(v_table_oid);
+    EXECUTE v_sql;
+    
+    -- replicate permissions from source table to revision history table
+    FOR v_role, v_privilege IN
+        SELECT g.grantee, g.privilege_type
+        FROM information_schema.role_table_grants g
+        WHERE g.table_name = p_table
+        AND   g.table_schema =  p_schema
+    LOOP
+        EXECUTE 'GRANT ' || v_privilege || ' ON TABLE ' || v_revision_table || 
+            ' TO ' || v_role;
+    END LOOP;
+        
     v_sql := (
         SELECT
             'ALTER TABLE  ' || v_revision_table || ' ALTER COLUMN ' || attname || ' SET STATISTICS ' ||  attstattarget
