@@ -27,6 +27,40 @@ $$
 LANGUAGE plpgsql;
 
 /**
+* Executes a text template given a set of input template parameters. Template 
+* parameters within the text are substituted content must be written as '%1%' 
+* to '%n%' where n is the number of text parameters.
+*
+* @param p_template       The template text
+* @param p_params         The template parameters
+* @return                 The number of rows affected by running the template
+*/
+
+CREATE OR REPLACE FUNCTION ver_ExecuteTemplate(
+    p_template TEXT,
+    p_params TEXT[])
+RETURNS
+    BIGINT AS
+$$
+DECLARE
+    v_sql TEXT;
+    v_count BIGINT;
+BEGIN
+    v_sql := table_version.ver_ExpandTemplate( p_template, p_params );
+    BEGIN
+        EXECUTE v_sql;
+    EXCEPTION
+        WHEN others THEN
+            RAISE EXCEPTION E'Error executing template SQL: %\nError: %',
+            v_sql, SQLERRM;
+    END;
+    GET DIAGNOSTICS v_count=ROW_COUNT;
+    RETURN v_count;
+END;
+$$
+LANGUAGE plpgsql;
+  
+/**
 * Gets the tablename for the tables revision data.
 *
 * @param p_schema         The table schema
@@ -55,41 +89,6 @@ CREATE OR REPLACE FUNCTION ver_get_version_table_full(
 RETURNS VARCHAR AS $$
     SELECT 'table_version.' || table_version.ver_get_version_table($1, $2);
 $$ LANGUAGE sql IMMUTABLE;
-
-/**
-* Gets columns for a given table
-*
-* @param p_schema         The table schema
-* @param p_table          The table name
-* @return                 The revision data table name
-*/
-CREATE OR REPLACE FUNCTION _ver_get_table_cols(
-    p_schema NAME,
-    p_table NAME
-) 
-RETURNS TABLE(
-    column_name NAME,
-    column_type TEXT
-) AS $$
-    SELECT
-        ATT.attname,
-        format_type(ATT.atttypid, ATT.atttypmod)
-    FROM
-        pg_attribute ATT
-    WHERE
-        ATT.attnum > 0 AND
-        NOT ATT.attisdropped AND
-        ATT.attrelid = (
-            SELECT
-                CLS.oid
-            FROM
-                pg_class CLS
-                JOIN pg_namespace NSP ON NSP.oid = CLS.relnamespace
-            WHERE
-                NSP.nspname = $1 AND
-                CLS.relname = $2
-        );
-$$ LANGUAGE sql;
 
 /**
 * Gets the trigger name that is created on the versioned table.
@@ -170,4 +169,21 @@ BEGIN
     RETURN v_exists;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+/**
+* Get the owner for a table
+*
+* @param p_table          The table
+* @return                 Table owner rolename
+*/
+CREATE OR REPLACE FUNCTION _ver_get_table_owner(
+    p_table REGCLASS
+)
+RETURNS TEXT AS
+$$
+    SELECT  quote_ident(r.rolname)
+    FROM   pg_catalog.pg_class c
+    JOIN   pg_catalog.pg_roles r on (c.relowner = r.oid)
+    WHERE  c.oid = p_table
+$$ LANGUAGE sql;
 
