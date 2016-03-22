@@ -168,7 +168,7 @@ BEGIN
 
     RETURN v_exists;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 
 /**
 * Get the owner for a table

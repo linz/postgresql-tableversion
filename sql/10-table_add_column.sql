@@ -43,5 +43,5 @@ BEGIN
     PERFORM @extschema@.ver_create_version_trigger(p_schema_name, p_table_name, v_key_col);
     RETURN TRUE;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 
