@@ -516,4 +516,21 @@ $$
     ) AS ATT
 $$ LANGUAGE sql;
 
+-- Return a list of columns for a table as an array of ATTRIBUTE entries
+
+CREATE OR REPLACE FUNCTION _ver_get_table_columns(
+    p_table REGCLASS
+)
+RETURNS @extschema@.ATTRIBUTE[] AS
+$$
+    SELECT array_agg(
+        CAST((ATT.attname, format_type(ATT.atttypid, ATT.atttypmod), 
+         ATT.attnotnull) AS @extschema@.ATTRIBUTE))
+    FROM
+        pg_attribute ATT
+    WHERE
+        ATT.attnum > 0 AND
+        NOT ATT.attisdropped AND
+        ATT.attrelid = p_table;
+$$ LANGUAGE sql;
 
