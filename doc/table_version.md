@@ -512,7 +512,7 @@ Throws an exception if the source table:
 
 - does not exist
 - is already versioned
-- does not have a unique non-compostite integer, bigint, text or varhcar column
+- does not have a unique non-compostite integer, bigint, text or varchar column
 
 **Notes**
 
