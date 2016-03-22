@@ -14,7 +14,7 @@ BEGIN
     END IF;
 
     INSERT INTO @extschema@.revision (revision_time, schema_change, comment, user_name)
-    VALUES (p_revision_time, p_schema_change, p_comment, CURRENT_USER)
+    VALUES (p_revision_time, p_schema_change, p_comment, SESSION_USER)
     RETURNING id INTO v_revision;
     
     CREATE TEMP TABLE _changeset_revision(

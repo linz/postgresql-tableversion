@@ -18,6 +18,12 @@ ALTER TABLE @extschema@.revision
 ALTER TABLE @extschema@.revision 
     ALTER COLUMN user_name SET DEFAULT CURRENT_USER;
 
+-- Provide public select right to metadata tables
+
+GRANT SELECT ON TABLE revision TO public;
+GRANT SELECT ON TABLE versioned_tables TO public;
+GRANT SELECT ON TABLE tables_changed TO public;
+
 -- Add support returning for the user_name from the get revision functions.
 -- Need to drop and recreate the functions due to the return type changes.
 DROP FUNCTION @extschema@.ver_get_revisions(INTEGER[]);
@@ -69,8 +75,6 @@ RETURNS TABLE(
         revision DESC;
 $$ LANGUAGE sql;
 
--- Updated function support for text primary keys
-
 CREATE OR REPLACE FUNCTION ver_enable_versioning(
     p_schema NAME,
     p_table  NAME
@@ -86,6 +90,8 @@ DECLARE
     v_revision        @extschema@.revision.id%TYPE;
     v_revision_exists BOOLEAN;
     v_table_has_data  BOOLEAN;
+    v_role            TEXT;
+    v_privilege       TEXT;
 BEGIN
     IF NOT EXISTS (SELECT * FROM pg_tables WHERE tablename = p_table AND schemaname = p_schema) THEN
         RAISE EXCEPTION 'Table %.% does not exists', quote_ident(p_schema), quote_ident(p_table);
@@ -142,9 +148,21 @@ BEGIN
     ');';
     EXECUTE v_sql;
     
-    EXECUTE 'GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE ' || v_revision_table || ' TO bde_admin';
-    EXECUTE 'GRANT SELECT ON TABLE ' || v_revision_table || ' TO bde_user';
-
+    v_sql := 'ALTER TABLE ' || v_revision_table || ' OWNER TO ' || 
+        @extschema@._ver_get_table_owner(v_table_oid);
+    EXECUTE v_sql;
+    
+    -- replicate permissions from source table to revision history table
+    FOR v_role, v_privilege IN
+        SELECT g.grantee, g.privilege_type
+        FROM information_schema.role_table_grants g
+        WHERE g.table_name = p_table
+        AND   g.table_schema =  p_schema
+    LOOP
+        EXECUTE 'GRANT ' || v_privilege || ' ON TABLE ' || v_revision_table || 
+            ' TO ' || v_role;
+    END LOOP;
+        
     v_sql := (
         SELECT
             'ALTER TABLE  ' || v_revision_table || ' ALTER COLUMN ' || attname || ' SET STATISTICS ' ||  attstattarget
@@ -309,7 +327,8 @@ BEGIN
     FOR v_pcid IN 
         SELECT v_schema || '.' || proname || '(' || pg_get_function_identity_arguments(oid) || ')'
         FROM pg_proc 
-        WHERE pronamespace=(SELECT oid FROM pg_namespace WHERE nspname = v_schema)  
+        WHERE pronamespace=(SELECT oid FROM pg_namespace WHERE nspname = v_schema)
+        AND proname NOT IN ('ver_enable_versioning', 'ver_disable_versioning')
     LOOP
         EXECUTE 'ALTER FUNCTION ' || v_pcid z || ' SECURITY INVOKER';
     END LOOP;
