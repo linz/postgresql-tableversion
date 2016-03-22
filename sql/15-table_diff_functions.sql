@@ -590,5 +590,3 @@ $$
         ATT.attrelid = p_table;
 $$ LANGUAGE sql;
 
-
-

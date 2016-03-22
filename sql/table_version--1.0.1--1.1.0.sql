@@ -315,7 +315,33 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION ver_create_revision(
+    p_comment       TEXT, 
+    p_revision_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+    p_schema_change BOOLEAN DEFAULT FALSE
+) 
+RETURNS INTEGER AS
+$$
+DECLARE
+    v_revision @extschema@.revision.id%TYPE;
+BEGIN
+    IF @extschema@._ver_get_reversion_temp_table('_changeset_revision') THEN
+        RAISE EXCEPTION 'A revision changeset is still in progress. Please complete the revision before starting a new one';
+    END IF;
 
+    INSERT INTO @extschema@.revision (revision_time, schema_change, comment, user_name)
+    VALUES (p_revision_time, p_schema_change, p_comment, SESSION_USER)
+    RETURNING id INTO v_revision;
+    
+    CREATE TEMP TABLE _changeset_revision(
+        revision INTEGER NOT NULL PRIMARY KEY
+    );
+    INSERT INTO _changeset_revision(revision) VALUES (v_revision);
+    ANALYSE _changeset_revision;
+    
+    RETURN v_revision;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- remove security definer from sll functions and functions that create fuunctions
 
@@ -328,7 +354,7 @@ BEGIN
         SELECT v_schema || '.' || proname || '(' || pg_get_function_identity_arguments(oid) || ')'
         FROM pg_proc 
         WHERE pronamespace=(SELECT oid FROM pg_namespace WHERE nspname = v_schema)
-        AND proname NOT IN ('ver_enable_versioning', 'ver_disable_versioning')
+        AND proname NOT IN ('ver_create_revision', 'ver_complete_revision')
     LOOP
         EXECUTE 'ALTER FUNCTION ' || v_pcid z || ' SECURITY INVOKER';
     END LOOP;
@@ -362,8 +388,8 @@ BEGIN
     v_select_columns_rev := '';
     
     OPEN v_col_cur FOR
-    SELECT column_name, column_type
-    FROM @extschema@._ver_get_table_cols(p_schema, p_table);
+    SELECT att_name AS column_name, att_type AS column_type
+    FROM unnest(@extschema@._ver_get_table_columns(p_schema || '.' ||  p_table));
 
     FETCH FIRST IN v_col_cur INTO v_column_name, v_column_type;
     LOOP
@@ -475,10 +501,6 @@ $FUNC$ LANGUAGE plpgsql;
     
     EXECUTE 'DROP FUNCTION IF EXISTS ' || @extschema@._ver_get_diff_function(p_schema, p_table);
     EXECUTE v_sql;
-    
-    EXECUTE 'REVOKE ALL ON FUNCTION ' || @extschema@._ver_get_diff_function(p_schema, p_table)||' FROM PUBLIC;';
-	EXECUTE 'GRANT EXECUTE ON FUNCTION ' || @extschema@._ver_get_diff_function(p_schema, p_table)||' TO bde_admin;';
-	EXECUTE 'GRANT EXECUTE ON FUNCTION ' || @extschema@._ver_get_diff_function(p_schema, p_table)||' TO bde_user;';
 
     -- Create get version function for table called: 
     -- ver_get_$schema$_$table$_revision(p_revision integer)
@@ -517,10 +539,6 @@ $FUNC$ LANGUAGE plpgsql;
     
     EXECUTE 'DROP FUNCTION IF EXISTS ' || @extschema@._ver_get_revision_function(p_schema, p_table);
     EXECUTE v_sql;
-    
-	EXECUTE 'REVOKE ALL ON FUNCTION ' || @extschema@._ver_get_revision_function(p_schema, p_table) || ' FROM PUBLIC;';
-	EXECUTE 'GRANT EXECUTE ON FUNCTION ' || @extschema@._ver_get_revision_function(p_schema, p_table) || ' TO bde_admin;';
-	EXECUTE 'GRANT EXECUTE ON FUNCTION ' || @extschema@._ver_get_revision_function(p_schema, p_table) || ' TO bde_user;';
 
     RETURN TRUE;
 END;
@@ -548,8 +566,8 @@ BEGIN
     
     v_column_update := '';
     FOR v_column_name IN
-        SELECT column_name
-        FROM @extschema@._ver_get_table_cols(p_schema, p_table)
+        SELECT att_name AS column_name
+        FROM unnest(@extschema@._ver_get_table_columns(p_schema || '.' ||  p_table))
     LOOP
         IF v_column_name = p_key_col THEN
             CONTINUE;
@@ -658,7 +676,7 @@ CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
         
         RETURN NULL;
     END;
-$TRIGGER$ LANGUAGE plpgsql;
+$TRIGGER$ LANGUAGE plpgsql SECURITY DEFINER;
 
     $template$;
 
@@ -673,16 +691,56 @@ $TRIGGER$ LANGUAGE plpgsql;
 
     SELECT @extschema@._ver_get_version_trigger(p_schema, p_table)
     INTO v_trigger_name;
+    
 
-    EXECUTE 'DROP TRIGGER IF EXISTS '  || v_trigger_name|| ' ON ' ||  
+    EXECUTE 'DROP TRIGGER IF EXISTS '  || v_trigger_name || ' ON ' ||  
         quote_ident(p_schema) || '.' || quote_ident(p_table);
 
     EXECUTE 'CREATE TRIGGER '  || v_trigger_name || ' AFTER INSERT OR UPDATE OR DELETE ON ' ||  
         quote_ident(p_schema) || '.' || quote_ident(p_table) ||
         ' FOR EACH ROW EXECUTE PROCEDURE ' || v_revision_table || '()';
     
+    EXECUTE 'ALTER FUNCTION ' || v_revision_table || '() ' ||
+        'OWNER TO ' || @extschema@._ver_get_table_owner((p_schema || '.' || p_table)::REGCLASS);
+    
     RETURN TRUE;
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION ver_ExecuteTemplate(
+    p_template TEXT,
+    p_params TEXT[])
+RETURNS
+    BIGINT AS
+$$
+DECLARE
+    v_sql TEXT;
+    v_count BIGINT;
+BEGIN
+    v_sql := @extschema@.ver_ExpandTemplate( p_template, p_params );
+    BEGIN
+        EXECUTE v_sql;
+    EXCEPTION
+        WHEN others THEN
+            RAISE EXCEPTION E'Error executing template SQL: %\nError: %',
+            v_sql, SQLERRM;
+    END;
+    GET DIAGNOSTICS v_count=ROW_COUNT;
+    RETURN v_count;
+END;
+$$
+LANGUAGE plpgsql;
+
+DROP FUNCTION table_version._ver_get_table_cols(NAME, NAME);
+
+CREATE OR REPLACE FUNCTION _ver_get_table_owner(
+    p_table REGCLASS
+)
+RETURNS TEXT AS
+$$
+    SELECT  quote_ident(r.rolname)
+    FROM   pg_catalog.pg_class c
+    JOIN   pg_catalog.pg_roles r on (c.relowner = r.oid)
+    WHERE  c.oid = p_table
+$$ LANGUAGE sql;
 
