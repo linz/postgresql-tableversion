@@ -388,61 +388,6 @@ BEGIN
 END;
 $$
 LANGUAGE plpgsql;
-    
-CREATE OR REPLACE FUNCTION ver_table_key_datatype(
-    p_table      REGCLASS,
-    p_key_column NAME
-)
-RETURNS TEXT AS
-$$
-    SELECT
-        format_type(ATT.atttypid, NULL)
-    FROM
-        pg_index IDX,
-        pg_attribute ATT
-    WHERE
-        IDX.indrelid = $1 AND
-        ATT.attrelid = $1 AND
-        ATT.attnum = ANY(IDX.indkey) AND
-        ATT.attnotnull = TRUE AND
-        IDX.indisunique = TRUE AND
-        IDX.indexprs IS NULL AND
-        IDX.indpred IS NULL AND
-        array_length(IDX.indkey::INTEGER[], 1) = 1 AND
-        LOWER(ATT.attname) = LOWER($2)
-    ORDER BY
-        IDX.indisprimary DESC;
-$$ LANGUAGE sql;
-
-CREATE OR REPLACE FUNCTION ver_table_key_is_valid(
-    p_table      REGCLASS,
-    p_key_column NAME
-)
-RETURNS BOOLEAN AS
-$$
-    SELECT EXISTS (
-        SELECT
-            TRUE
-        FROM
-            pg_index IDX,
-            pg_attribute ATT
-        WHERE
-            IDX.indrelid = $1 AND
-            ATT.attrelid = $1 AND
-            ATT.attnum = ANY(IDX.indkey) AND
-            ATT.attnotnull = TRUE AND
-            IDX.indisunique = TRUE AND
-            IDX.indexprs IS NULL AND
-            IDX.indpred IS NULL AND
-            format_type(ATT.atttypid, NULL) IN (
-                'integer', 'bigint', 'text', 'character varying'
-            ) AND
-            array_length(IDX.indkey::INTEGER[], 1) = 1 AND
-            LOWER(ATT.attname) = LOWER($2)
-        ORDER BY
-            IDX.indisprimary DESC
-    );
-$$ LANGUAGE sql;
 
 CREATE OR REPLACE FUNCTION _ver_get_compare_select_sql(
     p_table       REGCLASS,
@@ -571,22 +516,4 @@ $$
     ) AS ATT
 $$ LANGUAGE sql;
 
-
--- Return a list of columns for a table as an array of ATTRIBUTE entries
-
-CREATE OR REPLACE FUNCTION _ver_get_table_columns(
-    p_table REGCLASS
-)
-RETURNS @extschema@.ATTRIBUTE[] AS
-$$
-    SELECT array_agg(
-        CAST((ATT.attname, format_type(ATT.atttypid, ATT.atttypmod), 
-         ATT.attnotnull) AS @extschema@.ATTRIBUTE))
-    FROM
-        pg_attribute ATT
-    WHERE
-        ATT.attnum > 0 AND
-        NOT ATT.attisdropped AND
-        ATT.attrelid = p_table;
-$$ LANGUAGE sql;
 
