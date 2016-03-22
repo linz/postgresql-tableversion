@@ -1,3 +1,20 @@
+postgresql-tableversion (1.1.0) trusty; urgency=medium
+
+  * Improve markup formatting to work with PGXN
+  * Improve markup formatting in readme
+  * Add additional documentation for table specific revision functions
+  * Added support user name revision tracking and text primary keys
+  * Changed functions to remove security definer
+  * Added support functions for diff functions
+  * Improvements and fixes to the table diff functions
+  * Improved permission controls for accessing metadata tables and executing difference functions. Remove old internal hard coded permissions
+  * Added tests for diff functions and permissions changes, aswell as documentation
+  * Remove invalid echo command in makefile. Closes #1
+  * replace hard coded schema path with PG installed extension variable
+  * Make sure recorded user is the caller of create revision function
+
+ -- Jeremy Palmer <jpalmer@linz.govt.nz>  Wed, 23 Mar 2016 07:50:18 +1300
+
 postgresql-tableversion (1.0.1-1) trusty; urgency=medium
 
   * Initial release.
