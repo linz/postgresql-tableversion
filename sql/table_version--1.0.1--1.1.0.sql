@@ -355,8 +355,9 @@ BEGIN
         FROM pg_proc 
         WHERE pronamespace=(SELECT oid FROM pg_namespace WHERE nspname = v_schema)
         AND proname NOT IN ('ver_create_revision', 'ver_complete_revision')
+        AND pg_get_function_result(oid) <> 'trigger'
     LOOP
-        EXECUTE 'ALTER FUNCTION ' || v_pcid z || ' SECURITY INVOKER';
+        EXECUTE 'ALTER FUNCTION ' || v_pcid || ' SECURITY INVOKER';
     END LOOP;
 END;
 $$;
