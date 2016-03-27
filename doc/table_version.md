@@ -364,7 +364,7 @@ primary key. Comparisons are only done between common table columns
 `p_table1`
 : The first table
 
-`p_table1`
+`p_table2`
 : The second table
 
 `p_key_column`
@@ -662,7 +662,8 @@ Get the revision information for the given revision ID.
         OUT revision_time TIMESTAMP,
         OUT start_time    TIMESTAMP,
         OUT schema_change BOOLEAN,
-        OUT comment       TEXT
+        OUT comment       TEXT,
+        OUT user_name     TEXT
     );
 
 **Parameters**
@@ -688,6 +689,9 @@ The function has the following out parameters:
 
 `comment`
 : The returned revision comment
+
+`user_name`
+: The returned user who created the revision
 
 **Example**
 
@@ -724,7 +728,8 @@ Get multiple revisions
         revision_time  TIMESTAMP,
         start_time     TIMESTAMP,
         schema_change  BOOLEAN,
-        comment        TEXT
+        comment        TEXT,
+        user_name      TEXT
     )
 
 **Parameters**
