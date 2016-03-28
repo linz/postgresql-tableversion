@@ -55,7 +55,7 @@ Purpose
 -------
 
 This extension was created to store table data revisions in a data warehouse
-environment. The primarly use case was to import bulk difference data from an
+environment. The primarily use case was to import bulk difference data from an
 external system on a daily basis and record all of those daily revisions.
 The design decision to maintain the version history data in a completely separate
 table from the current data table (instead of just having a view) was driven by
@@ -278,7 +278,7 @@ The extension creates the following configuration tables:
 - table_version.versioned_tables
 
 Whenever a new table is setup for versioning or an versioned table is edited the
-metadata of that transacation is recorded in these tables. When databases using
+metadata of that transaction is recorded in these tables. When databases using
 the table_version extension are dumped that data from these configuration tables
 are also dumped to ensure the patch history data is persisted.
 
@@ -303,7 +303,7 @@ Support Functions
 
 ### `ver_apply_table_differences()` ###
 
-Generates a difference between any a source orignal table and a new table and
+Generates a difference between any a source original table and a new table and
 then applies those differences to the original table. Both table must have a 
 single column primary key. Comparisons are only done between common table
 columns
@@ -340,7 +340,7 @@ Returns a record of 3 values for the changed applied to the original table.:
 
 throws an exception if the source table:
 
-- either tables's key column is not a unique non-compostite integer, bigint, 
+- either tables's key column is not a unique non-composite integer, bigint, 
 text, or varchar column
 - no common columns between tables were found
 
@@ -378,14 +378,14 @@ Returns a generic set of records. Each row contains the following columns:
 - id {key's datatype}
 
 Because the function returns a generic set of records the schema type for the
-the returned record needs to be defined. This definition will be dependant on
+the returned record needs to be defined. This definition will be dependent on
 the key column's datatype. 
 
 **Exceptions**
 
 throws an exception if the source table:
 
-- either tables's key column is not a unique non-compostite integer, bigint, 
+- either tables's key column is not a unique non-composite integer, bigint, 
 text, or varchar column
 - no common columns between tables were found
 
@@ -445,7 +445,7 @@ Generates a difference between any two given revisions for versioned table
 **Returns**
 
 A tableset of changed rows containing the each row that has been inserted,
-updated or deleted between teh start and end revisions. The '_diff_action'
+updated or deleted between the start and end revisions. The '_diff_action'
 column contains the type of modification for each row. The _diff_action value
 can be one of:
 
@@ -512,7 +512,7 @@ Throws an exception if the source table:
 
 - does not exist
 - is already versioned
-- does not have a unique non-compostite integer, bigint, text or varchar column
+- does not have a unique non-composite integer, bigint, text or varchar column
 
 **Notes**
 
@@ -564,7 +564,7 @@ throws an exception if the source table:
 
 **Notes**
 
-All assoicated objects created for the versioning will be dropped.
+All associated objects created for the versioning will be dropped.
 
 **Example**
 
@@ -572,7 +572,7 @@ All assoicated objects created for the versioning will be dropped.
 
 ### `ver_create_revision()` ###
 
-Create a new revision within the curernt SQL session.
+Create a new revision within the current SQL session.
 
     FUNCTION ver_create_revision(p_comment TEXT, p_revision_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, p_schema_change BOOLEAN DEFAULT FALSE)
     RETURN INTEGER
@@ -616,7 +616,7 @@ Completed a revision within the current SQL session.
 
 **Returns**
 
-`true` or `false` if the revision was sucessfully completed. Will return `false`
+`true` or `false` if the revision was successfully completed. Will return `false`
 if an revision has not been created.
 
 **Notes**
@@ -922,7 +922,7 @@ Get tables that are modified for a given revision range.
 
 **Returns**
 
-A tableset of records modified tables and revision when the change occured.
+A tableset of records modified tables and revision when the change occurred.
 
 **Example**
 
