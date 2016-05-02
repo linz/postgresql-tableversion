@@ -3,6 +3,10 @@
 All notable changes for the PostgreSQL table version extension are documented 
 in this file.
 
+## [1.1.2] - 2016-05-02
+### Fixed
+- Improved software version management
+
 ## [1.1.1] - 2016-03-27
 ### Fixed
 - Documentation fixes
