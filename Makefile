@@ -1,6 +1,7 @@
+EXTVERSION   = 1.1.1
+
 META         = META.json
-EXTENSION    = $(shell grep -m 1 '"name":' $(META) | sed -e 's/[[:space:]]*"name":[[:space:]]*"\([^"]*\)",/\1/')
-EXTVERSION   = $(shell grep -m 1 '"version":' $(META) | sed -e 's/[[:space:]]*"version":[[:space:]]*"\([^"]*\)",/\1/')
+EXTENSION    = $(shell grep -m 1 '"name":' $(META).in | sed -e 's/[[:space:]]*"name":[[:space:]]*"\([^"]*\)",/\1/')
 
 SED = sed
 
@@ -25,9 +26,9 @@ PG91         = $(shell $(PG_CONFIG) --version | grep -qE " 8\.| 9\.0" && echo no
 
 ifeq ($(PG91),yes)
 
-DATA_built = sql/$(EXTENSION)--$(EXTVERSION).sql
+DATA_built = sql/$(EXTENSION)--$(EXTVERSION).sql $(META)
 	
-sql/$(EXTENSION).sql: $(SQLSCRIPTS)
+sql/$(EXTENSION).sql: $(SQLSCRIPTS) $(META)
 	echo '\echo Use "CREATE EXTENSION $(EXTENSION)" to load this file. \quit' > $@
 	cat $(SQLSCRIPTS) >> $@
 	echo "GRANT USAGE ON SCHEMA table_version TO public;" >> $@
@@ -35,6 +36,9 @@ sql/$(EXTENSION).sql: $(SQLSCRIPTS)
 sql/$(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
 	cp $< $@
 	
+$(META): $(META).in
+	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
+
 $(EXTENSION).control: $(EXTENSION).control.in
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
 	
@@ -42,7 +46,8 @@ DATA = $(wildcard sql/*--*.sql)
 EXTRA_CLEAN = \
     sql/$(EXTENSION)--$(EXTVERSION).sql \
     sql/$(EXTENSION).sql \
-    $(EXTENSION).control
+    $(EXTENSION).control \
+    $(META)
 endif
 
 # Hook for test to ensure dependencies in control file are set correctly

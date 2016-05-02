@@ -2,7 +2,7 @@
     "name": "table_version",
     "abstract": "PostgreSQL table versioning extension, recording row modifications and its history",
     "description": "PostgreSQL table versioning extension, recording row modifications and its history. The extension provides APIs for accessing snapshots of a table at certain revisions and the difference generated between any two given revisions. The extension uses a PL/PgSQL trigger based system to record and provide access to the row revisions",
-    "version": "1.1.1",
+    "version": "@@VERSION@@",
     "maintainer": "jpalmer@linz.govt.nz",
     "license": "bsd",
     "provides": {
@@ -10,7 +10,7 @@
             "abstract": "PostgreSQL table versioning extension, recording row modifications and its history",
             "file": "sql/table_version.sql",
             "docfile": "doc/table_version.md",
-            "version": "1.1.1"
+            "version": "@@VERSION@@"
         }
     },
     "prereqs": {
