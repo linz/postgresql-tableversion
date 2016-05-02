@@ -1,4 +1,4 @@
-EXTVERSION   = 1.1.1
+EXTVERSION   = dev
 
 META         = META.json
 EXTENSION    = $(shell grep -m 1 '"name":' $(META).in | sed -e 's/[[:space:]]*"name":[[:space:]]*"\([^"]*\)",/\1/')
