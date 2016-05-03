@@ -1,12 +1,5 @@
-postgresql-tableversion (1.1.2-1linz~trusty1) UNRELEASED; urgency=medium
+postgresql-tableversion (1.1.2-1linz~trusty1) trusty; urgency=medium
 
-  * Updating to Debian 3.0 packaging format
+  * Packaging for LINZ's Software Repository
 
- -- Jeremy Palmer <jpalmer@linz.govt.nz>  Sun, 01 May 2016 19:56:10 +1200
-
-postgresql-tableversion (1.0.1-1linz~trusty1) trusty; urgency=medium
-
-  * Initial release.
-
- -- Jeremy <jpalmer@linz.govt.nz>  Mon, 25 Jan 2016 14:38:46 +1300
- 
+ -- Ivan Mincik <imincik@linz.govt.nz>  Wed, 04 May 2016 08:41:38 +1200
