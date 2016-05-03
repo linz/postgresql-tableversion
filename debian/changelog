@@ -1,3 +1,9 @@
+postgresql-tableversion (1.1.2-2linz~trusty1) trusty; urgency=medium
+
+  * Removing 'postgresql-9.3-pgtap' from build dependencies
+
+ -- Ivan Mincik <imincik@linz.govt.nz>  Wed, 04 May 2016 10:21:07 +1200
+
 postgresql-tableversion (1.1.2-1linz~trusty1) trusty; urgency=medium
 
   * Packaging for LINZ's Software Repository
