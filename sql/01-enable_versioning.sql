@@ -84,7 +84,7 @@ BEGIN
         AND   g.table_schema =  p_schema
     LOOP
         EXECUTE 'GRANT ' || v_privilege || ' ON TABLE ' || v_revision_table || 
-            ' TO ' || v_role;
+            ' TO "' || v_role | '"';
     END LOOP;
         
     v_sql := (
