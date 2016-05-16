@@ -3,6 +3,11 @@
 All notable changes for the PostgreSQL table version extension are documented 
 in this file.
 
+## [Unreleased] - xxxx-xx-xx
+### Fixed
+- Enable versioning: Quoting of user role when replicating table permission during
+- Fixed blocking of versioning queries. Issue #2
+
 ## [1.1.2] - 2016-05-02
 ### Fixed
 - Improved software version management
