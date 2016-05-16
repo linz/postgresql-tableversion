@@ -1,3 +1,42 @@
+--------------------------------------------------------------------------------
+
+-- postgresql-table_version - PostgreSQL database patch change management extension
+--
+-- Copyright 2016 Crown copyright (c)
+-- Land Information New Zealand and the New Zealand Government.
+-- All rights reserved
+--
+-- This software is released under the terms of the new BSD license. See the 
+-- LICENSE file for more information.
+--
+--------------------------------------------------------------------------------
+
+-- Remove any existing FKs.
+
+DO $$
+DECLARE
+    v_nspname NAME;
+    v_relname NAME;
+    v_conname NAME;
+    v_sql TEXT;
+BEGIN
+
+    FOR v_nspname, v_relname, v_conname IN
+        SELECT nspname, relname, conname
+        FROM pg_constraint 
+        JOIN pg_class ON conrelid=pg_class.oid 
+        JOIN pg_namespace ON pg_namespace.oid=pg_class.relnamespace
+        WHERE nspname = 'table_version'
+        AND  relname <> 'tables_changed'
+        AND contype = 'f'
+    LOOP
+        EXECUTE 'ALTER TABLE "' || v_nspname || '"."' || v_relname || '" DROP CONSTRAINT "' || v_conname || '"';
+    END LOOP;
+END
+$$;
+
+-- Updated user quoting
+
 
 CREATE OR REPLACE FUNCTION ver_enable_versioning(
     p_schema NAME,
@@ -84,7 +123,7 @@ BEGIN
         AND   g.table_schema =  p_schema
     LOOP
         EXECUTE 'GRANT ' || v_privilege || ' ON TABLE ' || v_revision_table || 
-            ' TO ' || v_role;
+            ' TO ' || quote_ident(v_role);
     END LOOP;
         
     v_sql := (
@@ -238,4 +277,3 @@ BEGIN
     RETURN TRUE;
 END;
 $$ LANGUAGE plpgsql;
-
