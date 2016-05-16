@@ -3,7 +3,7 @@
 All notable changes for the PostgreSQL table version extension are documented 
 in this file.
 
-## [Unreleased] - xxxx-xx-xx
+## [1.1.3] - 2016-05-17
 ### Fixed
 - Enable versioning: Quoting of user role when replicating table permission during
 - Fixed blocking of versioning queries. Issue #2
