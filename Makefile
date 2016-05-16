@@ -15,8 +15,8 @@ REGRESS      = $(patsubst test/sql/%.sql,%,$(TESTS))
 REGRESS_OPTS = --inputdir=test --load-language=plpgsql
 
 #
-# Uncoment the MODULES line if you are adding C files
-# to your extention.
+# Uncomment the MODULES line if you are adding C files
+# to your extension.
 #
 #MODULES      = $(patsubst %.c,%,$(wildcard src/*.c))
 PG_CONFIG    = pg_config
