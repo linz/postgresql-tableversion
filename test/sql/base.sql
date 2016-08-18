@@ -55,6 +55,7 @@ SELECT has_function( 'table_version', 'ver_get_versioned_tables'::name );
 SELECT has_function( 'table_version', 'ver_is_table_versioned', ARRAY['name','name'] );
 SELECT has_function( 'table_version', 'ver_versioned_table_change_column_type', ARRAY['name','name', 'name', 'text'] );
 SELECT has_function( 'table_version', 'ver_versioned_table_add_column', ARRAY['name','name', 'name', 'text'] );
+SELECT has_function( 'table_version', 'ver_versioned_table_drop_column', ARRAY['name','name', 'name'] );
 
 CREATE SCHEMA foo;
 
@@ -235,6 +236,8 @@ SELECT results_eq(
 SELECT is(table_version.ver_versioned_table_change_column_type('foo', 'bar', 'd1', 'VARCHAR(100)'), TRUE, 'Change column datatype');
 
 SELECT is(table_version.ver_versioned_table_add_column('foo', 'bar', 'baz', 'TEXT'), TRUE, 'Add column datatype');
+
+SELECT is(table_version.ver_versioned_table_drop_column('foo', 'bar', 'baz'), TRUE, 'Drop column');
 
 SELECT ok(table_version.ver_disable_versioning('foo', 'bar'), 'Disable versioning on foo.bar');
 
