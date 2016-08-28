@@ -12,7 +12,7 @@ DECLARE
     v_revision_table TEXT;
 BEGIN
     IF NOT @extschema@.ver_is_table_versioned(p_schema_name, p_table_name) THEN
-        RAISE EXCEPTION 'Table %.% is not versioned', quote_ident(p_schema_name), quote_ident(p_     table_name);
+        RAISE EXCEPTION 'Table %.% is not versioned', quote_ident(p_schema_name), quote_ident(p_table_name);
     END IF;
 
     v_revision_table := @extschema@.ver_get_version_table_full(p_schema_name, p_table_name);
@@ -20,7 +20,7 @@ BEGIN
 
     EXECUTE 'ALTER TABLE ' || quote_ident(p_schema_name) || '.' || quote_ident(p_table_name) ||      ' DISABLE TRIGGER ' || v_trigger_name;
     EXECUTE 'ALTER TABLE ' || quote_ident(p_schema_name) || '.' || quote_ident(p_table_name) ||      ' DROP COLUMN ' || quote_ident(p_column_name);
-    EXECUTE 'ALTER TABLE ' || v_revision_table      || ' DROP COLUMN ' || quote_ident(p_column_n     ame);
+    EXECUTE 'ALTER TABLE ' || v_revision_table      || ' DROP COLUMN ' || quote_ident(p_column_name);
     EXECUTE 'ALTER TABLE ' || quote_ident(p_schema_name) || '.' || quote_ident(p_table_name) ||      ' ENABLE TRIGGER ' || v_trigger_name;
     
     SELECT
