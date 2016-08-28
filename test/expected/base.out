@@ -12,7 +12,7 @@
 -- Provide unit testing for table versioning system using pgTAP
 --------------------------------------------------------------------------------
 \set ECHO none
-1..72
+1..74
 ok 1 - Schema table_version should exist
 ok 2 - Should have revision table
 ok 3 - Should have tables_changed table
@@ -41,7 +41,7 @@ ok 25 - Function table_version.ver_get_versioned_tables() should exist
 ok 26 - Function table_version.ver_is_table_versioned(name, name) should exist
 ok 27 - Function table_version.ver_versioned_table_change_column_type(name, name, name, text) should exist
 ok 28 - Function table_version.ver_versioned_table_add_column(name, name, name, text) should exist
-ok 29 - Function table_version.ver_versioned_table_drop_column(name, name, name, text) should exist
+ok 29 - Function table_version.ver_versioned_table_drop_column(name, name, name) should exist
 ok 30 - Enable versioning on foo.bar
 ok 31 - Check table is revisioned versioning on foo.bar
 ok 32 - Check table foo.bar table key

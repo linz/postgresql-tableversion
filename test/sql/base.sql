@@ -25,7 +25,7 @@ BEGIN;
 CREATE EXTENSION table_version;
 CREATE EXTENSION pgtap;
 
-SELECT plan(72);
+SELECT plan(74);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -55,7 +55,7 @@ SELECT has_function( 'table_version', 'ver_get_versioned_tables'::name );
 SELECT has_function( 'table_version', 'ver_is_table_versioned', ARRAY['name','name'] );
 SELECT has_function( 'table_version', 'ver_versioned_table_change_column_type', ARRAY['name','name', 'name', 'text'] );
 SELECT has_function( 'table_version', 'ver_versioned_table_add_column', ARRAY['name','name', 'name', 'text'] );
-SELECT has_function( 'table_version', 'ver_versioned_table_drop_column', ARRAY['name','name', 'name'] );
+SELECT has_function( 'table_version', 'ver_versioned_table_drop_column', ARRAY['name', 'name', 'name'] );
 
 CREATE SCHEMA foo;
 
