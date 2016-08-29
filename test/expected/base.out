@@ -12,7 +12,7 @@
 -- Provide unit testing for table versioning system using pgTAP
 --------------------------------------------------------------------------------
 \set ECHO none
-1..72
+1..74
 ok 1 - Schema table_version should exist
 ok 2 - Should have revision table
 ok 3 - Should have tables_changed table
@@ -41,47 +41,49 @@ ok 25 - Function table_version.ver_get_versioned_tables() should exist
 ok 26 - Function table_version.ver_is_table_versioned(name, name) should exist
 ok 27 - Function table_version.ver_versioned_table_change_column_type(name, name, name, text) should exist
 ok 28 - Function table_version.ver_versioned_table_add_column(name, name, name, text) should exist
-ok 29 - Enable versioning on foo.bar
-ok 30 - Check table is revisioned versioning on foo.bar
-ok 31 - Check table foo.bar table key
-ok 32 - Check table base revision
-ok 33 - Function table_version.ver_get_foo_bar_revision(integer) should exist
-ok 34 - Function table_version.ver_get_foo_bar_diff(integer, integer) should exist
-ok 35 - Check get table revision function API
-ok 36 - Foo bar diff for table creation
-ok 37 - Create edit 1 revision
-ok 38 - Complete edit 1 revision
-ok 39 - Foo bar diff for edit 1
-ok 40 - Create edit 2 revision
-ok 41 - Complete edit 2 revision
-ok 42 - Foo bar diff for edit 1 (recheck)
-ok 43 - Foo bar diff range for edit 1-2
-ok 44 - Foo bar diff for edit 2
-ok 45 - Foo bar diff for edit 2 (larger range parameter)
-ok 46 - Create edit 3 revision
-ok 47 - Complete edit 3 revision
-ok 48 - Foo bar diff check to ensure a row created and deleted in between revisions is not returned
-ok 49 - Create edit 4 revision
-ok 50 - Complete edit 4 revision
-ok 51 - Foo bar diff for edit 4
-ok 52 - Foo bar diff check to ensure a feature created and delete in between revision does not show (delete does not occur in last revision)
-ok 53 - Create edit 4 revision
-ok 54 - Complete edit 4 revision
-ok 55 - Foo bar diff check re-insert a prevoiusly deleted row #1
-ok 56 - Foo bar diff check re-insert a prevoiusly deleted row #2
-ok 57 - Change column datatype
-ok 58 - Add column datatype
-ok 59 - Disable versioning on foo.bar
-ok 60 - Enable versioning of text primary key on foo.bar2
-ok 61 - Check table is revisioned versioning on foo.bar2
-ok 62 - Check table foo.bar table key
-ok 63 - Create edit text PK
-ok 64 - Complete edit text PK
-ok 65 - Foo bar2 diff for text PK edit
-ok 66 - Disable versioning on foo.bar2
-ok 67 - Diff function between foo3 and foo4
-ok 68 - Apply diff to table function between foo3 and foo4
-ok 69 - Enable versioning on table with permissions
-ok 70 - Test foo_bar5_revision ownership
-ok 71 - Test foo_bar5_revision permission for test_user
-ok 72 - Disable versioning on foo.bar5
+ok 29 - Function table_version.ver_versioned_table_drop_column(name, name, name) should exist
+ok 30 - Enable versioning on foo.bar
+ok 31 - Check table is revisioned versioning on foo.bar
+ok 32 - Check table foo.bar table key
+ok 33 - Check table base revision
+ok 34 - Function table_version.ver_get_foo_bar_revision(integer) should exist
+ok 35 - Function table_version.ver_get_foo_bar_diff(integer, integer) should exist
+ok 36 - Check get table revision function API
+ok 37 - Foo bar diff for table creation
+ok 38 - Create edit 1 revision
+ok 39 - Complete edit 1 revision
+ok 40 - Foo bar diff for edit 1
+ok 41 - Create edit 2 revision
+ok 42 - Complete edit 2 revision
+ok 43 - Foo bar diff for edit 1 (recheck)
+ok 44 - Foo bar diff range for edit 1-2
+ok 45 - Foo bar diff for edit 2
+ok 46 - Foo bar diff for edit 2 (larger range parameter)
+ok 47 - Create edit 3 revision
+ok 48 - Complete edit 3 revision
+ok 49 - Foo bar diff check to ensure a row created and deleted in between revisions is not returned
+ok 50 - Create edit 4 revision
+ok 51 - Complete edit 4 revision
+ok 52 - Foo bar diff for edit 4
+ok 53 - Foo bar diff check to ensure a feature created and delete in between revision does not show (delete does not occur in last revision)
+ok 54 - Create edit 4 revision
+ok 55 - Complete edit 4 revision
+ok 56 - Foo bar diff check re-insert a prevoiusly deleted row #1
+ok 57 - Foo bar diff check re-insert a prevoiusly deleted row #2
+ok 58 - Change column datatype
+ok 59 - Add column datatype
+ok 60 - Drop column
+ok 61 - Disable versioning on foo.bar
+ok 62 - Enable versioning of text primary key on foo.bar2
+ok 63 - Check table is revisioned versioning on foo.bar2
+ok 64 - Check table foo.bar table key
+ok 65 - Create edit text PK
+ok 66 - Complete edit text PK
+ok 67 - Foo bar2 diff for text PK edit
+ok 68 - Disable versioning on foo.bar2
+ok 69 - Diff function between foo3 and foo4
+ok 70 - Apply diff to table function between foo3 and foo4
+ok 71 - Enable versioning on table with permissions
+ok 72 - Test foo_bar5_revision ownership
+ok 73 - Test foo_bar5_revision permission for test_user
+ok 74 - Disable versioning on foo.bar5
