@@ -62,6 +62,10 @@ BEGIN
         RAISE EXCEPTION 'Table %.% does not have a unique non-compostite integer, bigint, text, or varchar column', quote_ident(p_schema), quote_ident(p_table);
     END IF;
 
+    IF (SELECT count(*) <= 1 FROM information_schema.columns WHERE table_name= p_table AND table_schema = p_schema) THEN
+        RAISE EXCEPTION 'Table %.% must contain at least one other non key column', quote_ident(p_schema), quote_ident(p_table);
+    END IF;
+
     v_revision_table := @extschema@.ver_get_version_table_full(p_schema, p_table);
     
     v_sql :=
