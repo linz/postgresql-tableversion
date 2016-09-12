@@ -3,7 +3,7 @@
 All notable changes for the PostgreSQL table version extension are documented 
 in this file.
 
-## [Unreleased] - xxxx-xx-xx
+## [1.2.0] - 2016-09-13
 ### Added
 - Added support for table_drop_column function
 
