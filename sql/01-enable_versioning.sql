@@ -78,7 +78,11 @@ BEGIN
     
     -- replicate permissions from source table to revision history table
     FOR v_role, v_privilege IN
-        SELECT g.grantee, g.privilege_type
+        SELECT CASE WHEN g.grantee = 'PUBLIC'
+                   THEN 'public'
+                   ELSE g.grantee
+               END as grantee,
+               g.privilege_type
         FROM information_schema.role_table_grants g
         WHERE g.table_name = p_table
         AND   g.table_schema =  p_schema
