@@ -4,6 +4,14 @@ All notable changes for the PostgreSQL table version extension are documented
 in this file.
 
 ## [Unreleased] - xxxx-xx-xx
+### Added
+- Added support for table_drop_column function
+
+### Fixed
+- Revsioning a table with only a primary key column causes an error. Issue #7
+- Error creating revision when table is given access to 'public' role. Issue #8
+
+## [1.1.3] - 2016-05-17
 ### Fixed
 - Enable versioning: Quoting of user role when replicating table permission during
 - Fixed blocking of versioning queries. Issue #2
