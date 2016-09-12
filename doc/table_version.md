@@ -1035,6 +1035,42 @@ Column can not have a default values.
 
     SELECT table_version.ver_versioned_table_add_column('foo', 'bar', 'baz', 'VARCHAR(100)')
 
+### `ver_versioned_table_drop_column()` ###
+
+Delete a column from a versioned table.
+
+    FUNCTION ver_versioned_table_drop_column(
+        p_schema_name NAME,
+        p_table_name  NAME,
+        p_column_name NAME
+    )
+    RETURNS BOOLEAN
+
+**Parameters**
+
+`p_schema_name`
+: The table schema
+
+`p_table_name`
+: The table name
+
+`p_column_name`
+: The name of the column to delete
+
+**Returns**
+
+`true` or `false` if the column was successfully deleted
+
+**Exceptions**
+
+throws an exception if:
+
+- the table is not versioned
+
+**Example**
+
+    SELECT table_version.ver_versioned_table_drop_column('foo', 'bar', 'baz')
+
 Support
 -------
 
