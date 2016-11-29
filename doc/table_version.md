@@ -3,38 +3,62 @@ table_version
 
 Synopsis
 --------
+Let's start from scratch and create empty database `table_version`
 
-    #= CREATE EXTENSION table_version;
+    $ createdb table_version
+    $ psql table_version
+
+First step we need to do, is to install `table_version` extension to our database
+
+    table_version=# CREATE EXTENSION table_version;
     CREATE EXTENSION
+
+Next, we create schema `foo` and add it to our search path
     
-    #= CREATE TABLE foo.bar (
+    table_version=# CREATE SCHEMA foo;
+    CREATE SCHEMA
+    
+    table_version=# SET search_path TO foo,public;
+
+Our table to be versioned will be called `bar` and will be located in `foo` schema
+
+    table_version=# CREATE TABLE foo.bar (
         id INTEGER NOT NULL PRIMARY KEY,
         baz TEXT
     );
     CREATE TABLE
-    
-    #= SELECT table_version.ver_enable_versioning('foo', 'bar');
+
+Enable versioning on created table by calling `ver_enable_versioning` function.
+The function accepts two parameters - schema and table name
+
+    table_version=# SELECT table_version.ver_enable_versioning('foo', 'bar');
      ver_enable_versioning 
     -----------------------
      t
+
+Create first revision of our created table, called `My test edit`
 
     SELECT table_version.ver_create_revision('My test edit');
      ver_create_revision 
     ---------------------
                     1001
 
-    #= INSERT INTO foo.bar (id, baz) VALUES
+    table_version=# INSERT INTO foo.bar (id, baz) VALUES
     (1, 'foo bar 1'),
     (2, 'foo bar 2'),
     (3, 'foo bar 3');
     INSERT 0 3
 
-    #= SELECT table_version.ver_complete_revision(); 
+Mark revision as done
+
+    table_version=# SELECT table_version.ver_complete_revision(); 
      ver_complete_revision 
     -----------------------
      t
-    
-    #= SELECT * FROM table_version.ver_get_foo_bar_diff(1000, 1001);
+
+And show differences between last revisions
+
+    table_version=# SELECT * FROM table_version.ver_get_foo_bar_diff(1001, 1002);
      _diff_action | id |    baz
     --------------+----+-----------
      I            |  3 | foo bar 3
@@ -1092,4 +1116,3 @@ Zealand Government. All rights reserved
 
 This software is provided as a free download under the 3-clause BSD License. See
 the LICENSE file for more details.
-
