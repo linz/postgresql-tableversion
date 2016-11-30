@@ -3,24 +3,24 @@ table_version
 
 Synopsis
 --------
-Let's start from scratch and create empty database `table_version`
+1. Let's start from scratch and create empty database `table_version`
 
     $ createdb table_version
     $ psql table_version
 
-First step we need to do, is to install `table_version` extension to our database
+2. First step we need to do, is to install `table_version` extension to our database
 
     table_version=# CREATE EXTENSION table_version;
     CREATE EXTENSION
 
-Next, we create schema `foo` and add it to our search path
+3. Next, we create schema `foo` and add it to our search path
     
     table_version=# CREATE SCHEMA foo;
     CREATE SCHEMA
     
     table_version=# SET search_path TO foo,public;
 
-Our table to be versioned will be called `bar` and will be located in `foo` schema
+4. Our table to be versioned will be called `bar` and will be located in `foo` schema
 
     table_version=# CREATE TABLE foo.bar (
         id INTEGER NOT NULL PRIMARY KEY,
@@ -28,20 +28,37 @@ Our table to be versioned will be called `bar` and will be located in `foo` sche
     );
     CREATE TABLE
 
-Enable versioning on created table by calling `ver_enable_versioning` function.
-The function accepts two parameters - schema and table name
+5. Enable versioning on created table by calling `ver_enable_versioning` function.
+   The function accepts two parameters - schema and table name
 
     table_version=# SELECT table_version.ver_enable_versioning('foo', 'bar');
      ver_enable_versioning 
     -----------------------
      t
 
-Create first revision of our created table, called `My test edit`
+6. Create first revision of our created table, called `My test edit`
 
-    SELECT table_version.ver_create_revision('My test edit');
+    table_version=# SELECT table_version.ver_create_revision('My test edit');
      ver_create_revision 
     ---------------------
                     1001
+
+7. Mark revision as done - yes, there are no data in the able, we just put empty
+   table to our revision.
+
+    table_version=# SELECT table_version.ver_complete_revision(); 
+     ver_complete_revision 
+    -----------------------
+     t
+
+8. Create next revision of our created table, called `Insert data`
+
+    table_version=# SELECT table_version.ver_create_revision('Insert data');
+     ver_create_revision 
+    ---------------------
+                    1002
+
+9. Insert some initial set of data
 
     table_version=# INSERT INTO foo.bar (id, baz) VALUES
     (1, 'foo bar 1'),
@@ -49,14 +66,14 @@ Create first revision of our created table, called `My test edit`
     (3, 'foo bar 3');
     INSERT 0 3
 
-Mark revision as done
+10. Mark revision as done
 
     table_version=# SELECT table_version.ver_complete_revision(); 
      ver_complete_revision 
     -----------------------
      t
 
-And show differences between last revisions
+11. And show differences between last revisions
 
     table_version=# SELECT * FROM table_version.ver_get_foo_bar_diff(1001, 1002);
      _diff_action | id |    baz
@@ -99,15 +116,17 @@ How it works
 ------------
 
 When a table is versioned the original table data is left untouched and a new
-revision table is created with all the same fields plus a "_revsion_created"
-and "_revision_expired" field. A row level trigger is then setup on the original
+revision table is created with all the same fields plus a "_revision_created"
+and "_revision_expired" fields. A row level trigger is then setup on the original
 table and whenever an insert, update and delete statement is run the change
 is recorded in the table's revision data table. 
+
+Revisions are more described in the `table_version.revision` table.
 
 Installing the extension
 ------------------------
 
-Once table_version is installed, you can add it to a database. If you're running
+Once `table_version` is installed, you can add it to a database. If you're running
 PostgreSQL 9.1.0 or greater, it's a simple as connecting to a database as a
 super user and running:
 
@@ -124,7 +143,7 @@ installed, you can upgrade it to a properly packaged extension with:
 Usage
 -----
 
-Take the following example. We have a table 'bar' in schema 'foo' and insert
+Take the following example. We have a table `bar` in schema `foo` and insert
 some data:
 
     CREATE EXTENSION table_version;
@@ -145,9 +164,9 @@ Then to enable versioning on a table you need to run the following command:
 
     SELECT table_version.ver_enable_versioning('foo', 'bar');
 
-After you have run this command a trigger 'table_version.foo_bar_revision()'
-should have been created on the foo.bar table. Also the
-"table_version.foo_bar_revision" table is created to store the revision
+After you have run this command a trigger `table_version.foo_bar_revision()`
+should have been created on the `foo.bar` table. Also the
+`table_version.foo_bar_revision` table is created to store the revision
 data. If you execute a select from the table you can see the base revision
 data:
 
@@ -162,7 +181,7 @@ data:
     
 
 After the table has been versioned and you want to edit some data you
-must first start a revision, do the edits and then complete the revision. i.e:
+*must first start a revision*, do the edits and then complete the revision. i.e:
 
     SELECT table_version.ver_create_revision('My test edit');
 
@@ -179,7 +198,7 @@ must first start a revision, do the edits and then complete the revision. i.e:
     SELECT table_version.ver_complete_revision(); 
 
 
-Now you should have some more edits in table_version.foo_bar_revision table:
+Now you should have some more edits in `table_version.foo_bar_revision` table:
 
     SELECT * FROM table_version.foo_bar_revision;
 
@@ -297,16 +316,16 @@ Configuration tables
 
 The extension creates the following configuration tables:
 
-- table_version.revision
-- table_version.tables_changed
-- table_version.versioned_tables
+- `table_version.revision`
+- `table_version.tables_changed`
+- `table_version.versioned_tables`
 
 Whenever a new table is setup for versioning or an versioned table is edited the
 metadata of that transaction is recorded in these tables. When databases using
-the table_version extension are dumped that data from these configuration tables
+the `table_version` extension are dumped that data from these configuration tables
 are also dumped to ensure the patch history data is persisted.
 
-**WARNING**: If the extension is dropped by the user using the CASCADE option:
+**WARNING**: If the extension is dropped by the user using the `CASCADE` option:
 
     DROP EXTENSION table_version CASCADE;
 
