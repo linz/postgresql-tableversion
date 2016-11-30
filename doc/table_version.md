@@ -34,7 +34,7 @@ Synopsis
     -----------------------
      t
     
-    #= SELECT * FROM table_version.ver_get_foo_bar_diff(1001, 1002);
+    #= SELECT * FROM table_version.ver_get_foo_bar_diff(1000, 1001);
      _diff_action | id |    baz
     --------------+----+-----------
      I            |  3 | foo bar 3
