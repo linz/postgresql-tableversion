@@ -48,12 +48,9 @@ matrix:
 
 
 script:
+  - make
   - sudo make install
-  - PGPORT=5432 make installcheck
-
-
-after_failure:
-  - cat /home/travis/build/linz/postgresql-tableversion/regression.out
+  - PGPORT=5432 make installcheck || cat regression.diffs
 
 
 notifications:
