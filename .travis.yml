@@ -53,10 +53,20 @@ matrix:
         - POSTGRESQL=9.6
 
 
+before_install:
+  # These are needed to test debian package build
+  - sudo apt-get install debhelper
+
 script:
   - make
   - sudo make install
   - PGPORT=5432 make installcheck || cat regression.diffs
+  # debian packaging is only available for PostgreSQL 9.3,
+  # see https://github.com/linz/postgresql-tableversion/issues/27
+  #
+  # The -b switch is beacause only binary package works,
+  # See https://github.com/linz/postgresql-tableversion/issues/29
+  - if test $POSTGRESQL = 9.3; then dpkg-buildpackage -us -uc -b; fi
 
 
 notifications:
