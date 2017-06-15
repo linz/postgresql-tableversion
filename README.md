@@ -75,9 +75,9 @@ You need to run the test suite using a super user, such as the default
 Building Debian packaging
 --------------------------
 
-Build the debian packages using the following command:
+Build the Debian packages using the following command:
 
-    dpkg-buildpackage -us -uc
+    dpkg-buildpackage -us -uc -b
 
 Installing the extension
 ------------------------
