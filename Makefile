@@ -26,14 +26,14 @@ PG91         = $(shell $(PG_CONFIG) --version | grep -qE " 8\.| 9\.0" && echo no
 
 ifeq ($(PG91),yes)
 
-DATA_built = sql/$(EXTENSION)--$(EXTVERSION).sql $(META)
+DATA_built = $(EXTENSION)--$(EXTVERSION).sql $(META)
 	
 sql/$(EXTENSION).sql: $(SQLSCRIPTS) $(META)
 	echo '\echo Use "CREATE EXTENSION $(EXTENSION)" to load this file. \quit' > $@
 	cat $(SQLSCRIPTS) >> $@
 	echo "GRANT USAGE ON SCHEMA table_version TO public;" >> $@
 
-sql/$(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
+$(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
 	cp $< $@
 	
 $(META): $(META).in
