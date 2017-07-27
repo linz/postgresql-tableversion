@@ -55,7 +55,7 @@ matrix:
 
 before_install:
   # These are needed to test debian package build
-  - sudo apt-get install debhelper
+  - sudo apt-get install debhelper fakeroot
 
 script:
   - make
