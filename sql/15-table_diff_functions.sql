@@ -40,14 +40,8 @@ DECLARE
     v_common_cols   @extschema@.ATTRIBUTE[];
     v_unique_cols   @extschema@.ATTRIBUTE[];
     v_sql           TEXT;
-    v_table_cur1    REFCURSOR;
-    v_table_cur2    REFCURSOR;
-    v_table_record1 RECORD;
-    v_table_record2 RECORD;
-    v_i             INT8;
-    v_diff_count    INT8;
     v_error         TEXT;
-    v_return        RECORD;
+    v_geom_col      TEXT;
 BEGIN
     IF p_table1 = p_table2 THEN
         RETURN;
@@ -57,13 +51,13 @@ BEGIN
 
     IF NOT @extschema@.ver_table_key_is_valid(p_table1, p_compare_key) THEN
         RAISE EXCEPTION
-            '''%'' is not a unique non-compostite integer, bigint, text, or varchar column for %',
+            '''%'' is not a unique non-composite integer, bigint, text, or varchar column for %',
             p_compare_key, CAST(p_table1 AS TEXT);
     END IF;
 
     IF NOT @extschema@.ver_table_key_is_valid(p_table2, p_compare_key) THEN
         RAISE EXCEPTION
-            '''%'' is not a  unique non-compostite integer, bigint, text, or varchar column for %',
+            '''%'' is not a  unique non-composite integer, bigint, text, or varchar column for %',
             p_compare_key, CAST(p_table2 AS TEXT);
     END IF;
     
@@ -77,18 +71,15 @@ BEGIN
     INTO v_table_1_uniq;
 
     SELECT ARRAY(
-        SELECT ROW(ATT.att_name, ATT.att_type, ATT.att_not_null) 
+        SELECT ROW(ATT.att_name, ATT.att_type, ATT.att_not_null)
         FROM   unnest(v_table_1_cols) AS ATT 
         WHERE  ATT.att_name IN 
             (SELECT (unnest(v_table_2_cols)).att_name)
-        AND ATT.att_name NOT IN
-            (SELECT (unnest(v_table_1_uniq)).att_name)
-        AND ATT.att_name <> p_compare_key
     )
     INTO v_common_cols;
 
     SELECT ARRAY(
-        SELECT ROW(ATT.att_name, ATT.att_type, ATT.att_not_null) 
+        SELECT ROW(ATT.att_name, ATT.att_type, ATT.att_not_null)
         FROM   unnest(v_table_1_cols) AS ATT 
         WHERE  ATT.att_name IN 
             (SELECT (unnest(v_table_2_cols)).att_name)
@@ -98,70 +89,54 @@ BEGIN
     )
     INTO v_unique_cols;
     
-    SELECT @extschema@._ver_get_compare_select_sql(
-        p_table1, p_compare_key, v_common_cols, v_unique_cols
-    )
-    INTO v_sql;
-    OPEN v_table_cur1 NO SCROLL FOR EXECUTE v_sql;
+    v_sql := table_version.ver_ExpandTemplate( $sql$
+	SELECT
+	    CASE WHEN t2.%1% IS NULL THEN
+		    CAST('D' AS CHAR(1))
+	    WHEN t1.%1% IS NULL THEN
+		    CAST('I' AS CHAR(1))
+	    WHEN CAST(%2% AS TEXT) <> CAST(%2% AS TEXT) THEN
+		    CAST('X' AS CHAR(1))
+	    ELSE
+		    CAST('U' AS CHAR(1))
+	    END AS action,
+	    CASE WHEN t2.%1% IS NULL THEN
+		    t1.%1%
+	    ELSE
+		    t2.%1%
+	    END AS id
+	FROM
+	    (SELECT %3% FROM %4%) AS t1
+	    FULL OUTER JOIN
+	    (SELECT %3% FROM %5%) AS t2
+	    ON t2.%1% = t1.%1%
+	WHERE
+	    t1.%1% IS NULL OR
+	    t2.%1% IS NULL OR
+	    CAST(%2% AS TEXT) <> CAST(%2% AS TEXT) OR
+	    NOT COALESCE(t1.* = t2.*, FALSE)
+        $sql$,
+        ARRAY[
+            quote_ident(p_compare_key),
+            @extschema@._ver_get_compare_sql(v_unique_cols,'T'),
+            (SELECT array_to_string(array_agg(att_name), ',') att_name FROM unnest(v_common_cols)),
+            p_table1::TEXT,
+            p_table2::TEXT
+        ]
+    );
     
-    SELECT @extschema@._ver_get_compare_select_sql(
-        p_table2, p_compare_key, v_common_cols, v_unique_cols
-    )
-    INTO v_sql;
-    OPEN v_table_cur2 NO SCROLL FOR EXECUTE v_sql;
-    v_sql := '';
-    
-    FETCH FIRST FROM v_table_cur1 INTO v_table_record1;
-    FETCH FIRST FROM v_table_cur2 INTO v_table_record2;
-    
-    v_i := 0;
-    v_diff_count := 0;
-    WHILE v_table_record1 IS NOT NULL AND v_table_record2 IS NOT NULL LOOP
-        IF v_table_record1.id < v_table_record2.id THEN
-            SELECT 'D'::CHAR(1) AS action, v_table_record1.id INTO v_return;
-            v_diff_count := v_diff_count + 1;
-            RETURN NEXT v_return;
-            FETCH NEXT FROM v_table_cur1 INTO v_table_record1;
-            CONTINUE;
-        ELSIF v_table_record2.id < v_table_record1.id THEN
-            SELECT 'I'::CHAR(1) AS action, v_table_record2.id INTO v_return;
-            v_diff_count := v_diff_count + 1;
-            RETURN NEXT v_return;
-            FETCH NEXT FROM v_table_cur2 INTO v_table_record2;
-            CONTINUE;
-        ELSIF v_table_record1.check_uniq <> v_table_record2.check_uniq THEN
-            SELECT 'X'::CHAR(1) AS action, v_table_record1.id INTO v_return;
-            v_diff_count := v_diff_count + 1;
-            RETURN NEXT v_return;
-        ELSIF v_table_record1.check_sum <> v_table_record2.check_sum THEN
-            SELECT 'U'::CHAR(1) AS action, v_table_record1.id INTO v_return;
-            v_diff_count := v_diff_count + 1;
-            RETURN NEXT v_return;
-        END IF;
-        FETCH NEXT FROM v_table_cur1 INTO v_table_record1;
-        FETCH NEXT FROM v_table_cur2 INTO v_table_record2;
-        v_i := v_i + 1;
-        IF (v_i % 100000 = 0) THEN
-            RAISE DEBUG 'Compared % records, % differences', v_i, v_diff_count;
-        END IF;
+    FOR v_geom_col IN
+        SELECT att_name
+        FROM   unnest(v_common_cols)
+        WHERE  att_type LIKE 'geometry%'
+    LOOP
+        -- binary compare of PostGIS geometry including SRID (faster than text compare)
+        v_sql := v_sql || ' OR ST_AsEWKB(t1.' || v_geom_col || ') <> ST_AsEWKB(t2.' || v_geom_col || ')';
     END LOOP;
 
-    WHILE v_table_record1 IS NOT NULL LOOP
-        SELECT 'D'::CHAR(1) AS action, v_table_record1.id INTO v_return;
-        RETURN NEXT v_return;
-        FETCH NEXT FROM v_table_cur1 INTO v_table_record1;
-    END LOOP;
-    
-    WHILE v_table_record2 IS NOT NULL LOOP
-        SELECT 'I'::CHAR(1) AS action, v_table_record2.id INTO v_return;
-        RETURN NEXT v_return;
-        FETCH NEXT FROM v_table_cur2 INTO v_table_record2;
-    END LOOP;
-    
-    CLOSE v_table_cur1;
-    CLOSE v_table_cur2;
-    
-    RETURN;
+    RAISE DEBUG 'diff sql = %', v_sql;
+
+    RETURN QUERY EXECUTE v_sql;
 EXCEPTION
     WHEN others THEN
         GET STACKED DIAGNOSTICS v_error = PG_EXCEPTION_CONTEXT;
@@ -398,34 +373,6 @@ END;
 $$
 LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION _ver_get_compare_select_sql(
-    p_table       REGCLASS,
-    p_key_column  NAME,
-    p_columns     @extschema@.ATTRIBUTE[],
-    p_unique_cols @extschema@.ATTRIBUTE[]
-)
-RETURNS TEXT AS 
-$$
-BEGIN
-    RETURN @extschema@.ver_ExpandTemplate( $sql$
-        SELECT 
-           %1% AS ID,
-           CAST(%2% AS TEXT) AS check_sum,
-           CAST(%3% AS TEXT) AS check_uniq
-        FROM 
-           %4% AS T
-        ORDER BY
-           %1% ASC
-        $sql$,
-        ARRAY[
-            quote_ident(p_key_column),
-            @extschema@._ver_get_compare_sql(p_columns,'T'),
-            @extschema@._ver_get_compare_sql(p_unique_cols,'T'),
-            p_table::text
-            ]);
-END;
-$$ LANGUAGE plpgsql;
-
 CREATE OR REPLACE FUNCTION _ver_get_compare_sql(
     p_columns     @extschema@.ATTRIBUTE[],
     p_table_alias TEXT
@@ -542,4 +489,3 @@ $$
         NOT ATT.attisdropped AND
         ATT.attrelid = p_table;
 $$ LANGUAGE sql;
-
