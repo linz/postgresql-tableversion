@@ -1,6 +1,7 @@
 # PGXS Output #
 ###############
 table_version.control
+META.json
 results/
 *.so
 tmp/
