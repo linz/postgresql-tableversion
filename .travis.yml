@@ -60,7 +60,7 @@ before_install:
 script:
   - make
   - sudo make install
-  - PGPORT=5432 make installcheck || cat regression.diffs
+  - PGPORT=5432 make installcheck || { cat regression.diffs; false; }
   # debian packaging is only available for PostgreSQL 9.3,
   # see https://github.com/linz/postgresql-tableversion/issues/27
   #
