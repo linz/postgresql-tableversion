@@ -119,7 +119,8 @@ BEGIN
         ARRAY[
             quote_ident(p_compare_key),
             @extschema@._ver_get_compare_sql(v_unique_cols,'T'),
-            (SELECT array_to_string(array_agg(att_name), ',') att_name FROM unnest(v_common_cols)),
+            (SELECT array_to_string(array_agg(quote_ident(att_name)), ',')
+              att_name FROM unnest(v_common_cols)),
             p_table1::TEXT,
             p_table2::TEXT
         ]
