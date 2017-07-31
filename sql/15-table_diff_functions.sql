@@ -95,7 +95,7 @@ BEGIN
 		    CAST('D' AS CHAR(1))
 	    WHEN t1.%1% IS NULL THEN
 		    CAST('I' AS CHAR(1))
-	    WHEN CAST(%2% AS TEXT) <> CAST(%2% AS TEXT) THEN
+	    WHEN CAST(%2% AS TEXT) <> CAST(%3% AS TEXT) THEN
 		    CAST('X' AS CHAR(1))
 	    ELSE
 		    CAST('U' AS CHAR(1))
@@ -106,19 +106,20 @@ BEGIN
 		    t2.%1%
 	    END AS id
 	FROM
-	    (SELECT %3% FROM %4%) AS t1
+	    (SELECT %4% FROM %5%) AS t1
 	    FULL OUTER JOIN
-	    (SELECT %3% FROM %5%) AS t2
+	    (SELECT %4% FROM %6%) AS t2
 	    ON t2.%1% = t1.%1%
 	WHERE
 	    t1.%1% IS NULL OR
 	    t2.%1% IS NULL OR
-	    CAST(%2% AS TEXT) <> CAST(%2% AS TEXT) OR
+	    CAST(%2% AS TEXT) <> CAST(%3% AS TEXT) OR
 	    NOT COALESCE(t1.* = t2.*, FALSE)
         $sql$,
         ARRAY[
             quote_ident(p_compare_key),
-            @extschema@._ver_get_compare_sql(v_unique_cols,'T'),
+            @extschema@._ver_get_compare_sql(v_unique_cols,'t1'),
+            @extschema@._ver_get_compare_sql(v_unique_cols,'t2'),
             (SELECT array_to_string(array_agg(quote_ident(att_name)), ',')
               att_name FROM unnest(v_common_cols)),
             p_table1::TEXT,
