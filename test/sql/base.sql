@@ -25,7 +25,7 @@ BEGIN;
 CREATE EXTENSION table_version;
 CREATE EXTENSION pgtap;
 
-SELECT plan(75);
+SELECT plan(76);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -371,6 +371,19 @@ AS (action CHAR(1), ID INTEGER)$$,
              ('D'::CHAR, 3),
              ('I'::CHAR, 4)$$,
     'Diff function between fOo.Bar3 and foO.bAr4'
+);
+
+ALTER TABLE "fOo"."Bar3" ADD u numeric unique;
+ALTER TABLE "foO"."bAr4" ADD u numeric unique;
+
+SELECT results_eq(
+    $$SELECT * FROM
+table_version.ver_get_table_differences('"fOo"."Bar3"', '"foO"."bAr4"', 'order')
+AS (action CHAR(1), ID INTEGER)$$,
+    $$VALUES ('U'::CHAR, 2),
+             ('D'::CHAR, 3),
+             ('I'::CHAR, 4)$$,
+    'Diff function between fOo.Bar3 and foO.bAr4 (with unique column)'
 );
 
 DROP SCHEMA "fOo" CASCADE;
