@@ -25,7 +25,7 @@ BEGIN;
 CREATE EXTENSION table_version;
 CREATE EXTENSION pgtap;
 
-SELECT plan(74);
+SELECT plan(75);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -344,6 +344,37 @@ DROP TABLE foo.bar2;
 DROP TABLE foo.bar3;
 DROP TABLE foo.bar4;
 DROP TABLE foo.bar5;
+
+-- See
+-- https://github.com/linz/postgresql-tableversion/pull/32#issuecomment-319019821
+
+CREATE SCHEMA "fOo";
+CREATE SCHEMA "foO";
+
+CREATE TABLE "fOo"."Bar3"("order","B") AS VALUES
+(1, 'foo bar 1'),
+(2, 'foo bar 2'),
+(3, 'foo bar 3');
+ALTER TABLE "fOo"."Bar3" ADD PRIMARY KEY("order");
+
+CREATE TABLE "foO"."bAr4" ("order", "B") AS VALUES
+(1, 'foo bar 1'),
+(2, 'foo bar 2a'),
+(4, 'foo bar 4');
+ALTER TABLE "foO"."bAr4" ADD PRIMARY KEY("order");
+
+SELECT results_eq(
+    $$SELECT * FROM
+table_version.ver_get_table_differences('"fOo"."Bar3"', '"foO"."bAr4"', 'order')
+AS (action CHAR(1), ID INTEGER)$$,
+    $$VALUES ('U'::CHAR, 2),
+             ('D'::CHAR, 3),
+             ('I'::CHAR, 4)$$,
+    'Diff function between fOo.Bar3 and foO.bAr4'
+);
+
+DROP SCHEMA "fOo" CASCADE;
+DROP SCHEMA "foO" CASCADE;
 
 SELECT * FROM finish();
 
