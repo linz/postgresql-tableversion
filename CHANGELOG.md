@@ -3,9 +3,13 @@
 All notable changes for the PostgreSQL table version extension are documented 
 in this file.
 
+## [1.3.0] - YYYY-MM-DD
+### Added
+- `ver_version` function
+
 ## [1.2.0] - 2016-09-13
 ### Added
-- Added support for table_drop_column function
+- Added support for `table_drop_column` function
 
 ### Fixed
 - Revsioning a table with only a primary key column causes an error. Issue #7

@@ -26,7 +26,7 @@ BEGIN;
 
 CREATE EXTENSION pgtap;
 
-SELECT plan(76);
+SELECT plan(77);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -389,6 +389,8 @@ AS (action CHAR(1), ID INTEGER)$$,
 
 DROP SCHEMA "fOo" CASCADE;
 DROP SCHEMA "foO" CASCADE;
+
+SELECT has_function( 'table_version', 'ver_version'::name );
 
 SELECT * FROM finish();
 

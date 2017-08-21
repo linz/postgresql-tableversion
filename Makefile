@@ -1,4 +1,5 @@
 EXTVERSION   = 1.3.0dev
+REVISION=$(shell test -d .git && which git > /dev/null && git describe --always)
 
 META         = META.json
 EXTENSION    = $(shell grep -m 1 '"name":' $(META).in | sed -e 's/[[:space:]]*"name":[[:space:]]*"\([^"]*\)",/\1/')
@@ -7,6 +8,10 @@ TGT_VERSION=$(subst dev,,$(EXTVERSION))
 PREV_VERSION=$(shell ls sql/table_version--*--*.sql | sed 's/.*$(EXTENSION)--.*--//;s/\.sql//' | grep -Fv $(TGT_VERSION) | sort -n | tail -1)
 
 SED = sed
+
+SQLSCRIPTS_built = \
+    sql/20-version.sql \
+    $(END)
 
 SQLSCRIPTS = \
     sql/[0-9][0-9]-*.sql \
@@ -30,13 +35,13 @@ PG91         = $(shell $(PG_CONFIG) --version | grep -qE " 8\.| 9\.0" && echo no
 
 ifeq ($(PG91),yes)
 
-DATA_built = $(EXTENSION)--$(EXTVERSION).sql $(META)
+DATA_built = $(EXTENSION)--$(EXTVERSION).sql $(META) $(SQLSCRIPTS_built)
 
 ifeq ($(findstring dev,$(EXTVERSION)),dev)
   DATA_built += $(EXTENSION)--$(PREV_VERSION)--$(EXTVERSION).sql
 endif
 
-sql/$(EXTENSION).sql: $(SQLSCRIPTS) $(META)
+sql/$(EXTENSION).sql: $(SQLSCRIPTS) $(META) $(SQLSCRIPTS_built)
 	echo '\echo Use "CREATE EXTENSION $(EXTENSION)" to load this file. \quit' > $@
 	cat $(SQLSCRIPTS) >> $@
 	echo "GRANT USAGE ON SCHEMA table_version TO public;" >> $@
@@ -50,6 +55,9 @@ $(EXTENSION)--$(PREV_VERSION)--$(EXTVERSION).sql:
 	if test -f "$$WIP_UPGRADE_FILE"; then \
     cat $$WIP_UPGRADE_FILE >> $@; \
   fi
+
+%.sql: %.sql.in
+	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/;s/@@REVISION@@/$(REVISION)/' $< > $@
 	
 $(META): $(META).in
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
