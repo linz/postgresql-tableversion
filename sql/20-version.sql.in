@@ -1,0 +1,4 @@
+
+CREATE OR REPLACE FUNCTION ver_version()
+RETURNS TEXT AS $$ SELECT '@@VERSION@@ @@REVISION@@'::text $$ LANGUAGE sql;
+
