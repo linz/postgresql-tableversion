@@ -9,18 +9,23 @@ cd `dirname $0`/../../
 VER="1.1.0 1.1.1 1.1.2 1.1.3 1.2.0";
 
 # Install all older versions
+git fetch --unshallow --tags # to get all commits/tags
 git clone . older-versions
 cd older-versions
 for v in $VER; do
+  echo "-------------------------------------"
   echo "Installing version $v"
-  git checkout $v && git clean -dxf && sudo make install
+  echo "-------------------------------------"
+  git checkout $v && git clean -dxf && sudo make install || exit 1
 done;
 cd ..
 rm -rf older-versions;
 
 # Test upgrade from all older versions
 for v in $VER; do
+  echo "-------------------------------------"
   echo "Checking upgrade from version $v"
+  echo "-------------------------------------"
   make installcheck-upgrade PREPAREDB_UPGRADE_FROM=$v || { cat regression.diffs; exit 1; }
 done
 
