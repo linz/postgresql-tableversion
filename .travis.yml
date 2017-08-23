@@ -67,6 +67,17 @@ script:
   # The -b switch is beacause only binary package works,
   # See https://github.com/linz/postgresql-tableversion/issues/29
   - if test $POSTGRESQL = 9.3; then dpkg-buildpackage -us -uc -b; fi
+  #
+  # Now test upgrades from all tagged versions
+  #
+  # NOTE: tag 1.0.1 does not build, so we skip that
+  #
+  - VER="1.1.0 1.1.1 1.1.2 1.1.3 1.2.0"; \
+    for v in $VER; do \
+      echo "Checking upgrade from version $v"; \
+      git checkout $v && make clean all && sudo make install; \
+      make installcheck-upgrade PREPAREDB_UPGRADE_FROM=$v; \
+    done;
 
 
 notifications:
