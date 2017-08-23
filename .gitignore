@@ -8,7 +8,6 @@ tmp/
 *.o
 regression.diffs
 regression.out
-/sql/table_version--*
 
 # Editor Backup #
 #################
