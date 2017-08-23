@@ -1,7 +1,10 @@
-EXTVERSION   = dev
+EXTVERSION   = 1.3.0dev
 
 META         = META.json
 EXTENSION    = $(shell grep -m 1 '"name":' $(META).in | sed -e 's/[[:space:]]*"name":[[:space:]]*"\([^"]*\)",/\1/')
+
+TGT_VERSION=$(subst dev,,$(EXTVERSION))
+PREV_VERSION=$(shell ls sql/table_version--*--*.sql | sed 's/.*$(EXTENSION)--.*--//;s/\.sql//' | grep -Fv $(TGT_VERSION) | sort -n | tail -1)
 
 SED = sed
 
@@ -28,7 +31,11 @@ PG91         = $(shell $(PG_CONFIG) --version | grep -qE " 8\.| 9\.0" && echo no
 ifeq ($(PG91),yes)
 
 DATA_built = $(EXTENSION)--$(EXTVERSION).sql $(META)
-	
+
+ifeq ($(findstring dev,$(EXTVERSION)),dev)
+  DATA_built += $(EXTENSION)--$(PREV_VERSION)--$(EXTVERSION).sql
+endif
+
 sql/$(EXTENSION).sql: $(SQLSCRIPTS) $(META)
 	echo '\echo Use "CREATE EXTENSION $(EXTENSION)" to load this file. \quit' > $@
 	cat $(SQLSCRIPTS) >> $@
@@ -36,6 +43,13 @@ sql/$(EXTENSION).sql: $(SQLSCRIPTS) $(META)
 
 $(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
 	cp $< $@
+
+$(EXTENSION)--$(PREV_VERSION)--$(EXTVERSION).sql:
+	echo "-- Fake upgrade for dev version" > $@
+	WIP_UPGRADE_FILE=sql/$(EXTENSION)--$(PREV_VERSION)--$(TGT_VERSION).sql; \
+	if test -f "$$WIP_UPGRADE_FILE"; then \
+    cat $$WIP_UPGRADE_FILE >> $@; \
+  fi
 	
 $(META): $(META).in
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
@@ -73,6 +87,8 @@ test/sql/preparedb: test/sql/preparedb.in
 
 installcheck-upgrade:
 	PREPAREDB_UPGRADE=1 make installcheck
+
+
 
 #
 # pgtap
