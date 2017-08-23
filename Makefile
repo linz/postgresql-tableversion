@@ -13,6 +13,7 @@ DOCS         = $(wildcard doc/*.md)
 TESTS        = $(wildcard test/sql/*.sql)
 REGRESS      = $(patsubst test/sql/%.sql,%,$(TESTS))
 REGRESS_OPTS = --inputdir=test --load-language=plpgsql
+REGRESS_PREP = testdeps
 
 #
 # Uncomment the MODULES line if you are adding C files
@@ -50,12 +51,28 @@ EXTRA_CLEAN = \
     $(META)
 endif
 
-# Hook for test to ensure dependencies in control file are set correctly
-testdeps: check_control
-
 .PHONY: check_control
 check_control:
 	grep -q "pgTAP" $(META)
+
+# This is phony because it depends on env variables
+.PHONY: test/sql/preparedb
+test/sql/preparedb: test/sql/preparedb.in
+	cat $< | \
+	  if test "${PREPAREDB_UPGRADE}" = 1; then \
+      if test -n "${PREPAREDB_UPGRADE_FROM}"; then \
+        UPGRADE_FROM="version '${PREPAREDB_UPGRADE_FROM}'"; \
+      else \
+        UPGRADE_FROM=""; \
+      fi; \
+      sed "s/^--UPGRADE-- //;s/@@FROM_VERSION@@/$$UPGRADE_FROM/"; \
+    else \
+      cat; \
+    fi | \
+	  $(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' > $@
+
+installcheck-upgrade:
+	PREPAREDB_UPGRADE=1 make installcheck
 
 #
 # pgtap
@@ -68,9 +85,10 @@ $(EXTNDIR)/extension/pgtap.control:
 
 #
 # testdeps
+# Hook for test to ensure dependencies in control file are set correctly
 #
 .PHONY: testdeps
-testdeps: pgtap
+testdeps: pgtap test/sql/preparedb
 
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
