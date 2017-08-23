@@ -68,7 +68,7 @@ script:
   # See https://github.com/linz/postgresql-tableversion/issues/29
   - if test $POSTGRESQL = 9.3; then dpkg-buildpackage -us -uc -b; fi
   # Now test upgrades from all tagged versions
-  - test/ci/test_all_upgrades.sh
+  - PGPORT=5432 test/ci/test_all_upgrades.sh
 
 
 notifications:

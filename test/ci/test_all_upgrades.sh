@@ -21,6 +21,6 @@ rm -rf older-versions;
 # Test upgrade from all older versions
 for v in $VER; do
   echo "Checking upgrade from version $v"
-  make installcheck-upgrade PREPAREDB_UPGRADE_FROM=$v
+  make installcheck-upgrade PREPAREDB_UPGRADE_FROM=$v || { cat regression.diffs; exit 1; }
 done
 
