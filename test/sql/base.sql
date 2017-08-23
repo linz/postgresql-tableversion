@@ -22,7 +22,8 @@ SET client_min_messages TO WARNING;
 
 BEGIN;
 
-CREATE EXTENSION table_version;
+\i test/sql/preparedb
+
 CREATE EXTENSION pgtap;
 
 SELECT plan(76);
