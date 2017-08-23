@@ -83,7 +83,7 @@ test/sql/preparedb: test/sql/preparedb.in
     else \
       cat; \
     fi | \
-	  $(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' > $@
+	  $(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' -e 's/@@FROM_VERSION@@//' > $@
 
 installcheck-upgrade:
 	PREPAREDB_UPGRADE=1 make installcheck
