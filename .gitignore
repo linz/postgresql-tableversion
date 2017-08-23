@@ -8,6 +8,7 @@ tmp/
 *.o
 regression.diffs
 regression.out
+test/sql/preparedb
 
 # Editor Backup #
 #################
