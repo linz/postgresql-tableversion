@@ -79,7 +79,7 @@ test/sql/preparedb: test/sql/preparedb.in
       else \
         UPGRADE_FROM=""; \
       fi; \
-      sed "s/^--UPGRADE-- //;s/@@FROM_VERSION@@/$$UPGRADE_FROM/"; \
+      $(SED) -e 's/^--UPGRADE-- //' -e "s/@@FROM_VERSION@@/$$UPGRADE_FROM/"; \
     else \
       cat; \
     fi | \
