@@ -190,7 +190,7 @@ BEGIN
     SELECT * FROM @extschema@._ver_apply_changes(
         p_original_table, p_new_table, 'table_diff', p_key_column
     )
-    INTO number_deletes, number_inserts, number_updates;
+    INTO number_inserts, number_deletes, number_updates;
 
     DROP TABLE table_diff;
     
