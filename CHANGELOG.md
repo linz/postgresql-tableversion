@@ -8,6 +8,7 @@ in this file.
 - `ver_version` function
 ### Changed
 - Upgrade scripts are now generated (#35)
+- Performance of `ver_get_table_differences` improved (#15)
 
 
 ## [1.2.0] - 2016-09-13
