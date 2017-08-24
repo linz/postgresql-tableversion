@@ -6,6 +6,9 @@ in this file.
 ## [1.3.0] - YYYY-MM-DD
 ### Added
 - `ver_version` function
+### Changed
+- Upgrade scripts are now generated (#35)
+
 
 ## [1.2.0] - 2016-09-13
 ### Added
