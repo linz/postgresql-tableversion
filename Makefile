@@ -13,6 +13,7 @@ UPGRADEABLE_VERSIONS = 1.2.0
 
 SQLSCRIPTS_built = \
     sql/20-version.sql \
+    test/sql/version.sql \
     $(END)
 
 SQLSCRIPTS = \

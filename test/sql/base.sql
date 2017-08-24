@@ -12,19 +12,11 @@
 --------------------------------------------------------------------------------
 -- Provide unit testing for table versioning system using pgTAP
 --------------------------------------------------------------------------------
+
 \set ECHO none
-\set QUIET true
-\set VERBOSITY verbose
-\pset format unaligned
-\pset tuples_only true
-
-SET client_min_messages TO WARNING;
-
-BEGIN;
-
 \i test/sql/preparedb
 
-CREATE EXTENSION pgtap;
+BEGIN;
 
 SELECT plan(77);
 
