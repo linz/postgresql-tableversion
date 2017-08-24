@@ -9,6 +9,8 @@ PREV_VERSION=$(shell ls sql/table_version--*--*.sql | sed 's/.*$(EXTENSION)--.*-
 
 SED = sed
 
+UPGRADEABLE_VERSIONS = 1.2.0
+
 SQLSCRIPTS_built = \
     sql/20-version.sql \
     $(END)
@@ -37,10 +39,6 @@ ifeq ($(PG91),yes)
 
 DATA_built = $(EXTENSION)--$(EXTVERSION).sql $(META) $(SQLSCRIPTS_built)
 
-ifeq ($(findstring dev,$(EXTVERSION)),dev)
-  DATA_built += $(EXTENSION)--$(PREV_VERSION)--$(EXTVERSION).sql
-endif
-
 sql/$(EXTENSION).sql: $(SQLSCRIPTS) $(META) $(SQLSCRIPTS_built)
 	echo '\echo Use "CREATE EXTENSION $(EXTENSION)" to load this file. \quit' > $@
 	cat $(SQLSCRIPTS) >> $@
@@ -48,13 +46,6 @@ sql/$(EXTENSION).sql: $(SQLSCRIPTS) $(META) $(SQLSCRIPTS_built)
 
 $(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
 	cp $< $@
-
-$(EXTENSION)--$(PREV_VERSION)--$(EXTVERSION).sql:
-	echo "-- Fake upgrade for dev version" > $@
-	WIP_UPGRADE_FILE=sql/$(EXTENSION)--$(PREV_VERSION)--$(TGT_VERSION).sql; \
-	if test -f "$$WIP_UPGRADE_FILE"; then \
-    cat $$WIP_UPGRADE_FILE >> $@; \
-  fi
 
 %.sql: %.sql.in
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/;s/@@REVISION@@/$(REVISION)/' $< > $@
@@ -65,7 +56,7 @@ $(META): $(META).in
 $(EXTENSION).control: $(EXTENSION).control.in
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
 	
-DATA = $(wildcard sql/*--*.sql)
+DATA = $(wildcard sql/*--*.sql) $(wildcard upgrade-scripts/*--*.sql)
 EXTRA_CLEAN = \
     sql/$(EXTENSION)--$(EXTVERSION).sql \
     sql/$(EXTENSION).sql \
@@ -96,6 +87,14 @@ test/sql/preparedb: test/sql/preparedb.in
 installcheck-upgrade:
 	PREPAREDB_UPGRADE=1 make installcheck
 
+.PHONY: upgrade-scripts
+upgrade-scripts: $(EXTENSION)--$(EXTVERSION).sql
+	mkdir -p upgrade-scripts
+	for OLD_VERSION in $(UPGRADEABLE_VERSIONS); do \
+		cat $< > upgrade-scripts/$(EXTENSION)--$$OLD_VERSION--$(EXTVERSION).sql; \
+	done
+
+all: upgrade-scripts
 
 
 #

@@ -11,11 +11,20 @@
 --
 --------------------------------------------------------------------------------
 
-CREATE TYPE ATTRIBUTE AS (
-    att_name NAME,
-    att_type NAME,
-    att_not_null BOOLEAN
-);
+DO $$ BEGIN IF NOT EXISTS (
+  SELECT t.oid
+  FROM pg_type t, pg_namespace n
+  WHERE n.oid = t.typnamespace
+    AND n.nspname = '@extschema@'
+    AND t.typname = 'attribute'
+) THEN
+  CREATE TYPE ATTRIBUTE AS (
+      att_name NAME,
+      att_type NAME,
+      att_not_null BOOLEAN
+  );
+END IF;
+END; $$;
 
 CREATE OR REPLACE FUNCTION ver_get_table_differences(
     p_table1      REGCLASS,
