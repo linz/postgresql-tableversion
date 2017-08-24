@@ -11,7 +11,7 @@
 --
 --------------------------------------------------------------------------------
 
-CREATE TABLE revision (
+CREATE TABLE IF NOT EXISTS revision (
     id SERIAL NOT NULL PRIMARY KEY,
     revision_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     start_time TIMESTAMP NOT NULL DEFAULT clock_timestamp(),
@@ -37,7 +37,7 @@ $$;
 
 SELECT pg_catalog.pg_extension_config_dump('revision', '');
 
-CREATE TABLE versioned_tables (	
+CREATE TABLE IF NOT EXISTS versioned_tables (	
     id SERIAL NOT NULL PRIMARY KEY,
     schema_name NAME NOT NULL,
     table_name NAME NOT NULL,
@@ -59,7 +59,7 @@ $$;
 
 SELECT pg_catalog.pg_extension_config_dump('versioned_tables', '');
 
-CREATE TABLE tables_changed (
+CREATE TABLE IF NOT EXISTS tables_changed (
     revision INTEGER NOT NULL REFERENCES revision,
     table_id INTEGER NOT NULL REFERENCES versioned_tables,
     PRIMARY KEY (revision, table_id)
