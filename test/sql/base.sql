@@ -296,13 +296,14 @@ INSERT INTO foo.bar4 (id, d1) VALUES
 (6, 'foo bar 6');
 
 SELECT results_eq(
-    $$SELECT * FROM table_version.ver_get_table_differences('foo.bar3', 'foo.bar4', 'id') AS (action CHAR(1), ID INTEGER)$$,
+    $$SELECT * FROM
+table_version.ver_get_table_differences('foo.bar3', 'foo.bar4', 'id') AS (action CHAR(1), ID INTEGER) ORDER BY 2$$,
     $$VALUES ('U'::CHAR, 1),
              ('U'::CHAR, 2),
              ('D'::CHAR, 3),
-             ('I'::CHAR, 6),
+             ('I'::CHAR, 4),
              ('I'::CHAR, 5),
-             ('I'::CHAR, 4)$$,
+             ('I'::CHAR, 6)$$,
     'Diff function between foo3 and foo4'
 );
 
