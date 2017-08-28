@@ -1,12 +1,13 @@
 
+-- {
 CREATE OR REPLACE FUNCTION ver_enable_versioning(
-    p_schema NAME,
-    p_table  NAME
+    v_table_oid       REGCLASS
 ) 
 RETURNS BOOLEAN AS
 $$
 DECLARE
-    v_table_oid       REGCLASS;
+    p_schema          NAME;
+    p_table           NAME;
     v_key_col         NAME;
     v_revision_table  TEXT;
     v_sql             TEXT;
@@ -17,21 +18,16 @@ DECLARE
     v_role            TEXT;
     v_privilege       TEXT;
 BEGIN
-    IF NOT EXISTS (SELECT * FROM pg_tables WHERE tablename = p_table AND schemaname = p_schema) THEN
-        RAISE EXCEPTION 'Table %.% does not exists', quote_ident(p_schema), quote_ident(p_table);
-    END IF;
-
     SELECT
-        CLS.oid
+      n.nspname, c.relname
     INTO
-        v_table_oid
+      p_schema, p_table
     FROM
-        pg_namespace NSP,
-        pg_class CLS
+      pg_namespace n, pg_class c
     WHERE
-        NSP.nspname = p_schema AND
-        CLS.relname = p_table AND
-        NSP.oid     = CLS.relnamespace;
+      c.oid = v_table_oid
+    AND
+      n.oid = c.relnamespace;
 
     SELECT
         ATT.attname as col
@@ -55,11 +51,11 @@ BEGIN
     LIMIT 1;
 
     IF v_key_col IS NULL THEN
-        RAISE EXCEPTION 'Table %.% does not have a unique non-compostite integer, bigint, text, or varchar column', quote_ident(p_schema), quote_ident(p_table);
+        RAISE EXCEPTION 'Table % does not have a unique non-compostite integer, bigint, text, or varchar column', v_table_oid::text;
     END IF;
 
     IF (SELECT count(*) <= 1 FROM information_schema.columns WHERE table_name= p_table AND table_schema = p_schema) THEN
-        RAISE EXCEPTION 'Table %.% must contain at least one other non key column', quote_ident(p_schema), quote_ident(p_table);
+        RAISE EXCEPTION 'Table % must contain at least one other non key column', v_table_oid::text;
     END IF;
 
     v_revision_table := @extschema@.ver_get_version_table_full(p_schema, p_table);
@@ -68,7 +64,7 @@ BEGIN
     'CREATE TABLE ' || v_revision_table || '(' ||
         '_revision_created INTEGER NOT NULL,' ||
         '_revision_expired INTEGER,' ||
-        'LIKE ' || quote_ident(p_schema) || '.' || quote_ident(p_table) ||
+        'LIKE ' || v_table_oid::text ||
     ');';
     BEGIN
       EXECUTE v_sql;
@@ -247,4 +243,9 @@ BEGIN
     RETURN TRUE;
 END;
 $$ LANGUAGE plpgsql;
+--}
 
+CREATE OR REPLACE FUNCTION ver_enable_versioning(p_schema NAME, p_table  NAME)
+RETURNS BOOLEAN AS $$
+  SELECT @extschema@.ver_enable_versioning(( p_schema || '.' || p_table)::regclass);
+$$ LANGUAGE sql;
