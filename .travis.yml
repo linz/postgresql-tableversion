@@ -61,14 +61,12 @@ script:
   - make
   - sudo make install
   - PGPORT=5432 make installcheck || { cat regression.diffs; false; }
-  # debian packaging is only available for PostgreSQL 9.3,
-  # see https://github.com/linz/postgresql-tableversion/issues/27
-  #
+  # Test upgrades from all tagged versions
+  - PGPORT=5432 test/ci/test_all_upgrades.sh
   # The -b switch is beacause only binary package works,
   # See https://github.com/linz/postgresql-tableversion/issues/29
-  - if test $POSTGRESQL = 9.3; then dpkg-buildpackage -us -uc -b; fi
-  # Now test upgrades from all tagged versions
-  - PGPORT=5432 test/ci/test_all_upgrades.sh
+  - dpkg-buildpackage -us -uc -b
+  - sudo dpkg -i ../postgresql-${POSTGRESQL}-tableversion_*.deb
 
 
 notifications:
