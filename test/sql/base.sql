@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(93);
+SELECT plan(94);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -446,9 +446,13 @@ SELECT throws_like(
   'Table % is already versioned',
   'ver_enable_versioning throws when called on already-versioned table');
 
-----
+-- New in 1.3
 
 SELECT has_function( 'table_version', 'ver_version'::name );
+
+-- New in 1.4
+
+SELECT has_function( 'table_version', 'ver_enable_versioning', ARRAY['regclass'] );
 
 SELECT * FROM finish();
 

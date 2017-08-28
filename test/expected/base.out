@@ -1,5 +1,5 @@
 \set ECHO none
-1..93
+1..94
 ok 1 - Schema table_version should exist
 ok 2 - Should have revision table
 ok 3 - Should have tables_changed table
@@ -99,3 +99,4 @@ ok 90 - foo.dropme is returned by ver_get_versioned_tables after re-create and v
 ok 91 - foo.dropme versioned table key is "id" after re-create and ver_enable_versioning
 ok 92 - ver_enable_versioning throws when called on already-versioned table
 ok 93 - Function table_version.ver_version() should exist
+ok 94 - Function table_version.ver_enable_versioning(regclass) should exist

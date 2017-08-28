@@ -9,6 +9,8 @@ in this file.
 - Working upgrade path from unpackaged (#62)
 ### Changed
 - Dropping and recreating versioned tables is now recoverable (#57)
+### Added
+- A version of `ver_enable_versioning` taking a regclass parameter (#13)
 
 ## [1.3.0] - 2017-08-30
 ### Added
