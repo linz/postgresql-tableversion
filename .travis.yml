@@ -61,6 +61,7 @@ script:
   # The -b switch is beacause only binary package works,
   # See https://github.com/linz/postgresql-tableversion/issues/29
   - dpkg-buildpackage -us -uc -b
+  # Test install from package
   - sudo env "PATH=$PATH" dpkg -i ../postgresql-${POSTGRESQL}-tableversion_*.deb
 
 
