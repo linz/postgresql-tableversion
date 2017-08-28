@@ -9,6 +9,8 @@ in this file.
 ### Changed
 - Upgrade scripts are now generated (#35)
 - Performance of `ver_get_table_differences` improved (#15)
+### Fixed
+- Swapped insert/delete count from `ver_apply_table_differences` (#39)
 
 
 ## [1.2.0] - 2016-09-13
