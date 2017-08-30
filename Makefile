@@ -9,7 +9,7 @@ PREV_VERSION=$(shell ls sql/table_version--*--*.sql | sed 's/.*$(EXTENSION)--.*-
 
 SED = sed
 
-UPGRADEABLE_VERSIONS = 1.2.0
+UPGRADEABLE_VERSIONS = 1.2.0 1.3.0dev
 
 SQLSCRIPTS_built = \
     sql/20-version.sql \
