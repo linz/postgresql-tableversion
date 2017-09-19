@@ -4,7 +4,7 @@ Priority: extra
 Build-Depends: debhelper (>= 7),
                postgresql-server-dev-all
 Standards-Version: 3.9.5
-Maintainer: Jeremy Palmer (LINZ) <jpalmer@linz.govt.nz>
+Maintainer: Ivan Mincik <imincik@linz.govt.nz>
 Homepage: http://www.linz.govt.nz
 Vcs-Git: git://github.com/linz/postgresql-tableversion.git
 Vcs-Browser: https://github.com/linz/postgresql-tableversion
