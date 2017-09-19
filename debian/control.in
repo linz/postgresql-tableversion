@@ -4,15 +4,15 @@ Priority: extra
 Build-Depends: debhelper (>= 7),
                postgresql-server-dev-all
 Standards-Version: 3.9.5
-Maintainer: Ivan Mincik <imincik@linz.govt.nz>
+Maintainer: Jeremy Palmer (LINZ) <jpalmer@linz.govt.nz>
 Homepage: http://www.linz.govt.nz
 Vcs-Git: git://github.com/linz/postgresql-tableversion.git
 Vcs-Browser: https://github.com/linz/postgresql-tableversion
 
-Package: postgresql-9.3-tableversion
+Package: postgresql-PGVERSION-tableversion
 Architecture: all
 Depends: ${misc:Depends},
-         postgresql-9.3
+         postgresql-PGVERSION
 Recommends:
 Description: PostgreSQL table versioning extension, recording row modifications
  and its history. The extension provides APIs for accessing snapshots of a table
