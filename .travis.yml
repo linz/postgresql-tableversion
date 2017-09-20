@@ -53,6 +53,8 @@ before_install:
   - sudo apt-get install debhelper fakeroot postgresql-server-dev-all
 
 script:
+  # Test https://github.com/linz/postgresql-tableversion/issues/47
+  - git tag -a "travis/1.2.3-4-gdeadbeef" -m "test"
   - make
   - sudo env "PATH=$PATH" make install
   - PGPORT=5432 make installcheck || { cat regression.diffs; false; }
