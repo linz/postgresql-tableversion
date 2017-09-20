@@ -16,7 +16,6 @@ test/sql/preparedb
 
 # Debian Packaging
 ##################
-debian/control
 debian/postgresql*-tableversion/
 debian/postgresql*tableversion.substvars
 debian/postgresql*tableversion.debhelper
