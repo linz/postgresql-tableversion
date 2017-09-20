@@ -58,9 +58,7 @@ script:
   - PGPORT=5432 make installcheck || { cat regression.diffs; false; }
   # Test upgrades from all tagged versions
   - PGPORT=5432 test/ci/test_all_upgrades.sh
-  # The -b switch is beacause only binary package works,
-  # See https://github.com/linz/postgresql-tableversion/issues/29
-  - dpkg-buildpackage -us -uc -b
+  - make deb
   # Test install from package
   - sudo env "PATH=$PATH" dpkg -i ../postgresql-${POSTGRESQL}-tableversion_*.deb
 
