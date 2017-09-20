@@ -3,6 +3,9 @@
 All notable changes for the PostgreSQL table version extension are documented 
 in this file.
 
+## [1.3.1dev] - YYYY-MM-DD
+
+
 ## [1.3.0] - 2017-08-30
 ### Added
 - `ver_version` function
