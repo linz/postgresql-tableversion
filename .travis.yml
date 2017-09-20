@@ -60,10 +60,9 @@ script:
   - PGPORT=5432 make installcheck || { cat regression.diffs; false; }
   # Test upgrades from all tagged versions
   - PGPORT=5432 test/ci/test_all_upgrades.sh
-  - make deb
-  # Test install from package
+  # Test build and install from package.
+  - PG_SUPPORTED_VERSIONS=${POSTGRESQL} make deb
   - sudo env "PATH=$PATH" dpkg -i ../postgresql-${POSTGRESQL}-tableversion_*.deb
-
 
 notifications:
   # LINZ corporate email server is dropping messages from Travis
