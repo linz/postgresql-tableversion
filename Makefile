@@ -63,7 +63,7 @@ $(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
 	cp $< $@
 
 %.sql: %.sql.in
-	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/;s/@@REVISION@@/$(REVISION)/' $< > $@
+	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/;s|@@REVISION@@|$(REVISION)|' $< > $@
 	
 $(META): $(META).in
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
