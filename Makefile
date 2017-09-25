@@ -38,8 +38,7 @@ PG91         = $(shell $(PG_CONFIG) --version | grep -qE " 8\.| 9\.0" && echo no
 
 ifeq ($(PG91),yes)
 
-DATA_built = $(EXTENSION)--$(EXTVERSION).sql $(META) \
-  $(SQLSCRIPTS_built) \
+DATA_built = $(EXTENSION)--$(EXTVERSION).sql \
   $(wildcard upgrade-scripts/*--*.sql)
 
 DATA = $(wildcard sql/*--*.sql)
