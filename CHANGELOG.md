@@ -1,13 +1,12 @@
 # Change Log
 
-All notable changes for the PostgreSQL table version extension are documented 
+All notable changes for the PostgreSQL table version extension are documented
 in this file.
 
 ## [1.3.1dev] - YYYY-MM-DD
 ### Fixed
 - Do not install META.json and 20-version.sql (#54)
-- Fix revision detection from git tags containing slashes (48)
-
+- Fix revision detection from git tags containing slashes (#48)
 
 ## [1.3.0] - 2017-08-30
 ### Added
