@@ -1,3 +1,4 @@
+\set ECHO none
 --------------------------------------------------------------------------------
 
 -- postgresql-table_version - PostgreSQL table versioning extension
@@ -13,12 +14,11 @@
 -- Provide unit testing for table versioning system using pgTAP
 --------------------------------------------------------------------------------
 
-\set ECHO none
 \i test/sql/preparedb
 
 BEGIN;
 
-SELECT plan(77);
+SELECT plan(84);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -387,6 +387,29 @@ AS (action CHAR(1), ID INTEGER)$$,
 
 DROP SCHEMA "fOo" CASCADE;
 DROP SCHEMA "foO" CASCADE;
+
+-- Test effects on dropping table
+
+CREATE TABLE foo.dropme (id INTEGER NOT NULL PRIMARY KEY, d1 TEXT);
+SELECT ok(table_version.ver_enable_versioning('foo', 'dropme'),
+  'enable versioning on foo.dropme');
+SELECT ok(table_version.ver_is_table_versioned('foo', 'dropme'),
+  'foo.dropme is versioned');
+SELECT throws_like('DROP TABLE foo.dropme',
+  'cannot drop%depend on it',
+  'foo.dropme can only be drop with CASCADE') ;
+DROP TABLE foo.dropme CASCADE;
+SELECT ok(NOT table_version.ver_is_table_versioned('foo', 'dropme'),
+  'foo.dropme is not versioned after drop cascade');
+CREATE TABLE foo.dropme (id INTEGER NOT NULL PRIMARY KEY, d1 TEXT);
+SELECT ok(NOT table_version.ver_is_table_versioned('foo', 'dropme'),
+  'foo.dropme is not versioned after re-create');
+SELECT ok(table_version.ver_create_version_trigger('foo','dropme','id'),
+  'can create version trigger on foo.dropme');
+SELECT ok(table_version.ver_is_table_versioned('foo', 'dropme'),
+  'foo.dropme is not versioned after re-create and create_version_trigger');
+
+----
 
 SELECT has_function( 'table_version', 'ver_version'::name );
 

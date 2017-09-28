@@ -21,7 +21,7 @@ DECLARE
     v_column_name    NAME;
     v_column_update  TEXT;
 BEGIN
-    IF NOT @extschema@.ver_is_table_versioned(p_schema, p_table) THEN
+    IF NOT @extschema@._ver_is_table_versioned(p_schema, p_table) THEN
         RAISE EXCEPTION 'Table %.% is not versioned', quote_ident(p_schema), quote_ident(p_table);
     END IF;
     

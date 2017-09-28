@@ -1,7 +1,7 @@
 \pset format unaligned
 \pset tuples_only true
 \set QUIET true
-\set VERBOSITY verbose
+\set VERBOSITY terse
 SET client_min_messages TO WARNING;
 CREATE EXTENSION IF NOT EXISTS pgtap;
 CREATE EXTENSION IF NOT EXISTS table_version @@FROM_VERSION@@;
