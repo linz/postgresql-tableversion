@@ -25,19 +25,10 @@ RETURNS BOOLEAN AS
 $$
 DECLARE
     v_is_versioned BOOLEAN;
-    v_has_trigger BOOLEAN;
 BEGIN
-    SELECT
-        versioned
-    INTO
-        v_is_versioned
-    FROM
-        @extschema@.versioned_tables
-    WHERE
-        schema_name = p_schema AND
-        table_name = p_table;
+    v_is_versioned := @extschema@._ver_is_table_versioned(p_schema, p_table);
 
-    IF v_is_versioned IS NULL THEN
+    IF v_is_versioned IS FALSE THEN
         RETURN FALSE;
     END IF;
 
