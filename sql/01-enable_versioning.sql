@@ -21,10 +21,6 @@ BEGIN
         RAISE EXCEPTION 'Table %.% does not exists', quote_ident(p_schema), quote_ident(p_table);
     END IF;
 
-    IF @extschema@.ver_is_table_versioned(p_schema, p_table) THEN
-        RAISE EXCEPTION 'Table %.% is already versioned', quote_ident(p_schema), quote_ident(p_table);
-    END IF;
-
     SELECT
         CLS.oid
     INTO
@@ -74,7 +70,12 @@ BEGIN
         '_revision_expired INTEGER,' ||
         'LIKE ' || quote_ident(p_schema) || '.' || quote_ident(p_table) ||
     ');';
-    EXECUTE v_sql;
+    BEGIN
+      EXECUTE v_sql;
+    EXCEPTION
+    WHEN duplicate_table THEN
+        RAISE EXCEPTION 'Table %.% is already versioned', quote_ident(p_schema), quote_ident(p_table);
+    END;
     
     v_sql := 'ALTER TABLE ' || v_revision_table || ' OWNER TO ' || 
         @extschema@._ver_get_table_owner(v_table_oid);

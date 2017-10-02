@@ -1,5 +1,5 @@
 \set ECHO none
-1..84
+1..85
 ok 1 - Schema table_version should exist
 ok 2 - Should have revision table
 ok 3 - Should have tables_changed table
@@ -83,6 +83,7 @@ WARNING:  Table foo.dropme does not exist
 ok 80 - foo.dropme is not versioned after drop cascade
 WARNING:  Table foo.dropme is known as versioned but lacks versioning triggers
 ok 81 - foo.dropme is not versioned after re-create
-ok 82 - can create version trigger on foo.dropme
-ok 83 - foo.dropme is not versioned after re-create and create_version_trigger
-ok 84 - Function table_version.ver_version() should exist
+ok 82 - can enable versioning on drop-recreated table foo.dropme
+ok 83 - foo.dropme is not versioned after re-create and ver_enable_versioning
+ok 84 - ver_enable_versioning throws when called on already-versioned table
+ok 85 - Function table_version.ver_version() should exist

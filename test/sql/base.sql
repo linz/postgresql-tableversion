@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(84);
+SELECT plan(85);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -404,10 +404,14 @@ SELECT ok(NOT table_version.ver_is_table_versioned('foo', 'dropme'),
 CREATE TABLE foo.dropme (id INTEGER NOT NULL PRIMARY KEY, d1 TEXT);
 SELECT ok(NOT table_version.ver_is_table_versioned('foo', 'dropme'),
   'foo.dropme is not versioned after re-create');
-SELECT ok(table_version.ver_create_version_trigger('foo','dropme','id'),
-  'can create version trigger on foo.dropme');
+SELECT ok(table_version.ver_enable_versioning('foo','dropme'),
+  'can enable versioning on drop-recreated table foo.dropme');
 SELECT ok(table_version.ver_is_table_versioned('foo', 'dropme'),
-  'foo.dropme is not versioned after re-create and create_version_trigger');
+  'foo.dropme is not versioned after re-create and ver_enable_versioning');
+SELECT throws_like(
+  $$ SELECT table_version.ver_enable_versioning('foo','dropme') $$,
+  'Table % is already versioned',
+  'ver_enable_versioning throws when called on already-versioned table');
 
 ----
 
