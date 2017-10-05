@@ -4,6 +4,8 @@ All notable changes for the PostgreSQL table version extension are documented
 in this file.
 
 ## [1.4.0dev] - YYYY-MM-DD
+### Changed
+- Dropping and recreating versioned tables is now recoverable (#57)
 
 ## [1.3.0] - 2017-08-30
 ### Added
