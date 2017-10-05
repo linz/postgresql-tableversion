@@ -1,5 +1,5 @@
 \set ECHO none
-1..85
+1..93
 ok 1 - Schema table_version should exist
 ok 2 - Should have revision table
 ok 3 - Should have tables_changed table
@@ -78,12 +78,24 @@ ok 75 - Diff function between fOo.Bar3 and foO.bAr4
 ok 76 - Diff function between fOo.Bar3 and foO.bAr4 (with unique column)
 ok 77 - enable versioning on foo.dropme
 ok 78 - foo.dropme is versioned
-ok 79 - foo.dropme can only be drop with CASCADE
+ok 79 - foo.dropme is returned by ver_get_versioned_tables
+ok 80 - foo.dropme versioned table key is "id"
+ok 81 - foo.dropme can only be drop with CASCADE
 WARNING:  Table foo.dropme does not exist
-ok 80 - foo.dropme is not versioned after drop cascade
+ok 82 - foo.dropme is not versioned after drop cascade
+WARNING:  Table foo.dropme does not exist
+ok 83 - foo.dropme is not returned by ver_get_versioned_tables after drop
+WARNING:  Table foo.dropme does not exist
+ok 84 - foo.dropme versioned table key is null after drop
 WARNING:  Table foo.dropme is known as versioned but lacks versioning triggers
-ok 81 - foo.dropme is not versioned after re-create
-ok 82 - can enable versioning on drop-recreated table foo.dropme
-ok 83 - foo.dropme is versioned after re-create and ver_enable_versioning
-ok 84 - ver_enable_versioning throws when called on already-versioned table
-ok 85 - Function table_version.ver_version() should exist
+ok 85 - foo.dropme is not versioned after re-create
+WARNING:  Table foo.dropme is known as versioned but lacks versioning triggers
+ok 86 - foo.dropme is not returned by ver_get_versioned_tables after re-create
+WARNING:  Table foo.dropme is known as versioned but lacks versioning triggers
+ok 87 - foo.dropme versioned table key is null after re-create
+ok 88 - can enable versioning on drop-recreated table foo.dropme
+ok 89 - foo.dropme is versioned after re-create and ver_enable_versioning
+ok 90 - foo.dropme is returned by ver_get_versioned_tables after re-create and ver_enable_versioning
+ok 91 - foo.dropme versioned table key is "id" after re-create and ver_enable_versioning
+ok 92 - ver_enable_versioning throws when called on already-versioned table
+ok 93 - Function table_version.ver_version() should exist

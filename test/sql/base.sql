@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(85);
+SELECT plan(93);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -395,19 +395,52 @@ SELECT ok(table_version.ver_enable_versioning('foo', 'dropme'),
   'enable versioning on foo.dropme');
 SELECT ok(table_version.ver_is_table_versioned('foo', 'dropme'),
   'foo.dropme is versioned');
+SELECT set_has($$
+  SELECT schema_name,table_name
+  FROM table_version.ver_get_versioned_tables()
+  $$, $$ VALUES ('foo','dropme') $$,
+  'foo.dropme is returned by ver_get_versioned_tables'
+);
+SELECT is(table_version.ver_get_versioned_table_key('foo','dropme'),
+  'id', 'foo.dropme versioned table key is "id"');
 SELECT throws_like('DROP TABLE foo.dropme',
   'cannot drop%depend on it',
   'foo.dropme can only be drop with CASCADE') ;
 DROP TABLE foo.dropme CASCADE;
 SELECT ok(NOT table_version.ver_is_table_versioned('foo', 'dropme'),
   'foo.dropme is not versioned after drop cascade');
+SELECT set_hasnt($$
+  SELECT schema_name,table_name
+  FROM table_version.ver_get_versioned_tables()
+  $$, $$ VALUES ('foo','dropme') $$,
+  'foo.dropme is not returned by ver_get_versioned_tables after drop'
+);
+SELECT is(table_version.ver_get_versioned_table_key('foo','dropme'),
+  NULL, 'foo.dropme versioned table key is null after drop');
 CREATE TABLE foo.dropme (id INTEGER NOT NULL PRIMARY KEY, d1 TEXT);
 SELECT ok(NOT table_version.ver_is_table_versioned('foo', 'dropme'),
   'foo.dropme is not versioned after re-create');
+SELECT set_hasnt($$
+  SELECT schema_name,table_name
+  FROM table_version.ver_get_versioned_tables()
+  $$, $$ VALUES ('foo','dropme') $$,
+  'foo.dropme is not returned by ver_get_versioned_tables after re-create'
+);
+SELECT is(table_version.ver_get_versioned_table_key('foo','dropme'),
+  NULL, 'foo.dropme versioned table key is null after re-create');
 SELECT ok(table_version.ver_enable_versioning('foo','dropme'),
   'can enable versioning on drop-recreated table foo.dropme');
 SELECT ok(table_version.ver_is_table_versioned('foo', 'dropme'),
   'foo.dropme is versioned after re-create and ver_enable_versioning');
+SELECT set_has($$
+  SELECT schema_name,table_name
+  FROM table_version.ver_get_versioned_tables()
+  $$, $$ VALUES ('foo','dropme') $$,
+  'foo.dropme is returned by ver_get_versioned_tables after re-create and ver_enable_versioning'
+);
+SELECT is(table_version.ver_get_versioned_table_key('foo','dropme'),
+  'id', 'foo.dropme versioned table key is "id" after re-create and ver_enable_versioning');
+-- TODO: test changing key !
 SELECT throws_like(
   $$ SELECT table_version.ver_enable_versioning('foo','dropme') $$,
   'Table % is already versioned',

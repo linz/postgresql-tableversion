@@ -12,7 +12,8 @@ RETURNS TABLE(
     FROM 
         @extschema@.versioned_tables
     WHERE
-        versioned = TRUE;
+        versioned = TRUE AND
+        @extschema@.ver_is_table_versioned(schema_name, table_name);
 $$ LANGUAGE sql;
 
 /**
@@ -33,7 +34,8 @@ AS $$
     WHERE
         versioned = TRUE AND
         schema_name = $1 AND
-        table_name = $2;
+        table_name = $2 AND
+        @extschema@.ver_is_table_versioned(schema_name, table_name);
 $$ LANGUAGE sql;
 
 
