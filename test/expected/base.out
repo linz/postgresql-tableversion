@@ -84,6 +84,6 @@ ok 80 - foo.dropme is not versioned after drop cascade
 WARNING:  Table foo.dropme is known as versioned but lacks versioning triggers
 ok 81 - foo.dropme is not versioned after re-create
 ok 82 - can enable versioning on drop-recreated table foo.dropme
-ok 83 - foo.dropme is not versioned after re-create and ver_enable_versioning
+ok 83 - foo.dropme is versioned after re-create and ver_enable_versioning
 ok 84 - ver_enable_versioning throws when called on already-versioned table
 ok 85 - Function table_version.ver_version() should exist

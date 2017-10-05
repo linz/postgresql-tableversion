@@ -407,7 +407,7 @@ SELECT ok(NOT table_version.ver_is_table_versioned('foo', 'dropme'),
 SELECT ok(table_version.ver_enable_versioning('foo','dropme'),
   'can enable versioning on drop-recreated table foo.dropme');
 SELECT ok(table_version.ver_is_table_versioned('foo', 'dropme'),
-  'foo.dropme is not versioned after re-create and ver_enable_versioning');
+  'foo.dropme is versioned after re-create and ver_enable_versioning');
 SELECT throws_like(
   $$ SELECT table_version.ver_enable_versioning('foo','dropme') $$,
   'Table % is already versioned',
