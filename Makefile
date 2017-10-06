@@ -38,7 +38,11 @@ PG91         = $(shell $(PG_CONFIG) --version | grep -qE " 8\.| 9\.0" && echo no
 
 ifeq ($(PG91),yes)
 
-DATA_built = $(EXTENSION)--$(EXTVERSION).sql \
+SCRIPTS_built = $(EXTENSION)-loader
+
+DATA_built = \
+  $(EXTENSION)--$(EXTVERSION).sql \
+  $(EXTENSION)-$(EXTVERSION).sql.tpl \
   $(wildcard upgrade-scripts/*--*.sql)
 
 DATA = $(wildcard sql/*--*.sql)
@@ -128,3 +132,15 @@ $(EXTNDIR)/extension/pgtap.control:
 .PHONY: testdeps
 testdeps: pgtap test/sql/preparedb
 
+
+$(EXTENSION)-$(EXTVERSION).sql.tpl: $(EXTENSION)--$(EXTVERSION).sql Makefile sql/noextension.sql.in
+	echo "BEGIN;" > $@
+	cat sql/noextension.sql.in >> $@
+	grep -v 'CREATE EXTENSION' $< \
+  | grep -v 'pg_extension_config_dump' \
+	>> $@
+	echo "COMMIT;" >> $@
+
+$(EXTENSION)-loader: $(EXTENSION)-loader.sh Makefile
+	cat $< > $@
+	chmod +x $@
