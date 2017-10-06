@@ -1,0 +1,21 @@
+-- This file can only be used when 'table_version' is not
+-- installed as an extension
+DO $$
+DECLARE
+  cur_search_path text;
+BEGIN
+  IF EXISTS (
+    SELECT * FROM pg_catalog.pg_extension WHERE extname = 'table_version'
+  )
+  THEN
+    RAISE EXCEPTION 'table_version is installed as an extension';
+  END IF;
+
+  --SELECT reset_val INTO cur_search_path
+  --FROM pg_settings WHERE name = 'search_path';
+  EXECUTE 'SHOW search_path' INTO cur_search_path;
+  EXECUTE 'SET search_path = table_version, ' || cur_search_path;
+END
+$$ LANGUAGE 'plpgsql';
+
+CREATE SCHEMA IF NOT EXISTS @extschema@;

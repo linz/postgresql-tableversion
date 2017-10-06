@@ -9,6 +9,8 @@ tmp/
 regression.diffs
 regression.out
 test/sql/preparedb
+*.tpl
+table_version-loader
 
 # Editor Backup #
 #################
