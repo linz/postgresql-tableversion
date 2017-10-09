@@ -4,6 +4,8 @@ All notable changes for the PostgreSQL table version extension are documented
 in this file.
 
 ## [1.4.0dev] - YYYY-MM-DD
+### Added
+- Loader script `table_version-loader` (#59)
 ### Changed
 - Dropping and recreating versioned tables is now recoverable (#57)
 
