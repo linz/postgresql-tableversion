@@ -1,0 +1,5 @@
+# http://editorconfig.org
+
+# Makefiles want tab indentation
+[{Makefile.in,Makefile}]
+indent_style = tab
