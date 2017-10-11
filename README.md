@@ -9,30 +9,14 @@ certain revisions and the difference generated between any two given revisions.
 The extension uses a PL/PgSQL trigger based system to record and provide access
 to the row revisions.
 
-Easy Installation
------------------
-Install [pgxn-client](http://pgxnclient.projects.pgfoundry.org) which is hosted
-on PyPI:
+Installing
+----------
 
-    $ sudo easy_install pgxnclient
-
-Then do:
-
-    $ sudo pgxn install table_version
-
-or
-    sudo pgxn load -d my_db table_version
-
-(Run pgxn --help for more info)
-
-Hard Installation
------------------
-
-To build it, just do this:
+To build it, install it and check the installation, just do this:
 
     make
-    make installcheck
     make install
+    make installcheck
 
 If you encounter an error such as:
 
@@ -85,20 +69,21 @@ postgresql-server-dev-all package, and consider adding the
 postgresql.org apt repository to get the most versions out
 of it (see https://wiki.postgresql.org/wiki/Apt)
 
-Installing the extension
-------------------------
+Enabling the extension in a database
+------------------------------------
 
-Once table_version is installed, you can add it to a database. If you're running
+Once `table_version` is installed, you can add it to a database. If you're running
 PostgreSQL 9.1.0 or greater, it's a simple as connecting to a database as a
 super user and running:
 
     CREATE EXTENSION table_version;
 
 The extension will install support configuration tables and functions into the
-table_version schema.
+`table_version` schema.
 
-If you've upgraded your cluster to PostgreSQL 9.1 and already had table_version
-installed, you can upgrade it to a properly packaged extension with:
+If you've upgraded your cluster to PostgreSQL 9.1 and already had
+`table_version` installed, you can upgrade it to a properly packaged
+extension with:
 
     CREATE EXTENSION table_version FROM unpackaged;
 
