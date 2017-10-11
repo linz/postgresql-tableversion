@@ -7,6 +7,18 @@ EXTENSION    = $(shell grep -m 1 '"name":' $(META).in | sed -e 's/[[:space:]]*"n
 TGT_VERSION=$(subst dev,,$(EXTVERSION))
 PREV_VERSION=$(shell ls sql/table_version--*--*.sql | sed 's/.*$(EXTENSION)--.*--//;s/\.sql//' | grep -Fv $(TGT_VERSION) | sort -n | tail -1)
 
+DISTFILES = \
+	doc \
+	sql \
+	test \
+	LICENSE \
+	Makefile \
+	$(META) \
+	$(META).in \
+	README.md \
+	table_version.control.in \
+	$(NULL)
+
 SED = sed
 
 UPGRADEABLE_VERSIONS = 1.2.0 1.3.0dev 1.3.0
@@ -111,6 +123,11 @@ deb:
 	# See https://github.com/linz/postgresql-tableversion/issues/29
 	dpkg-buildpackage -us -uc -b
 
+dist: distclean $(DISTFILES)
+	mkdir $(EXTENSION)-$(EXTVERSION)
+	cp -r $(DISTFILES) $(EXTENSION)-$(EXTVERSION)
+	tar czf $(EXTENSION)-$(EXTVERSION).tar.gz $(EXTENSION)-$(EXTVERSION)
+	rm -rf $(EXTENSION)-$(EXTVERSION)
 
 #
 # pgtap
