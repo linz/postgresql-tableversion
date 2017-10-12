@@ -102,10 +102,23 @@ test/sql/preparedb: test/sql/preparedb.in
         UPGRADE_FROM=""; \
       fi; \
       $(SED) -e 's/^--UPGRADE-- //' -e "s/@@FROM_VERSION@@/$$UPGRADE_FROM/"; \
+	  elif test "${PREPAREDB_NOEXTENSION}" = 1; then \
+      grep -v table_version; \
     else \
       cat; \
     fi | \
 	  $(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' -e 's/@@FROM_VERSION@@//' > $@
+
+check: check-noext
+
+check-noext:
+	PREPAREDB_NOEXTENSION=1 $(MAKE) test/sql/preparedb
+	dropdb --if-exists contrib_regression
+	createdb contrib_regression
+	TABLE_VERSION_TPL_FILE=$(EXTENSION)-$(EXTVERSION).sql.tpl \
+		./table_version-loader --no-extension contrib_regression
+	$(pg_regress_installcheck) $(REGRESS_OPTS) --use-existing $(REGRESS)
+	dropdb contrib_regression
 
 installcheck-upgrade:
 	PREPAREDB_UPGRADE=1 make installcheck

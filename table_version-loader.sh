@@ -5,9 +5,12 @@ TGT_DB=
 EXT_MODE=on
 EXT_NAME=table_version
 EXT_DIR=`pg_config --sharedir`/extension/
-VER=`grep default_version ${EXT_DIR}/${EXT_NAME}.control | sed "s/[^']*'//;s/'.*//"`
-TPL_FILE=${EXT_DIR}/${EXT_NAME}-${VER}.sql.tpl
+TPL_FILE=
+VER=
 
+if test -n "$TABLE_VERSION_EXT_DIR"; then
+  EXT_DIR="$TABLE_VERSION_EXT_DIR"
+fi
 
 while test -n "$1"; do
   if test "$1" = "--no-extension"; then
@@ -21,6 +24,19 @@ while test -n "$1"; do
   fi
   shift
 done
+
+if test -z "${VER}"; then
+# TPL_FILE is expected to have the following format:
+#   table_version-1.4.0dev.sql.tpl
+  VER=`ls ${EXT_DIR}/${EXT_NAME}-*.sql.tpl | sed "s/^.*${EXT_NAME}-//;s/\.sql\.tpl//" | tail -1`
+  if test -z "${VER}"; then
+    echo "Cannot find template loader, maybe set TABLE_VERSION_EXT_DIR?" >&2
+    exit 1
+  fi
+fi
+
+TPL_FILE=${EXT_DIR}/${EXT_NAME}-${VER}.sql.tpl
+
 
 if test -z "$TGT_DB"; then
   echo "Usage: $0 [--no-extension] [--version <ver>] <dbname>" >&2
