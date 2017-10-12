@@ -123,13 +123,16 @@ check-noext: table_version-loader
 installcheck-upgrade:
 	PREPAREDB_UPGRADE=1 make installcheck
 
-installcheck-noext: table_version-loader
+installcheck-loader: table_version-loader
 	PREPAREDB_NOEXTENSION=1 make test/sql/preparedb
 	dropdb --if-exists contrib_regression
 	createdb contrib_regression
-	./table_version-loader contrib_regression
+	`pg_config --bindir`/table_version-loader $(TABLE_VERSION_OPTS) contrib_regression
 	$(pg_regress_installcheck) $(REGRESS_OPTS) --use-existing $(REGRESS)
 	dropdb contrib_regression
+
+installcheck-loader-noext: table_version-loader
+	$(MAKE) installcheck-loader TABLE_VERSION_OPTS=--no-extension
 
 .PHONY: upgrade-scripts
 upgrade-scripts: $(EXTENSION)--$(EXTVERSION).sql
