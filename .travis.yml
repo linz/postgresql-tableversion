@@ -59,6 +59,7 @@ script:
   - TABLE_VERSION_EXT_DIR=. make check || { cat regression.diffs; false; }
   - sudo env "PATH=$PATH" make install
   - PGPORT=5432 make installcheck || { cat regression.diffs; false; }
+  - PGPORT=5432 make installcheck-noext || { cat regression.diffs; false; }
   # Test upgrades from all tagged versions
   - PGPORT=5432 test/ci/test_all_upgrades.sh
   # Test build and install from package.
