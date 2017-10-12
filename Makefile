@@ -119,7 +119,7 @@ check-noext: table_version-loader
 	PREPAREDB_NOEXTENSION=1 $(MAKE) test/sql/preparedb
 	dropdb --if-exists contrib_regression
 	createdb contrib_regression
-	TABLE_VERSION_TPL_FILE=$(EXTENSION)-$(EXTVERSION).sql.tpl \
+	TABLE_VERSION_EXT_DIR=. \
 		./table_version-loader --no-extension contrib_regression
 	$(pg_regress_installcheck) $(REGRESS_OPTS) --use-existing $(REGRESS)
 	dropdb contrib_regression
