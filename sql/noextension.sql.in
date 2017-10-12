@@ -15,7 +15,13 @@ BEGIN
   --FROM pg_settings WHERE name = 'search_path';
   EXECUTE 'SHOW search_path' INTO cur_search_path;
   EXECUTE 'SET search_path = table_version, ' || cur_search_path;
+
+  IF NOT EXISTS (
+    SELECT * FROM pg_catalog.pg_namespace WHERE nspname =
+    '@extschema@'
+  )
+  THEN
+    CREATE SCHEMA @extschema@;
+  END IF;
 END
 $$ LANGUAGE 'plpgsql';
-
-CREATE SCHEMA IF NOT EXISTS @extschema@;
