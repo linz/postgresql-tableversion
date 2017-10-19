@@ -66,6 +66,7 @@ DATA = $(wildcard sql/*--*.sql)
 EXTRA_CLEAN = \
     sql/$(EXTENSION)--$(EXTVERSION).sql \
     sql/$(EXTENSION).sql \
+		sql/20-version.sql \
     $(EXTENSION).control \
     upgrade-scripts \
     $(META)
