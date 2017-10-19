@@ -6,6 +6,7 @@ in this file.
 ## [1.4.0dev] - YYYY-MM-DD
 ### Added
 - Loader script `table_version-loader` (#59)
+- Working upgrade path from unpackaged (#62)
 ### Changed
 - Dropping and recreating versioned tables is now recoverable (#57)
 
