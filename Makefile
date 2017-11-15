@@ -118,6 +118,8 @@ $(EXTENSION).control: $(EXTENSION).control.in
 check_control:
 	grep -q "pgTAP" $(META)
 
+test/sql/version.sql: Makefile
+
 # This is phony because it depends on env variables
 .PHONY: test/sql/preparedb
 test/sql/preparedb: test/sql/preparedb.in
