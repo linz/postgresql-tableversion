@@ -3,7 +3,7 @@
 All notable changes for the PostgreSQL table version extension are documented 
 in this file.
 
-## [1.4.0dev] - YYYY-MM-DD
+## [1.4.0] - 2017-11-15
 ### Added
 - Loader script `table_version-loader` (#59)
 - Working upgrade path from unpackaged (#62)
