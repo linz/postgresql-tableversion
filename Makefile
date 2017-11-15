@@ -64,6 +64,7 @@ DATA_built = \
 
 DATA = $(wildcard sql/*--*.sql)
 EXTRA_CLEAN = \
+    $(SQLSCRIPTS_built) \
     sql/$(EXTENSION)--$(EXTVERSION).sql \
     sql/$(EXTENSION).sql \
 		sql/20-version.sql \
