@@ -4,6 +4,7 @@ All notable changes for the PostgreSQL table version extension are documented
 in this file.
 
 ## [1.5.0dev] - YYYY-MM-DD
+- Loader script made tolerant to already-loaded extension
 
 ## [1.4.0] - 2017-11-15
 ### Added

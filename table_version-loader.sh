@@ -56,11 +56,12 @@ if test "${EXT_MODE}" = 'on'; then cat<<EOF | psql -tA --set ON_ERROR_STOP=1
         AND c.relname = 'revision'
       )
       THEN
-        RAISE EXCEPTION 'table_version is already installed';
+        ALTER EXTENSION ${EXT_NAME} UPDATE TO '${VER}';
+      ELSE
+        CREATE EXTENSION ${EXT_NAME} VERSION '${VER}';
       END IF;
     END
   \$\$ LANGUAGE 'plpgsql';
-  CREATE EXTENSION ${EXT_NAME} VERSION '${VER}';
 EOF
 else
   cat ${TPL_FILE} | sed "s/@extschema@/${TGT_SCHEMA}/g" |
