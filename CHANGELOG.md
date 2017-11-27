@@ -3,6 +3,10 @@
 All notable changes for the PostgreSQL table version extension are documented 
 in this file.
 
+## [1.4.2] - 2018-04-04
+### Fixed
+- Loader script made tolerant to already-loaded extension
+
 ## [1.4.1] - 2018-02-19
 ### IMPORTANT
 - If coming from 1.3.0, 1.3.1 or 1.4.0 make sure to call
