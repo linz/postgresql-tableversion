@@ -22,7 +22,7 @@ DISTFILES = \
 
 SED = sed
 
-UPGRADEABLE_VERSIONS = 1.2.0 1.3.0dev 1.3.0 1.4.0dev 1.4.0
+UPGRADEABLE_VERSIONS = 1.2.0 1.3.0dev 1.3.0 1.4.0dev
 
 SQLSCRIPTS_built = \
     sql/20-version.sql \
