@@ -505,7 +505,7 @@ prepare "test2" as select T.id, T.code
 	as T(code char(1), id varchar);
 
 select lives_ok('"test1"','1. Request char/integer set result');
-select lives_ok('"test2"','2. Request char/varchar set result'');
+select lives_ok('"test2"','2. Request char/varchar set result');
 
 SELECT * FROM finish();
 
