@@ -456,6 +456,7 @@ SELECT has_function( 'table_version', 'ver_enable_versioning', ARRAY['regclass']
 
 -- Added after problem found in admin_bouldaries_uploader
 
+create schema test_schema;
 create table test_schema.table1_with_int_pk (
 id integer not null primary key,
 description varchar
