@@ -2,7 +2,7 @@
 
 dist: trusty
 sudo: true
-
+group: deprecated-2017Q4
 
 matrix:
   include:
@@ -74,7 +74,5 @@ notifications:
     - jeremy.palmer.nz@gmail.com
     - ivan.mincik@gmail.com
 
-
-group: deprecated-2017Q4
 
 # vim: set ts=2 sts=2 sw=2 et:
