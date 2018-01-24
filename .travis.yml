@@ -55,6 +55,14 @@ before_install:
 script:
   # Test https://github.com/linz/postgresql-tableversion/issues/47
   - git tag -a "travis/1.2.3-4-gdeadbeef" -m "test"
+  - which pg_config
+  - which psql
+  - pg_config --version
+  - psql --version
+  - psql -c "select version()" template1
+  - ls /usr/lib/postgresql/
+  - echo $PATH
+  - fail
   - make
   - make check || { cat regression.diffs; false; }
   - sudo env "PATH=$PATH" make install
