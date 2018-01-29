@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(94);
+SELECT plan(96);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -453,6 +453,59 @@ SELECT has_function( 'table_version', 'ver_version'::name );
 -- New in 1.4
 
 SELECT has_function( 'table_version', 'ver_enable_versioning', ARRAY['regclass'] );
+
+-- Added after problem found in admin_bouldaries_uploader
+
+create schema test_schema;
+create table test_schema.table1_with_int_pk (
+id integer not null primary key,
+description varchar
+);
+insert into test_schema.table1_with_int_pk values(100,'AAA');
+insert into test_schema.table1_with_int_pk values(200,'BBB');
+insert into test_schema.table1_with_int_pk values(300,'CCC');
+
+create table test_schema.table2_with_int_pk (
+id integer not null primary key,
+description varchar
+);
+insert into test_schema.table2_with_int_pk values(100,'AAA');
+insert into test_schema.table2_with_int_pk values(200,'YYY');
+insert into test_schema.table2_with_int_pk values(300,'ZZZ');
+
+create table test_schema.table1_with_varchar_pk (
+id varchar not null primary key,
+description varchar
+);
+insert into test_schema.table1_with_varchar_pk values('100','AAA');
+insert into test_schema.table1_with_varchar_pk values('200','BBB');
+insert into test_schema.table1_with_varchar_pk values('300','CCC');
+
+create table test_schema.table2_with_varchar_pk (
+id varchar not null primary key,
+description varchar
+);
+insert into test_schema.table2_with_varchar_pk values('100','AAA');
+insert into test_schema.table2_with_varchar_pk values('200','YYY');
+insert into test_schema.table2_with_varchar_pk values('300','ZZZ');
+
+
+prepare "test1" as select T.id, T.code 
+	from table_version.ver_get_table_differences(
+	'test_schema.table1_with_int_pk',
+	'test_schema.table2_with_int_pk',
+	'id') 
+	as T(code char(1), id int);
+
+prepare "test2" as select T.id, T.code 
+	from table_version.ver_get_table_differences(
+	'test_schema.table1_with_varchar_pk',
+	'test_schema.table2_with_varchar_pk',
+	'id') 
+	as T(code char(1), id varchar);
+
+select lives_ok('"test1"','1. Request char/integer set result');
+select lives_ok('"test2"','2. Request char/varchar set result');
 
 SELECT * FROM finish();
 
