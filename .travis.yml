@@ -2,7 +2,7 @@
 
 dist: trusty
 sudo: true
-group: deprecated-2017Q4
+
 
 matrix:
   include:
