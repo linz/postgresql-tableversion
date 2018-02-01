@@ -26,8 +26,9 @@ UPGRADEABLE_VERSIONS = 1.2.0 1.3.0dev 1.3.0 1.4.0dev 1.4.0 1.5.0dev
 
 SQLSCRIPTS_built = \
     sql/20-version.sql \
-    test/sql/version.sql \
     $(END)
+
+TESTS_built = test/sql/version.pg
 
 SQLSCRIPTS = \
     sql/[0-9][0-9]-*.sql \
@@ -35,8 +36,8 @@ SQLSCRIPTS = \
 
 DOCS         = $(wildcard doc/*.md)
 TESTS        = $(wildcard test/sql/*.sql)
-REGRESS      = $(patsubst test/sql/%.sql,%,$(TESTS))
-REGRESS_OPTS = --inputdir=test --load-language=plpgsql
+#REGRESS      = $(patsubst test/sql/%.sql,%,$(TESTS))
+#REGRESS_OPTS = --inputdir=test --load-language=plpgsql
 REGRESS_PREP = testdeps
 
 #
@@ -65,6 +66,7 @@ DATA_built = \
 DATA = $(wildcard sql/*--*.sql)
 EXTRA_CLEAN = \
     $(SQLSCRIPTS_built) \
+    $(TESTS_built) \
     sql/$(EXTENSION)--$(EXTVERSION).sql \
     sql/$(EXTENSION).sql \
 		sql/20-version.sql \
@@ -108,6 +110,9 @@ $(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
 
 %.sql: %.sql.in
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/;s|@@REVISION@@|$(REVISION)|' $< > $@
+
+%.pg: %.pg.in
+	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/;s|@@REVISION@@|$(REVISION)|' $< > $@
 	
 $(META): $(META).in
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
@@ -119,7 +124,7 @@ $(EXTENSION).control: $(EXTENSION).control.in
 check_control:
 	grep -q "pgTAP" $(META)
 
-test/sql/version.sql: Makefile
+test/sql/version.pg: Makefile
 
 # This is phony because it depends on env variables
 .PHONY: test/sql/preparedb
@@ -141,24 +146,31 @@ test/sql/preparedb: test/sql/preparedb.in
 
 check: check-noext
 
-check-noext: table_version-loader
+installcheck: $(TESTS_built)
+	$(MAKE) test/sql/preparedb
+	dropdb --if-exists contrib_regression
+	createdb contrib_regression
+	pg_prove -d contrib_regression test/sql
+	dropdb contrib_regression
+
+check-noext: $(TESTS_built) table_version-loader
 	PREPAREDB_NOEXTENSION=1 $(MAKE) test/sql/preparedb
 	dropdb --if-exists contrib_regression
 	createdb contrib_regression
 	TABLE_VERSION_EXT_DIR=. \
 		./table_version-loader --no-extension contrib_regression
-	$(pg_regress_installcheck) $(REGRESS_OPTS) --use-existing $(REGRESS)
+	pg_prove -d contrib_regression test/sql
 	dropdb contrib_regression
 
 installcheck-upgrade:
 	PREPAREDB_UPGRADE=1 make installcheck
 
-installcheck-loader: table_version-loader
+installcheck-loader: $(TESTS_built) table_version-loader
 	PREPAREDB_NOEXTENSION=1 make test/sql/preparedb
 	dropdb --if-exists contrib_regression
 	createdb contrib_regression
 	`pg_config --bindir`/table_version-loader $(TABLE_VERSION_OPTS) contrib_regression
-	$(pg_regress_installcheck) $(REGRESS_OPTS) --use-existing $(REGRESS)
+	pg_prove -d contrib_regression test/sql
 	dropdb contrib_regression
 
 installcheck-loader-noext: table_version-loader

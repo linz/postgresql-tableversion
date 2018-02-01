@@ -14,9 +14,9 @@ table_version-loader
 
 # make output #
 ###############
-./*.sql
+/*.sql
 sql/*.sql
-test/sql/version.sql
+test/sql/version.pg
 upgrade-scripts/
 
 # Editor Backup #
