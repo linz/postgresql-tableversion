@@ -40,7 +40,9 @@ debian/files
 # Logs and databases #
 ######################
 *.log
-*.sql
+./*.sql
+sql/*.sql
+test/sql/version.sql
 *.sqlite
 
 # OS generated files #
