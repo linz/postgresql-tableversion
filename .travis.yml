@@ -68,11 +68,11 @@ script:
   - psql -c "select version()" template1
   # Build, install and check
   - make
-  - make check || { cat regression.diffs; false; }
+  - make check
   - sudo env "PATH=$PATH" make install
-  - PGPORT=5432 make installcheck || { cat regression.diffs; false; }
-  - PGPORT=5432 make installcheck-loader || { cat regression.diffs; false; }
-  - PGPORT=5432 make installcheck-loader-noext || { cat regression.diffs; false; }
+  - PGPORT=5432 make installcheck
+  - PGPORT=5432 make installcheck-loader
+  - PGPORT=5432 make installcheck-loader-noext
   # Test upgrades from all tagged versions
   - PGPORT=5432 test/ci/test_all_upgrades.sh
   # Test build and install from package.
