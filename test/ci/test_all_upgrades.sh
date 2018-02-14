@@ -16,10 +16,10 @@ for v in $VER; do
   echo "-------------------------------------"
   echo "Installing version $v"
   echo "-------------------------------------"
-  git checkout $v && git clean -dxf && sudo env "PATH=$PATH" make install || exit 1
+  git checkout $v && git clean -dxf && make install || exit 1
 done;
 cd ..
-rm -rf older-versions;
+rm -rf older-versions
 
 # Test upgrade from all older versions
 for v in $VER; do

@@ -64,8 +64,8 @@ script:
   - PGPORT=5432 make installcheck-loader || { cat regression.diffs; false; }
   - PGPORT=5432 make installcheck-loader-noext || { cat regression.diffs; false; }
   # Test upgrades from all tagged versions
-  - PGPORT=5432 test/ci/test_all_upgrades.sh
-  # Test build and install from package.
+  - sudo env "PGUSER=$USER" env "PATH=$PATH" env "PGPORT=5432" test/ci/test_all_upgrades.sh
+  # Test install from package
   - PG_SUPPORTED_VERSIONS=${POSTGRESQL} make deb
   - sudo env "PATH=$PATH" dpkg -i ../postgresql-${POSTGRESQL}-tableversion_*.deb
 
