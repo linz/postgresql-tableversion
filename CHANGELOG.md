@@ -4,6 +4,8 @@ All notable changes for the PostgreSQL table version extension are documented
 in this file.
 
 ## [1.4.1dev] - YYYY-MM-DD
+### Fixed
+- Revision sequence reset on upgrade from previous versions (#77)
 
 ## [1.4.0] - 2017-11-15
 ### Added
