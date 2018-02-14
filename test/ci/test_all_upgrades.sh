@@ -6,7 +6,7 @@ cd `dirname $0`/../../
 # Versions/tags known to build
 # NOTE: tag 1.0.1 does not build, so we skip that
 #
-VER="1.1.0 1.1.1 1.1.2 1.1.3 1.2.0";
+VER="1.1.0 1.1.1 1.1.2 1.1.3 1.2.0 1.3.0 1.3.1";
 
 # Install all older versions
 git fetch --unshallow --tags # to get all commits/tags
