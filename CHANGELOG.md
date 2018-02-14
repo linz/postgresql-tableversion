@@ -3,6 +3,10 @@
 All notable changes for the PostgreSQL table version extension are documented
 in this file.
 
+## [1.3.2] - 2018-MM-DD
+### Fixed
+- Revision sequence reset on upgrade from previous versions (#77)
+
 ## [1.3.1] - 2017-09-26
 ### Fixed
 - Do not install META.json and 20-version.sql (#54)
