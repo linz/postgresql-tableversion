@@ -11,18 +11,28 @@
 --
 --------------------------------------------------------------------------------
 
-CREATE TABLE IF NOT EXISTS revision (
-    id SERIAL NOT NULL PRIMARY KEY,
-    revision_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    start_time TIMESTAMP NOT NULL DEFAULT clock_timestamp(),
-    user_name TEXT NOT NULL DEFAULT CURRENT_USER,
-    schema_change BOOLEAN NOT NULL,
-    comment TEXT
-);
+DO $$ BEGIN IF NOT EXISTS (
+  SELECT t.oid
+  FROM pg_class t, pg_namespace n
+  WHERE n.oid = t.relnamespace
+    AND n.nspname = '@extschema@'
+    AND t.relname = 'revision'
+) THEN
+  CREATE TABLE IF NOT EXISTS revision (
+      id SERIAL NOT NULL PRIMARY KEY,
+      revision_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      start_time TIMESTAMP NOT NULL DEFAULT clock_timestamp(),
+      user_name TEXT NOT NULL DEFAULT CURRENT_USER,
+      schema_change BOOLEAN NOT NULL,
+      comment TEXT
+  );
+  RAISE NOTICE 'Setting revision_id_seq value to 1000';
+  PERFORM setval('@extschema@.revision_id_seq', 1000, true);
+END IF;
+END; $$;
 
 GRANT SELECT ON TABLE revision TO public;
 
-SELECT setval('@extschema@.revision_id_seq', 1000, true);
 
 COMMENT ON TABLE revision IS $$
 Defines a revision represents a amendment to table or series of tables held 
