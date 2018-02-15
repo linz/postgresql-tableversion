@@ -26,6 +26,6 @@ for v in $VER; do
   echo "-------------------------------------"
   echo "Checking upgrade from version $v"
   echo "-------------------------------------"
-  make installcheck-upgrade PREPAREDB_UPGRADE_FROM=$v
+  make installcheck-upgrade PREPAREDB_UPGRADE_FROM=$v || exit 1
 done
 
