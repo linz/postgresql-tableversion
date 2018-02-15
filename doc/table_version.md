@@ -683,7 +683,7 @@ This must be called after a revision is created within the SQL session.
 
 ### `ver_delete_revision()` ###
 
-Delete a revision.
+Delete an empty revision.
 
     FUNCTION ver_delete_revision(p_revision INTEGER) 
     RETURNS BOOLEAN
