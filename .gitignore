@@ -15,7 +15,8 @@ table_version-loader
 # make output #
 ###############
 /*.sql
-sql/*.sql
+sql/20-version.sql
+sql/table_version.sql
 test/sql/version.pg
 upgrade-scripts/
 
