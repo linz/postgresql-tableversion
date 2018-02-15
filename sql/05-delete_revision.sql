@@ -13,7 +13,7 @@ BEGIN
         v_status := FOUND;
     EXCEPTION
         WHEN foreign_key_violation THEN
-            RAISE WARNING 'Can not delete revision % as it is referenced by other tables', p_revision;
+            RAISE WARNING 'Can not delete revision % as it is referenced by other tables: %', p_revision, SQLERRM;
             v_status := FALSE;
     END;
     RETURN v_status;
