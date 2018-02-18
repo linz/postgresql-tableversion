@@ -456,56 +456,56 @@ SELECT has_function( 'table_version', 'ver_enable_versioning', ARRAY['regclass']
 
 -- Added after problem found in admin_bouldaries_uploader
 
-create schema test_schema;
-create table test_schema.table1_with_int_pk (
-id integer not null primary key,
-description varchar
+CREATE SCHEMA test_schema;
+CREATE TABLE test_schema.table1_with_int_pk (
+id INTEGER NOT NULL PRIMARY KEY,
+description VARCHAR
 );
-insert into test_schema.table1_with_int_pk values(100,'AAA');
-insert into test_schema.table1_with_int_pk values(200,'BBB');
-insert into test_schema.table1_with_int_pk values(300,'CCC');
+INSERT INTO test_schema.table1_with_int_pk VALUES(100,'AAA');
+INSERT INTO test_schema.table1_with_int_pk VALUES(200,'BBB');
+INSERT INTO test_schema.table1_with_int_pk VALUES(300,'CCC');
 
-create table test_schema.table2_with_int_pk (
-id integer not null primary key,
-description varchar
+CREATE TABLE test_schema.table2_with_int_pk (
+id INTEGER NOT NULL PRIMARY KEY
+description VARCHAR
 );
-insert into test_schema.table2_with_int_pk values(100,'AAA');
-insert into test_schema.table2_with_int_pk values(200,'YYY');
-insert into test_schema.table2_with_int_pk values(300,'ZZZ');
+INSERT INTO test_schema.table2_with_int_pk VALUES(100,'AAA');
+INSERT INTO test_schema.table2_with_int_pk VALUES(200,'YYY');
+INSERT INTO test_schema.table2_with_int_pk VALUES(300,'ZZZ');
 
-create table test_schema.table1_with_varchar_pk (
-id varchar not null primary key,
-description varchar
+CREATE TABLE test_schema.table1_with_varchar_pk (
+id INTEGER NOT NULL PRIMARY KEY
+description VARCHAR
 );
-insert into test_schema.table1_with_varchar_pk values('100','AAA');
-insert into test_schema.table1_with_varchar_pk values('200','BBB');
-insert into test_schema.table1_with_varchar_pk values('300','CCC');
+INSERT INTO test_schema.table1_with_varchar_pk VALUES('100','AAA');
+INSERT INTO test_schema.table1_with_varchar_pk VALUES('200','BBB');
+INSERT INTO test_schema.table1_with_varchar_pk VALUES('300','CCC');
 
-create table test_schema.table2_with_varchar_pk (
-id varchar not null primary key,
-description varchar
+CREATE TABLE test_schema.table2_with_varchar_pk (
+id INTEGER NOT NULL PRIMARY KEY
+description VARCHAR
 );
-insert into test_schema.table2_with_varchar_pk values('100','AAA');
-insert into test_schema.table2_with_varchar_pk values('200','YYY');
-insert into test_schema.table2_with_varchar_pk values('300','ZZZ');
+INSERT INTO test_schema.table2_with_varchar_pk VALUES('100','AAA');
+INSERT INTO test_schema.table2_with_varchar_pk VALUES('200','YYY');
+INSERT INTO test_schema.table2_with_varchar_pk VALUES('300','ZZZ');
 
 
-prepare "test1" as select T.id, T.code 
-	from table_version.ver_get_table_differences(
+PREPARE "test1" AS SELECT T.id, T.code 
+	FROM table_version.ver_get_table_differences(
 	'test_schema.table1_with_int_pk',
 	'test_schema.table2_with_int_pk',
 	'id') 
-	as T(code char(1), id int);
+	AS T(code CHAR(1), id INT);
 
-prepare "test2" as select T.id, T.code 
-	from table_version.ver_get_table_differences(
+PREPARE "test2" AS SELECT T.id, T.code 
+	FROM table_version.ver_get_table_differences(
 	'test_schema.table1_with_varchar_pk',
 	'test_schema.table2_with_varchar_pk',
 	'id') 
-	as T(code char(1), id varchar);
+	AS T(code CHAR(1), id VARCHAR);
 
-select lives_ok('"test1"','1. Request char/integer set result');
-select lives_ok('"test2"','2. Request char/varchar set result');
+SELECT lives_ok('"test1"','1. Request char/integer set result');
+SELECT lives_ok('"test2"','2. Request char/varchar set result');
 
 SELECT * FROM finish();
 
