@@ -1125,6 +1125,20 @@ throws an exception if:
 
     SELECT table_version.ver_versioned_table_drop_column('foo', 'bar', 'baz')
 
+### `ver_fix_revision_disorder()` ###
+
+Reorder revisions created out of time order. This could happen if the
+revision sequence was accidentally reset either manually or by
+upgrading to versions 1.3.0, 1.3.1 or 1.4.0 which were affected by a
+[bug](https://github.com/linz/postgresql-tableversion/issues/77)
+triggering such reset
+
+The function takes no parameters and returns the number of revisions
+which were renamed to obtain an ordered sequence. You can safely
+call this function multiple times, expecting 0 to be returned after
+the first call (in case of uncommitted transactions there could be
+additional revisions to reorder after the first run).
+
 Support
 -------
 
