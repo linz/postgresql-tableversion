@@ -1,4 +1,4 @@
-EXTVERSION   = 1.3.2dev
+EXTVERSION   = 1.3.2
 REVISION=$(shell test -d .git && which git > /dev/null && git describe --always)
 
 META         = META.json
@@ -21,7 +21,7 @@ DISTFILES = \
 
 SED = sed
 
-UPGRADEABLE_VERSIONS = 1.2.0 1.3.0dev 1.3.0 1.3.1dev 1.3.1
+UPGRADEABLE_VERSIONS = 1.2.0 1.3.0dev 1.3.0 1.3.1dev 1.3.1 1.3.2dev
 
 SQLSCRIPTS_built = \
     sql/20-version.sql \
