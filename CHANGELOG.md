@@ -6,6 +6,9 @@ in this file.
 ## [1.3.2] - 2018-MM-DD
 ### Fixed
 - Revision sequence reset on upgrade from previous versions (#77)
+### Added
+- Function `ver_fix_revision_disorder` to fix bug introduced by
+  upgrades to version 1.3.0, 1.3.1 or 1.4.0 (#77)
 
 ## [1.3.1] - 2017-09-26
 ### Fixed
