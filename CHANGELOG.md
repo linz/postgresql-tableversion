@@ -4,6 +4,10 @@ All notable changes for the PostgreSQL table version extension are documented
 in this file.
 
 ## [1.5.0dev] - YYYY-MM-DD
+### IMPORTANT
+- If coming from 1.3.0, 1.3.1 or 1.4.0, make sure to call
+  `SELECT ver_fix_revision_disorder()` right after upgrad
+### Improved
 - Loader script made tolerant to already-loaded extension
 - Testing framework switched to `pg_prove` (#74)
 
