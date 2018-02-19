@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(96);
+SELECT plan(117);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -49,6 +49,7 @@ SELECT has_function( 'table_version', 'ver_is_table_versioned', ARRAY['name','na
 SELECT has_function( 'table_version', 'ver_versioned_table_change_column_type', ARRAY['name','name', 'name', 'text'] );
 SELECT has_function( 'table_version', 'ver_versioned_table_add_column', ARRAY['name','name', 'name', 'text'] );
 SELECT has_function( 'table_version', 'ver_versioned_table_drop_column', ARRAY['name', 'name', 'name'] );
+SELECT has_function( 'table_version', 'ver_fix_revision_disorder'::name );
 
 CREATE SCHEMA foo;
 
@@ -507,7 +508,61 @@ prepare "test2" as select T.id, T.code
 select lives_ok('"test1"','1. Request char/integer set result');
 select lives_ok('"test2"','2. Request char/varchar set result');
 
+---------------------------------------
+-- Test for ver_fix_revision_disorder
+---------------------------------------
+
+SELECT is(table_version.ver_fix_revision_disorder(), 0::bigint,
+  'no revision disorder in normal situation');
+
+SELECT lives_ok('CREATE TABLE t (k int primary key, v text)');
+SELECT lives_ok($$ SELECT table_version.ver_enable_versioning('public','t') $$);
+
+SELECT lives_ok($$ SELECT setval('table_version.revision_id_seq', 2, true) $$);
+
+SELECT lives_ok($$ SELECT table_version.ver_create_revision('r1') $$); -- 2
+SELECT lives_ok($$ INSERT INTO t VALUES (1, 'a') $$);
+SELECT lives_ok($$ SELECT table_version.ver_complete_revision() $$);
+
+SELECT lives_ok($$ SELECT setval('table_version.revision_id_seq', 1, true) $$);
+
+SELECT lives_ok($$ SELECT table_version.ver_create_revision('r2') $$); -- 1
+SELECT lives_ok($$ UPDATE t set v = 'a2' WHERE k = 1 $$);
+SELECT lives_ok($$ SELECT table_version.ver_complete_revision() $$);
+
+SELECT lives_ok($$ SELECT setval('table_version.revision_id_seq', 3, true) $$);
+
+SELECT lives_ok($$ SELECT table_version.ver_create_revision('r3') $$); -- 3
+SELECT lives_ok($$ UPDATE t set v = 'a3' WHERE k = 1 $$);
+SELECT lives_ok($$ SELECT table_version.ver_complete_revision() $$);
+
+SELECT isnt_empty($$
+  SELECT * FROM table_version.public_t_revision
+  WHERE _revision_expired > _revision_created
+$$, 'Disordered revisions are found in public_t_revision');
+
+SELECT is(table_version.ver_fix_revision_disorder(), 3::bigint,
+  'three revision renamed when needed');
+
+SELECT is_empty($$
+  SELECT * FROM table_version.public_t_revision
+  WHERE _revision_expired > _revision_created;
+$$, 'No disordered revisions are found in public_t_revision');
+
+SELECT isnt_empty($$
+  SELECT count(*) FROM table_version.public_t_revision
+  WHERE _revision_expired < _revision_created;
+$$, 'Ordered revisions are found in public_t_revision');
+
+
+SELECT is(table_version.ver_fix_revision_disorder(), 0::bigint,
+  'no revision moved after fix');
+
+
+---------------------------------------
+-- End of tests
+---------------------------------------
+
 SELECT * FROM finish();
 
 ROLLBACK;
-
