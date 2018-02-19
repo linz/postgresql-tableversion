@@ -27,7 +27,7 @@ BEGIN
   PERFORM setval('@extschema@.revision_id_seq',
     greatest(
       (select max(id) FROM @extschema@.revision),
-      (select nextval('@extschema@.revision_id_seq') )
+      (select last_value from @extschema@.revision_id_seq)
     ), true);
 
 -- 2. Prepare update queries
@@ -155,4 +155,3 @@ END;
 $FIX$
 LANGUAGE 'plpgsql' VOLATILE;
 --}
-
