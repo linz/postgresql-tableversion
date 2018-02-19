@@ -4,6 +4,9 @@ All notable changes for the PostgreSQL table version extension are documented
 in this file.
 
 ## [1.3.2] - 2018-MM-DD
+### IMPORTANT
+- If coming from 1.3.0 or 1.3.1, make sure to call
+  `SELECT ver_fix_revision_disorder()` right after upgrade
 ### Fixed
 - Revision sequence reset on upgrade from previous versions (#77)
 ### Added
