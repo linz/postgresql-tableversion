@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(117);
+SELECT plan(119);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -338,6 +338,9 @@ SELECT table_privs_are(
 );
 
 SELECT ok(table_version.ver_disable_versioning('foo', 'bar5'), 'Disable versioning on foo.bar5');
+
+SELECT is_empty('SELECT * FROM table_version.tables_changed', 'tables_changed is empty after ver_disable_version');
+SELECT is_empty('SELECT * FROM table_version.versioned_tables', 'versioned_tables is empty after ver_disable_version');
 
 DROP TABLE foo.bar;
 DROP TABLE foo.bar2;
