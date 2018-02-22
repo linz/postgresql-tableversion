@@ -21,6 +21,14 @@ BEGIN
     EXECUTE 'DROP FUNCTION IF EXISTS ' || @extschema@._ver_get_diff_function(p_schema, p_table);
     EXECUTE 'DROP FUNCTION IF EXISTS ' || @extschema@._ver_get_revision_function(p_schema, p_table);
     EXECUTE 'DROP TABLE IF EXISTS '    || @extschema@.ver_get_version_table_full(p_schema, p_table) || ' CASCADE';    
+
+    EXECUTE 'WITH deleted AS ('
+            ' DELETE FROM table_version.versioned_tables'
+            ' WHERE schema_name=$1'
+            ' AND table_name=$2 RETURNING id'
+            ') DELETE FROM table_version.tables_changed'
+            '  WHERE table_id in ( select * from deleted )'
+    USING p_schema, p_table;
     
     RETURN TRUE;
 END;
