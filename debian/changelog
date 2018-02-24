@@ -1,3 +1,9 @@
+postgresql-tableversion (1.4.1-1linz~xenial1) xenial; urgency=medium
+
+  * New upstream version
+
+ -- Ivan Mincik <imincik@linz.govt.nz>  Sun, 25 Feb 2018 03:46:20 +1300
+
 postgresql-tableversion (1.4.1-1linz~trusty1) trusty; urgency=medium
 
   * New upstream version
