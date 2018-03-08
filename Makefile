@@ -229,10 +229,15 @@ $(EXTENSION)-loader: $(EXTENSION)-loader.sh Makefile
 all: $(BIN) $(SHARE)
 
 install: local-install
+uninstall: local-uninstall
 
 local-install:
 	# TODO: allow tweaking bindir and prefixdir
 	$(INSTALL) -d $(DESTDIR)/usr/local/bin
 	$(INSTALL) $(BIN) $(DESTDIR)/usr/local/bin
 	$(INSTALL) -d $(DESTDIR)/usr/local/share/table_version
-	$(INSTALL) -m 644 $(SHARE) $(BIN) $(DESTDIR)/usr/local/share/table_version
+	$(INSTALL) -m 644 $(SHARE) $(DESTDIR)/usr/local/share/table_version
+
+local-uninstall:
+	for b in $(BIN); do rm -f $(DESTIDIR)/usr/local/bin/$$b; done
+	for b in $(SHARE); do rm -f $(DESTIDIR)/usr/local/share/table_version/$$b; done
