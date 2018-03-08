@@ -52,15 +52,11 @@ PG91         = $(shell $(PG_CONFIG) --version | grep -qE " 8\.| 9\.0" && echo no
 
 ifeq ($(PG91),yes)
 
-SCRIPTS_built = $(EXTENSION)-loader
-
-# This is a workaround for a bug in "install" rule in
-# PostgreSQL 9.4 and lower
-SCRIPTS = $(SCRIPTS_built)
+BIN = $(EXTENSION)-loader
+SHARE = $(EXTENSION)-$(EXTVERSION).sql.tpl
 
 DATA_built = \
   $(EXTENSION)--$(EXTVERSION).sql \
-  $(EXTENSION)-$(EXTVERSION).sql.tpl \
   $(wildcard upgrade-scripts/*--*.sql)
 
 DATA = $(wildcard sql/*--*.sql)
@@ -229,3 +225,13 @@ $(EXTENSION)-$(EXTVERSION).sql.tpl: $(EXTENSION)--$(EXTVERSION).sql Makefile sql
 $(EXTENSION)-loader: $(EXTENSION)-loader.sh Makefile
 	cat $< > $@
 	chmod +x $@
+
+all: $(BIN) $(SHARE)
+
+install: local-install
+
+local-install:
+	# TODO: allow tweaking bindir and prefixdir
+	$(INSTALL) $(BIN) /usr/local/bin
+	$(INSTALL) -d /usr/local/share/table_version
+	$(INSTALL) -m 644 $(SHARE) $(BIN) /usr/local/share/table_version
