@@ -232,6 +232,7 @@ install: local-install
 
 local-install:
 	# TODO: allow tweaking bindir and prefixdir
-	$(INSTALL) $(BIN) /usr/local/bin
-	$(INSTALL) -d /usr/local/share/table_version
-	$(INSTALL) -m 644 $(SHARE) $(BIN) /usr/local/share/table_version
+	$(INSTALL) -d $(DESTDIR)/usr/local/bin
+	$(INSTALL) $(BIN) $(DESTDIR)/usr/local/bin
+	$(INSTALL) -d $(DESTDIR)/usr/local/share/table_version
+	$(INSTALL) -m 644 $(SHARE) $(BIN) $(DESTDIR)/usr/local/share/table_version
