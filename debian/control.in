@@ -10,6 +10,7 @@ Vcs-Git: git://github.com/linz/postgresql-tableversion.git
 Vcs-Browser: https://github.com/linz/postgresql-tableversion
 
 Package: postgresql-PGVERSION-tableversion
+Provides: postgresql-tableversion
 Architecture: all
 Depends: ${misc:Depends},
          postgresql-PGVERSION
