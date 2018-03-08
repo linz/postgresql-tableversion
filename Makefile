@@ -52,8 +52,10 @@ PG91         = $(shell $(PG_CONFIG) --version | grep -qE " 8\.| 9\.0" && echo no
 
 ifeq ($(PG91),yes)
 
-BIN = $(EXTENSION)-loader
-SHARE = $(EXTENSION)-$(EXTVERSION).sql.tpl
+LOCAL_BINDIR = /usr/local/bin
+LOCAL_SHAREDIR = /usr/local/share/$(EXTENSION)
+LOCAL_BINS = $(EXTENSION)-loader
+LOCAL_SHARES = $(EXTENSION)-$(EXTVERSION).sql.tpl
 
 DATA_built = \
   $(EXTENSION)--$(EXTVERSION).sql \
@@ -165,7 +167,7 @@ installcheck-loader: $(TESTS_built) table_version-loader
 	PREPAREDB_NOEXTENSION=1 make test/sql/preparedb
 	dropdb --if-exists contrib_regression
 	createdb contrib_regression
-	PATH="$$PATH:/usr/local/bin" table_version-loader $(TABLE_VERSION_OPTS) contrib_regression
+	PATH="$$PATH:$(LOCAL_BINDIR)" table_version-loader $(TABLE_VERSION_OPTS) contrib_regression
 	pg_prove -d contrib_regression test/sql
 	dropdb contrib_regression
 
@@ -226,18 +228,17 @@ $(EXTENSION)-loader: $(EXTENSION)-loader.sh Makefile
 	cat $< > $@
 	chmod +x $@
 
-all: $(BIN) $(SHARE)
+all: $(LOCAL_BINS) $(LOCAL_SHARES)
 
 install: local-install
 uninstall: local-uninstall
 
 local-install:
-	# TODO: allow tweaking bindir and prefixdir
-	$(INSTALL) -d $(DESTDIR)/usr/local/bin
-	$(INSTALL) $(BIN) $(DESTDIR)/usr/local/bin
-	$(INSTALL) -d $(DESTDIR)/usr/local/share/table_version
-	$(INSTALL) -m 644 $(SHARE) $(DESTDIR)/usr/local/share/table_version
+	$(INSTALL) -d $(DESTDIR)$(LOCAL_BINDIR)
+	$(INSTALL) $(LOCAL_BINS) $(DESTDIR)$(LOCAL_BINDIR)
+	$(INSTALL) -d $(DESTDIR)$(LOCAL_SHAREDIR)
+	$(INSTALL) -m 644 $(LOCAL_SHARES) $(DESTDIR)$(LOCAL_SHAREDIR)
 
 local-uninstall:
-	for b in $(BIN); do rm -f $(DESTIDIR)/usr/local/bin/$$b; done
-	for b in $(SHARE); do rm -f $(DESTIDIR)/usr/local/share/table_version/$$b; done
+	for b in $(LOCAL_BINS); do rm -f $(DESTIDIR)$(LOCAL_BINDIR)/$$b; done
+	for b in $(LOCAL_SHARES); do rm -f $(DESTIDIR)$(LOCAL_SHAREDIR)/$$b; done
