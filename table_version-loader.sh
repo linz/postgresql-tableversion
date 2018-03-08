@@ -4,7 +4,7 @@ TGT_SCHEMA=table_version
 TGT_DB=
 EXT_MODE=on
 EXT_NAME=table_version
-EXT_DIR=/usr/local/share/table_version/extension/
+EXT_DIR=/usr/local/share/table_version/
 TPL_FILE=
 VER=
 
