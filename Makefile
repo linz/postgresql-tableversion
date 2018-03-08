@@ -165,7 +165,7 @@ installcheck-loader: $(TESTS_built) table_version-loader
 	PREPAREDB_NOEXTENSION=1 make test/sql/preparedb
 	dropdb --if-exists contrib_regression
 	createdb contrib_regression
-	`pg_config --bindir`/table_version-loader $(TABLE_VERSION_OPTS) contrib_regression
+	PATH="$$PATH:/usr/local/bin" table_version-loader $(TABLE_VERSION_OPTS) contrib_regression
 	pg_prove -d contrib_regression test/sql
 	dropdb contrib_regression
 
