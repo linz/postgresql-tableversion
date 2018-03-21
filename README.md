@@ -97,6 +97,12 @@ super user and running:
 The extension will install support configuration tables and functions into the
 table_version schema.
 
+If you're ugrading from an older version of the extension run:
+
+```
+ALTER EXTENSION table_version UPDATE;
+```
+
 If you've upgraded your cluster to PostgreSQL 9.1 and already had table_version
 installed, you can upgrade it to a properly packaged extension with:
 
