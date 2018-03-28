@@ -53,7 +53,7 @@ BEGIN
     IF NOT v_is_versioned THEN
         RAISE WARNING 'Table %.% is known as versioned but lacks versioning triggers',
           p_schema, p_table
-        USING HINT = 'use ver_enable_versioniong to recover';
+        USING HINT = 'use ver_enable_versioning to recover';
     END IF;
 
     RETURN v_is_versioned;
