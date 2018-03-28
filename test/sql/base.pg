@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(119);
+SELECT plan(125);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -315,7 +315,10 @@ SELECT results_eq(
 );
 
 CREATE ROLE test_owner;
+GRANT USAGE on SCHEMA foo to test_owner;
+
 CREATE ROLE test_user;
+GRANT USAGE on SCHEMA foo to test_user;
 
 CREATE TABLE foo.bar5 (
     baz INTEGER NOT NULL PRIMARY KEY,
@@ -341,6 +344,50 @@ SELECT ok(table_version.ver_disable_versioning('foo', 'bar5'), 'Disable versioni
 
 SELECT is_empty('SELECT * FROM table_version.tables_changed', 'tables_changed is empty after ver_disable_version');
 SELECT is_empty('SELECT * FROM table_version.versioned_tables', 'versioned_tables is empty after ver_disable_version');
+
+-- Now try again as the owner user
+
+SET SESSION AUTHORIZATION test_owner;
+
+SELECT ok(table_version.ver_enable_versioning('foo', 'bar5'),
+    'Enable versioning on table as the unprivileged table owner');
+
+SELECT table_owner_is(
+    'table_version', 'foo_bar5_revision', 'test_owner',
+    'Test foo_bar5_revision ownership'
+);
+
+SELECT table_privs_are(
+    'table_version', 'foo_bar5_revision', 'test_user',
+    ARRAY['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
+    'Test foo_bar5_revision permission for test_user'
+);
+
+SET SESSION AUTHORIZATION test_user;
+
+SELECT throws_like($$
+  SELECT table_version.ver_disable_versioning('foo', 'bar5') $$,
+  '% table owner role %',
+  'Unexpected exception from non-owner attempt at unversioning table');
+
+RESET SESSION AUTHORIZATION;
+
+SELECT ok(table_version.ver_disable_versioning('foo', 'bar5'),
+    'Disable versioning on foo.bar5 as table owner');
+
+RESET SESSION AUTHORIZATION;
+
+-- Check that non-owner user cannot version/unversion the table
+SET SESSION AUTHORIZATION test_user;
+
+SELECT throws_like($$
+  SELECT table_version.ver_enable_versioning('foo', 'bar5') $$,
+  '% table owner role %',
+  'Unexpected exception from non-owner attempt at versioning table');
+
+RESET SESSION AUTHORIZATION;
+
+
 
 DROP TABLE foo.bar;
 DROP TABLE foo.bar2;
