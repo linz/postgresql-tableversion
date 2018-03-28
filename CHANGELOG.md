@@ -7,6 +7,11 @@ in this file.
 ### IMPORTANT
 - If coming from 1.3.0, 1.3.1 or 1.4.0, make sure to call
   `SELECT ver_fix_revision_disorder()` right after upgrade
+### Changed
+- Functions `ver_enable_versioning` and `ver_disable_versioning`
+  are now security definer, allowing `table_version`usage to
+  under-provileged users: as long as you own a table you can
+  now also version/unversion it (#100)
 ### Improved
 - Loader script made tolerant to already-loaded extension
 - Testing framework switched to `pg_prove` (#74)

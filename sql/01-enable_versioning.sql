@@ -1,13 +1,14 @@
 
 -- {
 CREATE OR REPLACE FUNCTION ver_enable_versioning(
-    v_table_oid       REGCLASS
+    p_table_oid       REGCLASS
 ) 
 RETURNS BOOLEAN AS
 $$
 DECLARE
-    p_schema          NAME;
-    p_table           NAME;
+    v_schema          NAME;
+    v_table           NAME;
+    v_owner           NAME;
     v_key_col         NAME;
     v_revision_table  TEXT;
     v_sql             TEXT;
@@ -19,15 +20,25 @@ DECLARE
     v_privilege       TEXT;
 BEGIN
     SELECT
-      n.nspname, c.relname
+      n.nspname, c.relname, r.rolname
     INTO
-      p_schema, p_table
+      v_schema, v_table, v_owner
     FROM
-      pg_namespace n, pg_class c
+      pg_namespace n, pg_class c, pg_roles r
     WHERE
-      c.oid = v_table_oid
+      c.oid = p_table_oid
+    AND
+      r.oid = c.relowner
     AND
       n.oid = c.relnamespace;
+
+    -- Check that SESSION_USER is the owner of the table, or
+    -- refuse to enable versioning on this table
+    IF NOT pg_has_role(session_user, v_owner, 'usage') THEN
+        RAISE EXCEPTION 'User % cannot enable versioning on table %'
+            ' for lack of usage privileges on table owner role %',
+            session_user, p_table_oid, v_owner;
+    END IF;
 
     SELECT
         ATT.attname as col
@@ -37,8 +48,8 @@ BEGIN
         pg_index IDX,
         pg_attribute ATT
     WHERE
-        IDX.indrelid = v_table_oid AND
-        ATT.attrelid = v_table_oid AND
+        IDX.indrelid = p_table_oid AND
+        ATT.attrelid = p_table_oid AND
         ATT.attnum = ANY(IDX.indkey) AND
         ATT.attnotnull = TRUE AND
         IDX.indisunique = TRUE AND
@@ -51,30 +62,30 @@ BEGIN
     LIMIT 1;
 
     IF v_key_col IS NULL THEN
-        RAISE EXCEPTION 'Table % does not have a unique non-compostite integer, bigint, text, or varchar column', v_table_oid::text;
+        RAISE EXCEPTION 'Table % does not have a unique non-compostite integer, bigint, text, or varchar column', p_table_oid::text;
     END IF;
 
-    IF (SELECT count(*) <= 1 FROM information_schema.columns WHERE table_name= p_table AND table_schema = p_schema) THEN
-        RAISE EXCEPTION 'Table % must contain at least one other non key column', v_table_oid::text;
+    IF (SELECT count(*) <= 1 FROM information_schema.columns WHERE table_name= v_table AND table_schema = v_schema) THEN
+        RAISE EXCEPTION 'Table % must contain at least one other non key column', p_table_oid::text;
     END IF;
 
-    v_revision_table := @extschema@.ver_get_version_table_full(p_schema, p_table);
+    v_revision_table := @extschema@.ver_get_version_table_full(v_schema, v_table);
     
     v_sql :=
     'CREATE TABLE ' || v_revision_table || '(' ||
         '_revision_created INTEGER NOT NULL,' ||
         '_revision_expired INTEGER,' ||
-        'LIKE ' || v_table_oid::text ||
+        'LIKE ' || p_table_oid::text ||
     ');';
     BEGIN
       EXECUTE v_sql;
     EXCEPTION
     WHEN duplicate_table THEN
-        RAISE EXCEPTION 'Table %.% is already versioned', quote_ident(p_schema), quote_ident(p_table);
+        RAISE EXCEPTION 'Table %.% is already versioned', quote_ident(v_schema), quote_ident(v_table);
     END;
     
     v_sql := 'ALTER TABLE ' || v_revision_table || ' OWNER TO ' || 
-        @extschema@._ver_get_table_owner(v_table_oid);
+        @extschema@._ver_get_table_owner(p_table_oid);
     EXECUTE v_sql;
     
     -- replicate permissions from source table to revision history table
@@ -85,8 +96,8 @@ BEGIN
                END as grantee,
                g.privilege_type
         FROM information_schema.role_table_grants g
-        WHERE g.table_name = p_table
-        AND   g.table_schema =  p_schema
+        WHERE g.table_name = v_table
+        AND   g.table_schema =  v_schema
     LOOP
         EXECUTE 'GRANT ' || v_privilege || ' ON TABLE ' || v_revision_table || 
             ' TO ' || quote_ident(v_role);
@@ -98,7 +109,7 @@ BEGIN
         FROM
             pg_attribute 
         WHERE
-            attrelid = v_table_oid AND
+            attrelid = p_table_oid AND
             attname = v_key_col AND
             attisdropped IS FALSE AND
             attnum > 0 AND
@@ -113,7 +124,7 @@ BEGIN
     
     v_revision_exists := FALSE;
     
-    EXECUTE 'SELECT EXISTS (SELECT * FROM ' || CAST(v_table_oid AS TEXT) || ' LIMIT 1)'
+    EXECUTE 'SELECT EXISTS (SELECT * FROM ' || CAST(p_table_oid AS TEXT) || ' LIMIT 1)'
     INTO v_table_has_data;
     
     IF v_table_has_data THEN
@@ -128,14 +139,14 @@ BEGIN
             v_revision_exists := TRUE;
         ELSE
             SELECT @extschema@.ver_create_revision(
-                'Initial revisioning of ' || CAST(v_table_oid AS TEXT)
+                'Initial revisioning of ' || CAST(p_table_oid AS TEXT)
             )
             INTO  v_revision;
         END IF;
     
         v_sql :=
             'INSERT INTO ' || v_revision_table ||
-            ' SELECT ' || v_revision || ', NULL, * FROM ' || CAST(v_table_oid AS TEXT);
+            ' SELECT ' || v_revision || ', NULL, * FROM ' || CAST(p_table_oid AS TEXT);
         EXECUTE v_sql;
         
         IF NOT v_revision_exists THEN
@@ -149,15 +160,15 @@ BEGIN
         quote_ident(v_key_col) || ')';
     EXECUTE v_sql;
     
-    v_sql := 'CREATE INDEX ' || quote_ident('idx_' || p_table) || '_' || quote_ident(v_key_col) || ' ON ' || v_revision_table ||
+    v_sql := 'CREATE INDEX ' || quote_ident('idx_' || v_table) || '_' || quote_ident(v_key_col) || ' ON ' || v_revision_table ||
         '(' || quote_ident(v_key_col) || ')';
     EXECUTE v_sql;
 
-    v_sql := 'CREATE INDEX ' || quote_ident('fk_' || p_table) || '_expired ON ' || v_revision_table ||
+    v_sql := 'CREATE INDEX ' || quote_ident('fk_' || v_table) || '_expired ON ' || v_revision_table ||
         '(_revision_expired)';
     EXECUTE v_sql;
 
-    v_sql := 'CREATE INDEX ' || quote_ident('fk_' || p_table) || '_created ON ' || v_revision_table ||
+    v_sql := 'CREATE INDEX ' || quote_ident('fk_' || v_table) || '_created ON ' || v_revision_table ||
         '(_revision_created)';
     EXECUTE v_sql;
     
@@ -194,10 +205,10 @@ BEGIN
         cat.relname = 'pg_class' AND
         fnsp.nspname = 'table_version' AND
         fnsp.oid = fobj.relnamespace AND
-        fobj.relname = @extschema@.ver_get_version_table(p_schema, p_table) AND
-        tnsp.nspname = p_schema AND
+        fobj.relname = @extschema@.ver_get_version_table(v_schema, v_table) AND
+        tnsp.nspname = v_schema AND
         tnsp.oid = tobj.relnamespace AND
-        tobj.relname   = p_table;
+        tobj.relname   = v_table;
 
     SELECT
         id
@@ -206,17 +217,17 @@ BEGIN
     FROM
         @extschema@.versioned_tables
     WHERE
-        schema_name = p_schema AND
-        table_name = p_table;
+        schema_name = v_schema AND
+        table_name = v_table;
     
     IF v_table_id IS NOT NULL THEN
         UPDATE @extschema@.versioned_tables
         SET    versioned = TRUE
-        WHERE  schema_name = p_schema
-        AND    table_name = p_table;
+        WHERE  schema_name = v_schema
+        AND    table_name = v_table;
     ELSE
         INSERT INTO @extschema@.versioned_tables(schema_name, table_name, key_column, versioned)
-        VALUES (p_schema, p_table, v_key_col, TRUE)
+        VALUES (v_schema, v_table, v_key_col, TRUE)
         RETURNING id INTO v_table_id;
     END IF;
     
@@ -237,12 +248,12 @@ BEGIN
         );
     END IF;
 
-    PERFORM @extschema@.ver_create_table_functions(p_schema, p_table, v_key_col);
-    PERFORM @extschema@.ver_create_version_trigger(p_schema, p_table, v_key_col);
+    PERFORM @extschema@.ver_create_table_functions(v_schema, v_table, v_key_col);
+    PERFORM @extschema@.ver_create_version_trigger(v_schema, v_table, v_key_col);
     
     RETURN TRUE;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 --}
 
 CREATE OR REPLACE FUNCTION ver_enable_versioning(p_schema NAME, p_table  NAME)
