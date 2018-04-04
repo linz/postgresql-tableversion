@@ -8,7 +8,6 @@ in this file.
 - If coming from 1.3.0, 1.3.1 or 1.4.0, make sure to call
   `SELECT ver_fix_revision_disorder()` right after upgrade
 ### Improved
-- Loader script made tolerant to already-loaded extension
 - Testing framework switched to `pg_prove` (#74)
 - Made `ver_disable_versioning` cleanup `tables_changed` and
   `versioned_tables` (#89)
