@@ -226,7 +226,7 @@ $(EXTENSION)-$(EXTVERSION).sql.tpl: $(EXTENSION)--$(EXTVERSION).sql Makefile sql
 	echo "COMMIT;" >> $@
 
 $(EXTENSION)-loader: $(EXTENSION)-loader.sh Makefile
-	cat $< > $@
+	cat $< | sed 's|@@LOCAL_SHAREDIR@@|$(LOCAL_SHAREDIR)|' > $@
 	chmod +x $@
 
 all: $(LOCAL_BINS) $(LOCAL_SHARES)
