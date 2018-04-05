@@ -52,7 +52,7 @@ PG91         = $(shell $(PG_CONFIG) --version | grep -qE " 8\.| 9\.0" && echo no
 
 ifeq ($(PG91),yes)
 
-PREFIX = /usr/
+PREFIX ?= /usr/local
 LOCAL_BINDIR = $(PREFIX)/bin
 LOCAL_SHAREDIR = $(PREFIX)/share/$(EXTENSION)
 LOCAL_BINS = $(EXTENSION)-loader
