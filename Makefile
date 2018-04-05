@@ -55,8 +55,11 @@ ifeq ($(PG91),yes)
 PREFIX ?= /usr/local
 LOCAL_BINDIR = $(PREFIX)/bin
 LOCAL_SHAREDIR = $(PREFIX)/share/$(EXTENSION)
-LOCAL_BINS = $(EXTENSION)-loader
 LOCAL_SHARES = $(EXTENSION)-$(EXTVERSION).sql.tpl
+
+SCRIPTS_built = $(EXTENSION)-loader
+
+LOCAL_BINS = $(SCRIPTS_built)
 
 DATA_built = \
   $(EXTENSION)--$(EXTVERSION).sql \
@@ -66,6 +69,7 @@ DATA = $(wildcard sql/*--*.sql)
 EXTRA_CLEAN = \
     $(SQLSCRIPTS_built) \
     $(TESTS_built) \
+    $(SCRIPTS_built) \
     sql/$(EXTENSION)--$(EXTVERSION).sql \
     sql/$(EXTENSION).sql \
 		sql/20-version.sql \
