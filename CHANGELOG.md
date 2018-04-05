@@ -13,6 +13,8 @@ in this file.
   under-provileged users: as long as you own a table you can
   now also version/unversion it (#100)
 ### Improved
+- Loader script now installs by default in /usr/local/bin/
+  and does not depend on `pg_config` anymore (#67)
 - Testing framework switched to `pg_prove` (#74)
 - Made `ver_disable_versioning` cleanup `tables_changed` and
   `versioned_tables` (#89)
