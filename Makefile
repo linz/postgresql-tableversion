@@ -52,8 +52,9 @@ PG91         = $(shell $(PG_CONFIG) --version | grep -qE " 8\.| 9\.0" && echo no
 
 ifeq ($(PG91),yes)
 
-LOCAL_BINDIR = /usr/local/bin
-LOCAL_SHAREDIR = /usr/local/share/$(EXTENSION)
+PREFIX = /usr/
+LOCAL_BINDIR = $(PREFIX)/bin
+LOCAL_SHAREDIR = $(PREFIX)/share/$(EXTENSION)
 LOCAL_BINS = $(EXTENSION)-loader
 LOCAL_SHARES = $(EXTENSION)-$(EXTVERSION).sql.tpl
 
