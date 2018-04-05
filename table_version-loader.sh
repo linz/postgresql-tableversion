@@ -4,7 +4,7 @@ TGT_SCHEMA=table_version
 TGT_DB=
 EXT_MODE=on
 EXT_NAME=table_version
-EXT_DIR=`pg_config --sharedir`/extension/
+EXT_DIR=@@LOCAL_SHAREDIR@@
 TPL_FILE=
 VER=
 

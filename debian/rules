@@ -4,6 +4,8 @@
 # Uncomment this to turn on verbose mode.
 # export DH_VERBOSE=1
 
+export PREFIX=/usr
+
 include /usr/share/postgresql-common/pgxs_debian_control.mk
 
 

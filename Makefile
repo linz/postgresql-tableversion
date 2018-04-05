@@ -52,21 +52,24 @@ PG91         = $(shell $(PG_CONFIG) --version | grep -qE " 8\.| 9\.0" && echo no
 
 ifeq ($(PG91),yes)
 
-SCRIPTS_built = $(EXTENSION)-loader
+PREFIX ?= /usr/local
+LOCAL_BINDIR = $(PREFIX)/bin
+LOCAL_SHAREDIR = $(PREFIX)/share/$(EXTENSION)
+LOCAL_SHARES = $(EXTENSION)-$(EXTVERSION).sql.tpl
 
-# This is a workaround for a bug in "install" rule in
-# PostgreSQL 9.4 and lower
-SCRIPTS = $(SCRIPTS_built)
+LOCAL_SCRIPTS_built = $(EXTENSION)-loader
+
+LOCAL_BINS = $(LOCAL_SCRIPTS_built)
 
 DATA_built = \
   $(EXTENSION)--$(EXTVERSION).sql \
-  $(EXTENSION)-$(EXTVERSION).sql.tpl \
   $(wildcard upgrade-scripts/*--*.sql)
 
 DATA = $(wildcard sql/*--*.sql)
 EXTRA_CLEAN = \
     $(SQLSCRIPTS_built) \
     $(TESTS_built) \
+    $(LOCAL_SCRIPTS_built) \
     sql/$(EXTENSION)--$(EXTVERSION).sql \
     sql/$(EXTENSION).sql \
 		sql/20-version.sql \
@@ -169,7 +172,7 @@ installcheck-loader: $(TESTS_built) table_version-loader
 	PREPAREDB_NOEXTENSION=1 make test/sql/preparedb
 	dropdb --if-exists contrib_regression
 	createdb contrib_regression
-	`pg_config --bindir`/table_version-loader $(TABLE_VERSION_OPTS) contrib_regression
+	PATH="$$PATH:$(LOCAL_BINDIR)" table_version-loader $(TABLE_VERSION_OPTS) contrib_regression
 	pg_prove -d contrib_regression test/sql
 	dropdb contrib_regression
 
@@ -227,5 +230,20 @@ $(EXTENSION)-$(EXTVERSION).sql.tpl: $(EXTENSION)--$(EXTVERSION).sql Makefile sql
 	echo "COMMIT;" >> $@
 
 $(EXTENSION)-loader: $(EXTENSION)-loader.sh Makefile
-	cat $< > $@
+	cat $< | sed 's|@@LOCAL_SHAREDIR@@|$(LOCAL_SHAREDIR)|' > $@
 	chmod +x $@
+
+all: $(LOCAL_BINS) $(LOCAL_SHARES)
+
+install: local-install
+uninstall: local-uninstall
+
+local-install:
+	$(INSTALL) -d $(DESTDIR)$(LOCAL_BINDIR)
+	$(INSTALL) $(LOCAL_BINS) $(DESTDIR)$(LOCAL_BINDIR)
+	$(INSTALL) -d $(DESTDIR)$(LOCAL_SHAREDIR)
+	$(INSTALL) -m 644 $(LOCAL_SHARES) $(DESTDIR)$(LOCAL_SHAREDIR)
+
+local-uninstall:
+	for b in $(LOCAL_BINS); do rm -f $(DESTIDIR)$(LOCAL_BINDIR)/$$b; done
+	for b in $(LOCAL_SHARES); do rm -f $(DESTIDIR)$(LOCAL_SHAREDIR)/$$b; done
