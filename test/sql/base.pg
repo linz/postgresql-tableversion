@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(125);
+SELECT plan(135);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -204,7 +204,7 @@ SELECT results_eq(
     'Foo bar diff check to ensure a feature created and delete in between revision does not show (delete does not occur in last revision)'
 );
 
--- Edit 4 re-insert a delete row
+-- Edit 5 re-insert a delete row
 SELECT is(table_version.ver_create_revision('Foo bar edit 4'), 1006, 'Create edit 4 revision');
 
 INSERT INTO foo.bar (id, d1) VALUES (1, 'foo bar 1 (re-insert)');
@@ -229,9 +229,39 @@ SELECT results_eq(
 
 SELECT is(table_version.ver_versioned_table_change_column_type('foo', 'bar', 'd1', 'VARCHAR(100)'), TRUE, 'Change column datatype');
 
+-- TODO: check that the column was changed both in table and revision table
+
 SELECT is(table_version.ver_versioned_table_add_column('foo', 'bar', 'baz', 'TEXT'), TRUE, 'Add column datatype');
 
+-- check that the column was added in both in table and revision table
+SELECT has_column( 'foo', 'bar', 'baz',
+    'table foo.bar has column baz' );
+SELECT col_type_is( 'foo', 'bar', 'baz', 'text',
+    'foo.bar.baz is of type text' );
+SELECT has_column( 'table_version', 'foo_bar_revision', 'baz',
+    'revision table for foo.bar has column baz' );
+SELECT col_type_is( 'table_version', 'foo_bar_revision',
+    'baz', 'text',
+    'foo_bar_revision.baz is of type text' );
+
+-- Verify the new column can be used
+SELECT is(table_version.ver_create_revision('Foo bar edit 6'), 1007, 'Create edit 6 revision');
+SELECT lives_ok($$INSERT INTO foo.bar (id,baz) VALUES (4,'baz')$$);
+SELECT ok(table_version.ver_complete_revision(), 'Complete edit 5 revision');
+
+SELECT results_eq(
+    'SELECT * FROM table_version.ver_get_foo_bar_diff(1006, 1007) ORDER BY baz',
+    $$VALUES ('I'::char, 4, null::varchar, 'baz'::text)$$,
+    'Foo bar diff for new record after column added'
+);
+
 SELECT is(table_version.ver_versioned_table_drop_column('foo', 'bar', 'baz'), TRUE, 'Drop column');
+
+-- check that the column was removed both in table and revision table
+SELECT hasnt_column( 'foo', 'bar', 'baz',
+    'table foo.bar had column baz removed' );
+SELECT hasnt_column( 'table_version', 'foo_bar_revision', 'baz',
+    'revision table for foo.bar had column baz removed' );
 
 SELECT ok(table_version.ver_disable_versioning('foo', 'bar'), 'Disable versioning on foo.bar');
 
@@ -251,7 +281,7 @@ SELECT ok(table_version.ver_is_table_versioned('foo', 'bar2'), 'Check table is r
 SELECT is(table_version.ver_get_versioned_table_key('foo', 'bar2'), 'baz', 'Check table foo.bar table key');
 
 -- Edit 1 insert, update and delete for text primary key
-SELECT is(table_version.ver_create_revision('Foo bar2 edit'), 1008, 'Create edit text PK');
+SELECT is(table_version.ver_create_revision('Foo bar2 edit'), 1009, 'Create edit text PK');
 
 INSERT INTO foo.bar2 (baz, qux) VALUES ('foo bar 4', 'qux4');
 
@@ -265,7 +295,7 @@ WHERE baz = 'foo bar 3';
 SELECT ok(table_version.ver_complete_revision(), 'Complete edit text PK');
 
 SELECT results_eq(
-    'SELECT * FROM table_version.ver_get_foo_bar2_diff(1007, 1008) ORDER BY baz',
+    'SELECT * FROM table_version.ver_get_foo_bar2_diff(1008, 1009) ORDER BY baz',
     $$VALUES ('U'::char, 'foo bar 1', 'qux1 edit'),
              ('D'::char, 'foo bar 3', 'qux3'),
              ('I'::char, 'foo bar 4', 'qux4')$$,
