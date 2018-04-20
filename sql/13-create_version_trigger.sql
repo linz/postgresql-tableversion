@@ -20,6 +20,8 @@ DECLARE
     v_trigger_name   VARCHAR;
     v_column_name    NAME;
     v_column_update  TEXT;
+    v_col_insert_col TEXT;
+    v_col_insert_val TEXT;
 BEGIN
     IF NOT @extschema@._ver_is_table_versioned(p_schema, p_table) THEN
         RAISE EXCEPTION 'Table %.% is not versioned', quote_ident(p_schema), quote_ident(p_table);
@@ -27,6 +29,13 @@ BEGIN
     
     v_revision_table := @extschema@.ver_get_version_table_full(p_schema, p_table);
     
+
+    SELECT string_agg(quote_ident(att_name), ',') INTO v_col_insert_col
+    FROM unnest(@extschema@._ver_get_table_columns(p_schema || '.' ||  p_table));
+
+    SELECT string_agg('NEW.' || quote_ident(att_name), E',\n') INTO v_col_insert_val
+    FROM unnest(@extschema@._ver_get_table_columns(p_schema || '.' ||  p_table));
+
     v_column_update := '';
     FOR v_column_name IN
         SELECT att_name AS column_name
@@ -132,8 +141,11 @@ CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
         END IF;
 
         IF( TG_OP <> 'DELETE') THEN
-            INSERT INTO %revision_table%
-            SELECT v_revision, NULL, NEW.*;
+            INSERT INTO %revision_table% (_revision_created, _revision_expired, %revision_insert_cols%)
+            SELECT
+                v_revision,
+                NULL,
+                %revision_insert_vals%;
             RETURN NEW;
         END IF;
         
@@ -149,6 +161,8 @@ $TRIGGER$ LANGUAGE plpgsql SECURITY DEFINER;
     v_sql := REPLACE(v_sql, '%key_col%',        quote_ident(p_key_col));
     v_sql := REPLACE(v_sql, '%revision_table%', v_revision_table);
     v_sql := REPLACE(v_sql, '%revision_update_cols%', v_column_update);
+    v_sql := REPLACE(v_sql, '%revision_insert_cols%', v_col_insert_col);
+    v_sql := REPLACE(v_sql, '%revision_insert_vals%', v_col_insert_val);
     
     EXECUTE v_sql;
 

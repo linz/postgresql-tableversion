@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(139);
+SELECT plan(146);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -660,6 +660,20 @@ $$, 'Ordered revisions are found in public_t_revision');
 SELECT is(table_version.ver_fix_revision_disorder(), 0::bigint,
   'no revision moved after fix');
 
+---------------------------------------
+-- Test for table triggers
+---------------------------------------
+
+SELECT lives_ok('CREATE TABLE "index" (k int primary key, "desc" text, "table" int)');
+SELECT lives_ok($$ SELECT table_version.ver_enable_versioning('public','index') $$);
+SELECT lives_ok($$ SELECT table_version.ver_create_revision('r1') $$);
+SELECT lives_ok($$ INSERT INTO "index" VALUES (1, 'a', '23') $$);
+-- reorder the columns of the revision table
+-- See https://github.com/linz/postgresql-tableversion/issues/109
+SELECT lives_ok($$ ALTER TABLE table_version.public_index_revision DROP column "desc"; $$);
+SELECT lives_ok($$ ALTER TABLE table_version.public_index_revision ADD column "desc" text; $$);
+-- insert new value
+SELECT lives_ok($$ INSERT INTO "index" VALUES (2, 'b', '24') $$);
 
 ---------------------------------------
 -- End of tests
