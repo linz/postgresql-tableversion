@@ -8,16 +8,22 @@ in this file.
 - If coming from 1.3.0, 1.3.1 or 1.4.0, make sure to call
   `SELECT ver_fix_revision_disorder()` right after upgrade
 ### Changed
-- Functions `ver_enable_versioning` and `ver_disable_versioning`
+- Functions `ver_enable_versioning`, `ver_disable_versioning`
+  `ver_versioned_table_add_column`, `ver_versioned_table_drop_column`
   are now security definer, allowing `table_version`usage to
   under-provileged users: as long as you own a table you can
-  now also version/unversion it (#100)
+  now also version/unversion (#100) and add/drop cols to it (#113)
 ### Improved
 - Loader script now installs by default in /usr/local/bin/
   and does not depend on `pg_config` anymore (#67)
 - Testing framework switched to `pg_prove` (#74)
 - Made `ver_disable_versioning` cleanup `tables_changed` and
   `versioned_tables` (#89)
+### Added
+- More functions accepting regclass parameter (#13):
+    - `ver_disable_versioning`
+    - `ver_versioned_table_add_column`
+    - `ver_versioned_table_drop_column`
 
 ## [1.4.0] - 2017-11-15
 ### Added

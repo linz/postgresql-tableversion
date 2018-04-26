@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(135);
+SELECT plan(137);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
