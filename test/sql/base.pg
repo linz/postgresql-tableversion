@@ -393,6 +393,13 @@ SELECT table_privs_are(
     'Test foo_bar5_revision permission for test_user'
 );
 
+-- Check that owner can add / drop columns
+-- See https://github.com/linz/postgresql-tableversion/issues/113
+SELECT is(table_version.ver_versioned_table_add_column('foo', 'bar5', 'c2', 'TEXT'),
+    TRUE, 'Revisioned table owner can add column');
+SELECT is(table_version.ver_versioned_table_drop_column('foo', 'bar5', 'c2'),
+    TRUE, 'Revisioned table owner can drop column');
+
 SET SESSION AUTHORIZATION test_user;
 
 SELECT throws_like($$
