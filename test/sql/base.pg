@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(137);
+SELECT plan(139);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -406,6 +406,18 @@ SELECT throws_like($$
   SELECT table_version.ver_disable_versioning('foo', 'bar5') $$,
   '% table owner role %',
   'Unexpected exception from non-owner attempt at unversioning table');
+
+-- Check that non-owner can NOT add / drop columns
+SELECT throws_like($$ SELECT
+    table_version.ver_versioned_table_add_column('foo', 'bar5', 'c2', 'TEXT')
+    $$,
+    '% table owner role %',
+    'Revisioned table non-owner can not add column');
+SELECT throws_like($$ SELECT
+    table_version.ver_versioned_table_drop_column('foo', 'bar5', 'c2')
+    $$,
+    '% table owner role %',
+    'Revisioned table non-owner can not drop column');
 
 RESET SESSION AUTHORIZATION;
 
