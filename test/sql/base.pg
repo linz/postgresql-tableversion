@@ -621,7 +621,7 @@ SELECT lives_ok($$ SELECT table_version.ver_complete_revision() $$);
 
 SELECT isnt_empty($$
   SELECT * FROM table_version.public_t_revision
-  WHERE _revision_expired > _revision_created
+  WHERE _revision_expired < _revision_created
 $$, 'Disordered revisions are found in public_t_revision');
 
 SELECT is(table_version.ver_fix_revision_disorder(), 3::bigint,
@@ -629,12 +629,12 @@ SELECT is(table_version.ver_fix_revision_disorder(), 3::bigint,
 
 SELECT is_empty($$
   SELECT * FROM table_version.public_t_revision
-  WHERE _revision_expired > _revision_created;
+  WHERE _revision_expired < _revision_created;
 $$, 'No disordered revisions are found in public_t_revision');
 
 SELECT isnt_empty($$
   SELECT count(*) FROM table_version.public_t_revision
-  WHERE _revision_expired < _revision_created;
+  WHERE _revision_expired > _revision_created;
 $$, 'Ordered revisions are found in public_t_revision');
 
 
