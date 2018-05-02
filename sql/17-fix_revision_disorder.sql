@@ -42,7 +42,7 @@ BEGIN
           v_numversionedtables, v_rec.schema_name, v_rec.table_name);
       EXECUTE format('PREPARE "p_ue%s" AS '
           'UPDATE table_version.%s_%s_revision '
-          'SET _revision_created = $1 WHERE _revision_created = $2',
+          'SET _revision_expired = $1 WHERE _revision_expired = $2',
           v_numversionedtables, v_rec.schema_name, v_rec.table_name);
       v_numversionedtables := v_numversionedtables + 1;
     EXCEPTION WHEN UNDEFINED_TABLE THEN
