@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(146);
+SELECT plan(149);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -671,9 +671,16 @@ SELECT lives_ok($$ INSERT INTO "index" VALUES (1, 'a', '23') $$);
 -- reorder the columns of the revision table
 -- See https://github.com/linz/postgresql-tableversion/issues/109
 SELECT lives_ok($$ ALTER TABLE table_version.public_index_revision DROP column "desc"; $$);
+-- insert new value, testing effects of a missing column
+SELECT throws_like($$ INSERT INTO "index" VALUES (3, 'b', '24') $$,
+$$column "desc" of relation "public_index_revision" does not exist$$);
 SELECT lives_ok($$ ALTER TABLE table_version.public_index_revision ADD column "desc" text; $$);
 -- insert new value
 SELECT lives_ok($$ INSERT INTO "index" VALUES (2, 'b', '24') $$);
+-- Add additional column
+SELECT lives_ok($$ ALTER TABLE table_version.public_index_revision ADD column "desc2" text; $$);
+-- insert new value
+SELECT lives_ok($$ INSERT INTO "index" VALUES (4, 'b', '24') $$);
 
 ---------------------------------------
 -- End of tests
