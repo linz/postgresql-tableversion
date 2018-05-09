@@ -141,7 +141,11 @@ CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
         END IF;
 
         IF( TG_OP <> 'DELETE') THEN
-            INSERT INTO %revision_table% (_revision_created, _revision_expired, %revision_insert_cols%)
+            INSERT INTO %revision_table% (
+                _revision_created,
+                _revision_expired,
+                %revision_insert_cols%
+            )
             SELECT
                 v_revision,
                 NULL,
