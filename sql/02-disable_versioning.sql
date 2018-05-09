@@ -10,18 +10,9 @@ DECLARE
     v_owner  NAME;
 BEGIN
 
-    SELECT
-      n.nspname, c.relname, r.rolname
-    INTO
-      v_schema, v_table, v_owner
-    FROM
-      pg_namespace n, pg_class c, pg_roles r
-    WHERE
-      c.oid = p_table_oid
-    AND
-      r.oid = c.relowner
-    AND
-      n.oid = c.relnamespace;
+    SELECT nspname, relname, rolname
+    INTO v_schema, v_table, v_owner
+    FROM @extschema@._ver_get_table_info(p_table_oid);
 
     -- Check that SESSION_USER is the owner of the table, or
     -- refuse to enable versioning on this table
