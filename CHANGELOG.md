@@ -14,6 +14,7 @@ in this file.
   under-provileged users: as long as you own a table you can
   now also version/unversion (#100) and add/drop cols to it (#113)
 ### Improved
+- Do not assume consistent ordering of revision table columns (#109)
 - Loader script now installs by default in /usr/local/bin/
   and does not depend on `pg_config` anymore (#67)
 - Testing framework switched to `pg_prove` (#74)
