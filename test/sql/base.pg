@@ -7,7 +7,7 @@
 -- Land Information New Zealand and the New Zealand Government.
 -- All rights reserved
 --
--- This software is released under the terms of the new BSD license. See the 
+-- This software is released under the terms of the new BSD license. See the
 -- LICENSE file for more information.
 --
 --------------------------------------------------------------------------------
@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(181);
+SELECT plan(183);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -243,10 +243,10 @@ SELECT results_eq(
     format($$
         SELECT * FROM table_version.ver_get_foo_bar_diff(%1$s - 4, %1$s)
         ORDER BY id$$, :last_revision),
-    $$VALUES ('D'::char, 1, 'foo bar 1 edit'), 
-             ('U'::char, 2, 'foo bar 2 edit'), 
-             ('D'::char, 3, 'foo bar 3'), 
-             ('I'::char, 5, 'foo bar 5'), 
+    $$VALUES ('D'::char, 1, 'foo bar 1 edit'),
+             ('U'::char, 2, 'foo bar 2 edit'),
+             ('D'::char, 3, 'foo bar 3'),
+             ('I'::char, 5, 'foo bar 5'),
              ('I'::char, 6, 'foo bar 6')$$,
     'Foo bar diff check to ensure a feature created and delete in between revision does not show (delete does not occur in last revision)'
 );
@@ -272,10 +272,10 @@ SELECT results_eq(
     format($$
         SELECT * FROM table_version.ver_get_foo_bar_diff(%1$s - 5, %1$s)
         ORDER BY id$$, :last_revision),
-    $$VALUES ('U'::char, 1, 'foo bar 1 (re-insert)'), 
-             ('U'::char, 2, 'foo bar 2 edit'), 
-             ('D'::char, 3, 'foo bar 3'), 
-             ('I'::char, 5, 'foo bar 5'), 
+    $$VALUES ('U'::char, 1, 'foo bar 1 (re-insert)'),
+             ('U'::char, 2, 'foo bar 2 edit'),
+             ('D'::char, 3, 'foo bar 3'),
+             ('I'::char, 5, 'foo bar 5'),
              ('I'::char, 6, 'foo bar 6')$$,
     'Foo bar diff check re-insert a prevoiusly deleted row #2'
 );
@@ -753,18 +753,18 @@ INSERT INTO test_schema.table2_with_varchar_pk VALUES
     ('300','ZZZ');
 
 
-PREPARE "test1" AS SELECT T.id, T.code 
+PREPARE "test1" AS SELECT T.id, T.code
 	from table_version.ver_get_table_differences(
 	'test_schema.table1_with_int_pk',
 	'test_schema.table2_with_int_pk',
-	'id') 
+	'id')
 	AS T(code char(1), id int);
 
-PREPARE "test2" AS SELECT T.id, T.code 
+PREPARE "test2" AS SELECT T.id, T.code
 	from table_version.ver_get_table_differences(
 	'test_schema.table1_with_varchar_pk',
 	'test_schema.table2_with_varchar_pk',
-	'id') 
+	'id')
 	AS T(code char(1), id varchar);
 
 SELECT lives_ok('"test1"','1. Request char/integer set result');
@@ -779,9 +779,6 @@ SELECT is(table_version.ver_fix_revision_disorder(), 0::bigint,
 
 SELECT lives_ok('CREATE TABLE t (k int primary key, v text)');
 SELECT lives_ok($$ SELECT table_version.ver_enable_versioning('public','t') $$);
-SELECT lives_ok($$
- ALTER TABLE table_version.public_t_revision DROP CONSTRAINT public_t_revision_check
-$$);
 
 SELECT lives_ok($$ SELECT setval('table_version.revision_id_seq', 2, true) $$);
 
@@ -792,6 +789,16 @@ SELECT lives_ok($$ SELECT table_version.ver_complete_revision() $$);
 SELECT lives_ok($$ SELECT setval('table_version.revision_id_seq', 1, true) $$);
 
 SELECT lives_ok($$ SELECT table_version.ver_create_revision('r2') $$); -- 1
+
+SELECT throws_like( $$ UPDATE t set v = 'a2' WHERE k = 1 $$,
+    '%violates check constraint%',
+    'ver_create_revision bails out on revision sequence disorder'
+);
+
+SELECT lives_ok($$
+ ALTER TABLE table_version.public_t_revision DROP CONSTRAINT public_t_revision_check
+$$);
+
 SELECT lives_ok($$ UPDATE t set v = 'a2' WHERE k = 1 $$);
 SELECT lives_ok($$ SELECT table_version.ver_complete_revision() $$);
 
