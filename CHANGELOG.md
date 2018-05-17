@@ -10,7 +10,7 @@ in this file.
 ### Changed
 - Functions `ver_enable_versioning`, `ver_disable_versioning`
   `ver_versioned_table_add_column`, `ver_versioned_table_drop_column`
-  are now security definer, allowing `table_version`usage to
+  are now security definer, allowing `table_version` usage to
   under-provileged users: as long as you own a table you can
   now also version/unversion (#100) and add/drop cols to it (#113)
 ### Improved
