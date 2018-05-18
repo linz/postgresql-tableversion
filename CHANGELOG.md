@@ -3,6 +3,10 @@
 All notable changes for the PostgreSQL table version extension are documented 
 in this file.
 
+## [1.4.3] - 2018-05-09
+### Fixed
+- Fix db corruption by `ver_fix_revision_disorder` (#115)
+
 ## [1.4.2] - 2018-04-04
 ### Fixed
 - Loader script made tolerant to already-loaded extension
