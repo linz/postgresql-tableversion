@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(153);
+SELECT plan(156);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -400,6 +400,13 @@ SELECT is(table_version.ver_versioned_table_add_column('foo', 'bar5', 'c2', 'TEX
 SELECT is(table_version.ver_versioned_table_drop_column('foo', 'bar5', 'c2'),
     TRUE, 'Revisioned table owner can drop column');
 
+-- Check that owner can change column type
+-- See https://github.com/linz/postgresql-tableversion/pull/125
+SELECT is(table_version.ver_versioned_table_add_column('foo', 'bar5', 'c3', 'int2'),
+    TRUE, 'Revisioned table owner can add column (again)');
+SELECT is(table_version.ver_versioned_table_change_column_type('foo', 'bar5', 'c3', 'int4'),
+    TRUE, 'Revisioned table owner can change column type');
+
 SET SESSION AUTHORIZATION test_user;
 
 SELECT throws_like($$
@@ -418,6 +425,11 @@ SELECT throws_like($$ SELECT
     $$,
     '% table owner role %',
     'Revisioned table non-owner can not drop column');
+SELECT throws_like($$ SELECT
+    table_version.ver_versioned_table_change_column_type('foo', 'bar5', 'c3', 'int8')
+    $$,
+    '% table owner role %',
+    'Revisioned table non-owner can not change column type');
 
 RESET SESSION AUTHORIZATION;
 
