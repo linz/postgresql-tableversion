@@ -436,8 +436,6 @@ RESET SESSION AUTHORIZATION;
 SELECT ok(table_version.ver_disable_versioning('foo', 'bar5'),
     'Disable versioning on foo.bar5 as table owner');
 
-RESET SESSION AUTHORIZATION;
-
 -- Check that non-owner user cannot version/unversion the table
 SET SESSION AUTHORIZATION test_user;
 
