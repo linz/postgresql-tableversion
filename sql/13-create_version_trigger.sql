@@ -181,9 +181,6 @@ $TRIGGER$ LANGUAGE plpgsql SECURITY DEFINER;
         quote_ident(p_schema) || '.' || quote_ident(p_table) ||
         ' FOR EACH ROW EXECUTE PROCEDURE ' || v_revision_table || '()';
     
-    EXECUTE 'ALTER FUNCTION ' || v_revision_table || '() ' ||
-        'OWNER TO ' || @extschema@._ver_get_table_owner((p_schema || '.' || p_table)::REGCLASS);
-    
     RETURN TRUE;
 END;
 $$ LANGUAGE plpgsql;
