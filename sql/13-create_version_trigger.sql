@@ -1,15 +1,15 @@
 /**
 * Creates trigger and trigger function required for versioning the table.
 *
-* @param p_schema         The table schema
-* @param p_table          The table name
+* @param p_table_oid      The table regclass
 * @param p_key_col        The unique non-compostite integer column key.
 * @return                 If creating the functions was successful.
 * @throws RAISE_EXCEPTION If the table is not versioned
+*
+* -- {
 */
 CREATE OR REPLACE FUNCTION ver_create_version_trigger(
-    p_schema  NAME,
-    p_table   NAME,
+    p_table_oid   REGCLASS,
     p_key_col NAME
 ) 
 RETURNS BOOLEAN AS
@@ -22,24 +22,40 @@ DECLARE
     v_column_update  TEXT;
     v_col_insert_col TEXT;
     v_col_insert_val TEXT;
+    v_table          NAME;
+    v_schema         NAME;
+    v_owner          NAME;
 BEGIN
-    IF NOT @extschema@._ver_is_table_versioned(p_schema, p_table) THEN
-        RAISE EXCEPTION 'Table %.% is not versioned', quote_ident(p_schema), quote_ident(p_table);
+
+    SELECT nspname, relname, rolname
+    INTO v_schema, v_table, v_owner
+    FROM @extschema@._ver_get_table_info(p_table_oid);
+
+    -- Check that SESSION_USER is the owner of the table, or
+    -- refuse to add columns to it
+    IF NOT pg_has_role(session_user, v_owner, 'usage') THEN
+        RAISE EXCEPTION 'User % cannot create version triggers on table %'
+            ' for lack of usage privileges on table owner role %',
+            session_user, p_table_oid, v_owner;
+    END IF;
+
+    IF NOT @extschema@._ver_is_table_versioned(v_schema, v_table) THEN
+        RAISE EXCEPTION 'Table %.% is not versioned', quote_ident(v_schema), quote_ident(v_table);
     END IF;
     
-    v_revision_table := @extschema@.ver_get_version_table_full(p_schema, p_table);
+    v_revision_table := @extschema@.ver_get_version_table_full(v_schema, v_table);
     
 
     SELECT string_agg(quote_ident(att_name), ',') INTO v_col_insert_col
-    FROM unnest(@extschema@._ver_get_table_columns(p_schema || '.' ||  p_table));
+    FROM unnest(@extschema@._ver_get_table_columns(v_schema || '.' ||  v_table));
 
     SELECT string_agg('NEW.' || quote_ident(att_name), E',\n') INTO v_col_insert_val
-    FROM unnest(@extschema@._ver_get_table_columns(p_schema || '.' ||  p_table));
+    FROM unnest(@extschema@._ver_get_table_columns(v_schema || '.' ||  v_table));
 
     v_column_update := '';
     FOR v_column_name IN
         SELECT att_name AS column_name
-        FROM unnest(@extschema@._ver_get_table_columns(p_schema || '.' ||  p_table))
+        FROM unnest(@extschema@._ver_get_table_columns(v_schema || '.' ||  v_table))
     LOOP
         IF v_column_name = p_key_col THEN
             CONTINUE;
@@ -159,9 +175,9 @@ $TRIGGER$ LANGUAGE plpgsql SECURITY DEFINER;
 
     $template$;
 
-    v_sql := REPLACE(v_sql, '%schema_name%',    quote_literal(p_schema));
-    v_sql := REPLACE(v_sql, '%table_name%',     quote_literal(p_table));
-    v_sql := REPLACE(v_sql, '%full_table_name%', quote_ident(p_schema) || '.' || quote_ident(p_table));
+    v_sql := REPLACE(v_sql, '%schema_name%',    quote_literal(v_schema));
+    v_sql := REPLACE(v_sql, '%table_name%',     quote_literal(v_table));
+    v_sql := REPLACE(v_sql, '%full_table_name%', quote_ident(v_schema) || '.' || quote_ident(v_table));
     v_sql := REPLACE(v_sql, '%key_col%',        quote_ident(p_key_col));
     v_sql := REPLACE(v_sql, '%revision_table%', v_revision_table);
     v_sql := REPLACE(v_sql, '%revision_update_cols%', v_column_update);
@@ -170,18 +186,43 @@ $TRIGGER$ LANGUAGE plpgsql SECURITY DEFINER;
     
     EXECUTE v_sql;
 
-    SELECT @extschema@._ver_get_version_trigger(p_schema, p_table)
+    SELECT @extschema@._ver_get_version_trigger(v_schema, v_table)
     INTO v_trigger_name;
     
 
     EXECUTE 'DROP TRIGGER IF EXISTS '  || v_trigger_name || ' ON ' ||  
-        quote_ident(p_schema) || '.' || quote_ident(p_table);
+        quote_ident(v_schema) || '.' || quote_ident(v_table);
 
     EXECUTE 'CREATE TRIGGER '  || v_trigger_name || ' AFTER INSERT OR UPDATE OR DELETE ON ' ||  
-        quote_ident(p_schema) || '.' || quote_ident(p_table) ||
+        quote_ident(v_schema) || '.' || quote_ident(v_table) ||
         ' FOR EACH ROW EXECUTE PROCEDURE ' || v_revision_table || '()';
     
     RETURN TRUE;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+--}
 
+/*
+* Creates trigger and trigger function required for versioning the table.
+*
+* @param p_schema         The table schema
+* @param p_table          The table name
+* @param p_key_col        The unique non-compostite integer column key.
+* @return                 If creating the functions was successful.
+* @throws RAISE_EXCEPTION If the table is not versioned
+*
+* {
+*/
+CREATE OR REPLACE FUNCTION ver_create_version_trigger(
+    p_schema  NAME,
+    p_table   NAME,
+    p_key_col NAME
+) 
+RETURNS BOOLEAN AS
+$$
+    SELECT @extschema@.ver_create_version_trigger(
+        ( p_schema || '.' || p_table)::regclass,
+        p_key_col
+    );
+$$ LANGUAGE sql;
+-- }

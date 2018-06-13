@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(156);
+SELECT plan(160);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -407,6 +407,12 @@ SELECT is(table_version.ver_versioned_table_add_column('foo', 'bar5', 'c3', 'int
 SELECT is(table_version.ver_versioned_table_change_column_type('foo', 'bar5', 'c3', 'int4'),
     TRUE, 'Revisioned table owner can change column type');
 
+-- Check that owner can regenerate version triggers
+SELECT is(table_version.ver_create_version_trigger('foo', 'bar5', 'baz'),
+    TRUE, 'Table owner can regenerate version triggers');
+SELECT is(table_version.ver_create_version_trigger('foo.bar5', 'baz'),
+    TRUE, 'Table owner can regenerate version triggers (regclass version)');
+
 SET SESSION AUTHORIZATION test_user;
 
 SELECT throws_like($$
@@ -414,7 +420,7 @@ SELECT throws_like($$
   '% table owner role %',
   'Unexpected exception from non-owner attempt at unversioning table');
 
--- Check that non-owner can NOT add / drop columns
+-- Check that non-owner can NOT add / drop / change columns
 SELECT throws_like($$ SELECT
     table_version.ver_versioned_table_add_column('foo', 'bar5', 'c2', 'TEXT')
     $$,
@@ -430,6 +436,13 @@ SELECT throws_like($$ SELECT
     $$,
     '% table owner role %',
     'Revisioned table non-owner can not change column type');
+
+-- Check that non-owner can NOT add version triggers
+SELECT throws_like($$ SELECT
+    table_version.ver_create_version_trigger('foo', 'bar5', 'baz')
+    $$,
+    '% table owner role %',
+    'Table non-owner can not create version triggers');
 
 RESET SESSION AUTHORIZATION;
 
@@ -570,6 +583,7 @@ SELECT has_function( 'table_version', 'ver_disable_versioning', ARRAY['regclass'
 SELECT has_function( 'table_version', 'ver_versioned_table_add_column', ARRAY['regclass', 'name', 'text'] );
 SELECT has_function( 'table_version', 'ver_versioned_table_drop_column', ARRAY['regclass', 'name'] );
 SELECT has_function( 'table_version', 'ver_versioned_table_change_column_type', ARRAY['regclass', 'name', 'text'] );
+SELECT has_function( 'table_version', 'ver_create_version_trigger', ARRAY['regclass', 'name'] );
 
 
 -- Added after problem found in admin_bouldaries_uploader
