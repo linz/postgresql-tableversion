@@ -9,8 +9,9 @@ in this file.
   `SELECT ver_fix_revision_disorder()` right after upgrade
 ### Changed
 - Functions `ver_enable_versioning`, `ver_disable_versioning`
-  `ver_versioned_table_add_column`, `ver_versioned_table_drop_column`
-  and `ver_versioned_table_change_column_type` are now security definer,
+  `ver_versioned_table_add_column`, `ver_versioned_table_drop_column`,
+  `ver_versioned_table_change_column_type` and
+  `ver_create_version_trigger` are now security definer,
   allowing `table_version` usage to under-provileged users: as long as
   you own a table you can now also version/unversion (#100) and
   add/drop/change cols on it (#113)
@@ -27,6 +28,7 @@ in this file.
     - `ver_versioned_table_add_column`
     - `ver_versioned_table_drop_column`
     - `ver_versioned_table_change_column_type`
+    - `ver_create_version_trigger`
 
 ## [1.4.0] - 2017-11-15
 ### Added
