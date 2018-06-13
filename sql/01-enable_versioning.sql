@@ -241,7 +241,7 @@ BEGIN
     END IF;
 
     PERFORM @extschema@.ver_create_table_functions(v_schema, v_table, v_key_col);
-    PERFORM @extschema@.ver_create_version_trigger(v_schema, v_table, v_key_col);
+    PERFORM @extschema@.ver_create_version_trigger(p_table_oid, v_key_col);
     
     RETURN TRUE;
 END;
