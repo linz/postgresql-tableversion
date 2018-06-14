@@ -1,7 +1,7 @@
 
 -- {
 CREATE OR REPLACE FUNCTION ver_enable_versioning(
-    p_table_oid       REGCLASS
+    v_table_oid       REGCLASS
 ) 
 RETURNS BOOLEAN AS
 $$
@@ -22,14 +22,14 @@ BEGIN
 
     SELECT nspname, relname, rolname
     INTO v_schema, v_table, v_owner
-    FROM @extschema@._ver_get_table_info(p_table_oid);
+    FROM @extschema@._ver_get_table_info(v_table_oid);
 
     -- Check that SESSION_USER is the owner of the table, or
     -- refuse to enable versioning on this table
     IF NOT pg_has_role(session_user, v_owner, 'usage') THEN
         RAISE EXCEPTION 'User % cannot enable versioning on table %'
             ' for lack of usage privileges on table owner role %',
-            session_user, p_table_oid, v_owner;
+            session_user, v_table_oid, v_owner;
     END IF;
 
     SELECT
@@ -40,8 +40,8 @@ BEGIN
         pg_index IDX,
         pg_attribute ATT
     WHERE
-        IDX.indrelid = p_table_oid AND
-        ATT.attrelid = p_table_oid AND
+        IDX.indrelid = v_table_oid AND
+        ATT.attrelid = v_table_oid AND
         ATT.attnum = ANY(IDX.indkey) AND
         ATT.attnotnull = TRUE AND
         IDX.indisunique = TRUE AND
@@ -54,11 +54,11 @@ BEGIN
     LIMIT 1;
 
     IF v_key_col IS NULL THEN
-        RAISE EXCEPTION 'Table % does not have a unique non-compostite integer, bigint, text, or varchar column', p_table_oid::text;
+        RAISE EXCEPTION 'Table % does not have a unique non-compostite integer, bigint, text, or varchar column', v_table_oid::text;
     END IF;
 
     IF (SELECT count(*) <= 1 FROM information_schema.columns WHERE table_name= v_table AND table_schema = v_schema) THEN
-        RAISE EXCEPTION 'Table % must contain at least one other non key column', p_table_oid::text;
+        RAISE EXCEPTION 'Table % must contain at least one other non key column', v_table_oid::text;
     END IF;
 
     v_revision_table := @extschema@.ver_get_version_table_full(v_schema, v_table);
@@ -67,7 +67,7 @@ BEGIN
     'CREATE TABLE ' || v_revision_table || '(' ||
         '_revision_created INTEGER NOT NULL,' ||
         '_revision_expired INTEGER,' ||
-        'LIKE ' || p_table_oid::text ||
+        'LIKE ' || v_table_oid::text ||
     ');';
     BEGIN
       EXECUTE v_sql;
@@ -77,7 +77,7 @@ BEGIN
     END;
     
     v_sql := 'ALTER TABLE ' || v_revision_table || ' OWNER TO ' || 
-        @extschema@._ver_get_table_owner(p_table_oid);
+        @extschema@._ver_get_table_owner(v_table_oid);
     EXECUTE v_sql;
     
     -- replicate permissions from source table to revision history table
@@ -101,7 +101,7 @@ BEGIN
         FROM
             pg_attribute 
         WHERE
-            attrelid = p_table_oid AND
+            attrelid = v_table_oid AND
             attname = v_key_col AND
             attisdropped IS FALSE AND
             attnum > 0 AND
@@ -116,7 +116,7 @@ BEGIN
     
     v_revision_exists := FALSE;
     
-    EXECUTE 'SELECT EXISTS (SELECT * FROM ' || CAST(p_table_oid AS TEXT) || ' LIMIT 1)'
+    EXECUTE 'SELECT EXISTS (SELECT * FROM ' || CAST(v_table_oid AS TEXT) || ' LIMIT 1)'
     INTO v_table_has_data;
     
     IF v_table_has_data THEN
@@ -131,14 +131,14 @@ BEGIN
             v_revision_exists := TRUE;
         ELSE
             SELECT @extschema@.ver_create_revision(
-                'Initial revisioning of ' || CAST(p_table_oid AS TEXT)
+                'Initial revisioning of ' || CAST(v_table_oid AS TEXT)
             )
             INTO  v_revision;
         END IF;
     
         v_sql :=
             'INSERT INTO ' || v_revision_table ||
-            ' SELECT ' || v_revision || ', NULL, * FROM ' || CAST(p_table_oid AS TEXT);
+            ' SELECT ' || v_revision || ', NULL, * FROM ' || CAST(v_table_oid AS TEXT);
         EXECUTE v_sql;
         
         IF NOT v_revision_exists THEN
@@ -241,7 +241,7 @@ BEGIN
     END IF;
 
     PERFORM @extschema@.ver_create_table_functions(v_schema, v_table, v_key_col);
-    PERFORM @extschema@.ver_create_version_trigger(p_table_oid, v_key_col);
+    PERFORM @extschema@.ver_create_version_trigger(v_table_oid, v_key_col);
     
     RETURN TRUE;
 END;
