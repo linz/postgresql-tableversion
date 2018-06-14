@@ -8,14 +8,6 @@ matrix:
   include:
 
     - addons:
-        postgresql: 9.2
-        apt:
-          packages:
-            - postgresql-9.2-pgtap
-      env:
-        - POSTGRESQL=9.2
-
-    - addons:
         postgresql: 9.3
         apt:
           packages:
@@ -50,10 +42,9 @@ matrix:
 
 before_install:
   # These are needed to test debian package build
-  - sudo apt-get install debhelper fakeroot postgresql-server-dev-9.2 postgresql-server-dev-all
+  - sudo apt-get install debhelper fakeroot postgresql-server-dev-all
 
 script:
-  - dpkg -L postgresql-server-dev-9.2
   - find /usr/lib/postgresql/
   # Test https://github.com/linz/postgresql-tableversion/issues/47
   - git tag -a "travis/1.2.3-4-gdeadbeef" -m "test"
