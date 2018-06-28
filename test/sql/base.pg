@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(160);
+SELECT plan(161);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -363,6 +363,15 @@ SELECT ok(table_version.ver_enable_versioning('foo', 'bar5'), 'Enable versioning
 SELECT table_owner_is(
     'table_version', 'foo_bar5_revision', 'test_owner',
     'Test foo_bar5_revision ownership'
+);
+
+-- Test for https://github.com/linz/postgresql-tableversion/issues/99
+SELECT function_owner_is(
+    'table_version', 'foo_bar5_revision', ARRAY[]::text[],
+    ( SELECT r.rolname FROM pg_proc p, pg_roles r
+      WHERE p.oid = 'table_version.ver_version'::regproc
+        AND r.oid = p.proowner ),
+    'Owner of foo_bar5_revision function should be extension owner'
 );
 
 SELECT table_privs_are(
