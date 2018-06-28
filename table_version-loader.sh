@@ -62,7 +62,12 @@ if test "${EXT_MODE}" = 'on'; then cat<<EOF | psql -tA --set ON_ERROR_STOP=1
 EOF
 else
   TPL_FILE=${EXT_DIR}/${EXT_NAME}-${VER}.sql.tpl
-  echo "Using template file ${TPL_FILE}"
-  cat ${TPL_FILE} | sed "s/@extschema@/${TGT_SCHEMA}/g" |
-  psql --set ON_ERROR_STOP=1 > /dev/null
+  if test -r ${TPL_FILE}; then
+    echo "Using template file ${TPL_FILE}"
+    cat ${TPL_FILE} | sed "s/@extschema@/${TGT_SCHEMA}/g" |
+    psql --set ON_ERROR_STOP=1 > /dev/null
+  else
+    echo "Template file ${TPL_FILE} is not readable or does not exist" >&2
+    exit 1
+  fi
 fi
