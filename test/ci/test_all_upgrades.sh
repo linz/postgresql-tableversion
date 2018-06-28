@@ -38,7 +38,7 @@ rm -rf older-versions
 
 # Restore current table_version after installing/overriding new one
 # (effectively moving to wherever will be found first)
-cp -a ${TMP_ISTALL_DIR_PREFIX} `which table_version-loader` || exit 1
+cp -a ${TMP_INSTALL_DIR_PREFIX}/table_version-loader `which table_version-loader` || exit 1
 
 # Test upgrade from all older versions
 for v in $VER; do
