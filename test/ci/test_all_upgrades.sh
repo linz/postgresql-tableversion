@@ -22,9 +22,16 @@ for v in $VER; do
   echo "-------------------------------------"
   echo "Installing version $v"
   echo "-------------------------------------"
-  git checkout $v && git clean -dxf && make install || exit 1
-  mkdir -p ${TMP_INSTALL_DIR_PREFIX}/${v}/share || exit 1
-  cp -a /usr/local/share/table_version/* ${TMP_INSTALL_DIR_PREFIX}/${v}/share || exit 1
+  git checkout $v && git clean -dxf || exit 1
+  # Since 1.4.0 we have a loader
+  if test `echo $v | tr -d .` -ge 140; then
+    TPL_INSTALL_DIR=`make install | grep tpl  2> /dev/null | sed "s/.* //;s/'$//;s/^'//"`
+    test -n "$TPL_INSTALL_DIR" || exit 1
+    mkdir -p ${TMP_INSTALL_DIR_PREFIX}/${v}/share || exit 1
+    cp -a ${TPL_INSTALL_DIR}/*.tpl ${TMP_INSTALL_DIR_PREFIX}/${v}/share || exit 1
+  else
+    make install || exit 1
+  fi
 done;
 cd ..
 rm -rf older-versions
@@ -40,13 +47,15 @@ for v in $VER; do
   echo "-------------------------------------"
   make installcheck-upgrade PREPAREDB_UPGRADE_FROM=$v || exit 1
   # Since 1.4.0 we have a loader
-  make installcheck-loader-upgrade \
-    PREPAREDB_UPGRADE_FROM=$v \
-    PREPAREDB_UPGRADE_FROM_EXT_DIR=${TMP_INSTALL_DIR_PREFIX}/${v}/share \
-    || exit 1
-  make installcheck-loader-upgrade-noext \
-    PREPAREDB_UPGRADE_FROM=$v \
-    PREPAREDB_UPGRADE_FROM_EXT_DIR=${TMP_INSTALL_DIR_PREFIX}/${v}/share \
-    || exit 1
+  if test `echo $v | tr -d .` -ge 140; then
+    make installcheck-loader-upgrade \
+      PREPAREDB_UPGRADE_FROM=$v \
+      PREPAREDB_UPGRADE_FROM_EXT_DIR=${TMP_INSTALL_DIR_PREFIX}/${v}/share \
+      || exit 1
+    make installcheck-loader-upgrade-noext \
+      PREPAREDB_UPGRADE_FROM=$v \
+      PREPAREDB_UPGRADE_FROM_EXT_DIR=${TMP_INSTALL_DIR_PREFIX}/${v}/share \
+      || exit 1
+  fi
 done
 
