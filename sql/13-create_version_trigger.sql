@@ -236,6 +236,7 @@ $$ LANGUAGE sql;
 DO $$
 DECLARE
     old_version TEXT;
+    rec RECORD;
 BEGIN
     BEGIN
         old_version := @extschema@.ver_version();
@@ -259,10 +260,16 @@ BEGIN
        EXISTS ( SELECT * FROM @extschema@.versioned_tables )
     THEN
         RAISE NOTICE 'Updating triggers on versioned tables';
-        PERFORM
+        FOR rec IN SELECT schema_name, table_name,
             @extschema@.ver_create_version_trigger(
                 schema_name, table_name, key_column)
-        FROM @extschema@.versioned_tables;
+            FROM @extschema@.versioned_tables
+        LOOP
+            EXECUTE format('ALTER EXTENSION table_version '
+                ' DROP FUNCTION '
+                '@extschema@.%s_%s_revision()',
+                rec.schema_name, rec.table_name);
+        END LOOP;
     END IF;
 END
 $$ LANGUAGE 'plpgsql';
