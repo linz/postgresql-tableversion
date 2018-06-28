@@ -226,3 +226,44 @@ $$
     );
 $$ LANGUAGE sql;
 -- }
+
+--
+-- Fix existing table triggers if coming from a version prior to 1.5.0
+--
+-- WARNING: this needs to be sourced _before_ the script defining
+--          ver_version() function
+-- {
+DO $$
+DECLARE
+    old_version TEXT;
+BEGIN
+    BEGIN
+        old_version := @extschema@.ver_version();
+    EXCEPTION WHEN undefined_function THEN
+        RAISE DEBUG 'ver_version not available, '
+                    'we are either doing a new install '
+                    'or coming from version before 1.3';
+    END;
+
+    -- We only need to update triggers when coming
+    -- from versions 1.4 or earlier. Function ver_version
+    -- was introduced in 1.3 so no need to check any previous
+    -- version (old_version would be null in those cases)
+    --
+    -- Note that if old_version would also be NULL for new
+    -- installs in which case the SELECT below will do nothing
+    -- as the versioned_tables table would be empty
+    IF ( old_version IS NULL OR
+       old_version LIKE '1.3.%' OR
+       old_version LIKE '1.4.%' ) AND
+       EXISTS ( SELECT * FROM @extschema@.versioned_tables )
+    THEN
+        RAISE NOTICE 'Updating triggers on versioned tables';
+        PERFORM
+            @extschema@.ver_create_version_trigger(
+                schema_name, table_name, key_column)
+        FROM @extschema@.versioned_tables;
+    END IF;
+END
+$$ LANGUAGE 'plpgsql';
+--}
