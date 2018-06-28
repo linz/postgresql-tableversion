@@ -16,7 +16,7 @@ while test -n "$1"; do
   if test "$1" = "--no-extension"; then
     EXT_MODE=off
   elif test "$1" = "--version"; then
-    VER=$1; shift
+    shift; VER=$1
   elif test -z "${TGT_DB}"; then
     TGT_DB=$1
   else
