@@ -176,8 +176,29 @@ installcheck-loader: $(TESTS_built) table_version-loader
 	pg_prove -d contrib_regression test/sql
 	dropdb contrib_regression
 
+installcheck-loader-upgrade: $(TESTS_built) table_version-loader
+	PREPAREDB_NOEXTENSION=1 $(MAKE) test/sql/preparedb
+	dropdb --if-exists contrib_regression
+	createdb contrib_regression
+	PATH="$$PATH:$(LOCAL_BINDIR)" \
+	TABLE_VERSION_EXT_DIR=$(PREPAREDB_UPGRADE_FROM_EXT_DIR) \
+	    table_version-loader $(TABLE_VERSION_OPTS) contrib_regression
+	psql -f test/sql/preparedb contrib_regression
+	rm -rf test/sql-loader-upgrade
+	cp -a test/sql test/sql-loader-upgrade
+	psql -f test/sql/preparedb contrib_regression
+	psql -f test/sql/upgrade-pre.sql contrib_regression
+	PATH="$$PATH:$(LOCAL_BINDIR)" table_version-loader $(TABLE_VERSION_OPTS) contrib_regression
+	psql -f test/sql/upgrade-post.sql contrib_regression
+	sed -ie 's/^\\i test.sql.preparedb//' test/sql-loader-upgrade/base.pg
+	pg_prove -d contrib_regression test/sql-loader-upgrade
+	dropdb contrib_regression
+
 installcheck-loader-noext: table_version-loader
 	$(MAKE) installcheck-loader TABLE_VERSION_OPTS=--no-extension
+
+installcheck-loader-upgrade-noext:
+	$(MAKE) installcheck-loader-upgrade TABLE_VERSION_OPTS=--no-extension
 
 .PHONY: upgrade-scripts
 upgrade-scripts: upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql
