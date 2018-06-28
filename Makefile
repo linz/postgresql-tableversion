@@ -182,13 +182,16 @@ installcheck-loader-upgrade: $(TESTS_built) table_version-loader
 	createdb contrib_regression
 	PATH="$$PATH:$(LOCAL_BINDIR)" \
 	TABLE_VERSION_EXT_DIR=$(PREPAREDB_UPGRADE_FROM_EXT_DIR) \
-	    table_version-loader $(TABLE_VERSION_OPTS) contrib_regression
+	    table_version-loader --version $(PREPAREDB_UPGRADE_FROM) \
+        $(TABLE_VERSION_OPTS) contrib_regression
 	psql -f test/sql/preparedb contrib_regression
 	rm -rf test/sql-loader-upgrade
 	cp -a test/sql test/sql-loader-upgrade
 	psql -f test/sql/preparedb contrib_regression
 	psql -f test/sql/upgrade-pre.sql contrib_regression
-	PATH="$$PATH:$(LOCAL_BINDIR)" table_version-loader $(TABLE_VERSION_OPTS) contrib_regression
+	PATH="$$PATH:$(LOCAL_BINDIR)" \
+		table_version-loader --version $(EXTVERSION) \
+		$(TABLE_VERSION_OPTS) contrib_regression
 	psql -f test/sql/upgrade-post.sql contrib_regression
 	sed -ie 's/^\\i test.sql.preparedb//' test/sql-loader-upgrade/base.pg
 	pg_prove -d contrib_regression test/sql-loader-upgrade
