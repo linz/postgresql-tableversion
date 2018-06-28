@@ -35,9 +35,6 @@ if test -z "${VER}"; then
   fi
 fi
 
-TPL_FILE=${EXT_DIR}/${EXT_NAME}-${VER}.sql.tpl
-
-
 if test -z "$TGT_DB"; then
   echo "Usage: $0 [--no-extension] [--version <ver>] <dbname>" >&2
   exit 1
@@ -64,6 +61,8 @@ if test "${EXT_MODE}" = 'on'; then cat<<EOF | psql -tA --set ON_ERROR_STOP=1
   \$\$ LANGUAGE 'plpgsql';
 EOF
 else
+  TPL_FILE=${EXT_DIR}/${EXT_NAME}-${VER}.sql.tpl
+  echo "Using template file ${TPL_FILE}"
   cat ${TPL_FILE} | sed "s/@extschema@/${TGT_SCHEMA}/g" |
   psql --set ON_ERROR_STOP=1 > /dev/null
 fi
