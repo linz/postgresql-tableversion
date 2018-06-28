@@ -28,7 +28,7 @@ for v in $VER; do
     TPL_INSTALL_DIR=`make install | grep tpl  2> /dev/null | sed "s/.* //;s/'$//;s/^'//"`
     test -n "$TPL_INSTALL_DIR" || exit 1
     mkdir -p ${TMP_INSTALL_DIR_PREFIX}/${v}/share || exit 1
-    cp -a ${TPL_INSTALL_DIR}/*.tpl ${TMP_INSTALL_DIR_PREFIX}/${v}/share || exit 1
+    cp -f ${TPL_INSTALL_DIR}/*.tpl ${TMP_INSTALL_DIR_PREFIX}/${v}/share || exit 1
   else
     make install || exit 1
   fi
