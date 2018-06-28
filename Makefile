@@ -166,10 +166,10 @@ check-noext: $(TESTS_built) table_version-loader
 	dropdb contrib_regression
 
 installcheck-upgrade:
-	PREPAREDB_UPGRADE=1 make installcheck
+	PREPAREDB_UPGRADE=1 $(MAKE) installcheck
 
 installcheck-loader: $(TESTS_built) table_version-loader
-	PREPAREDB_NOEXTENSION=1 make test/sql/preparedb
+	PREPAREDB_NOEXTENSION=1 $(MAKE) test/sql/preparedb
 	dropdb --if-exists contrib_regression
 	createdb contrib_regression
 	PATH="$$PATH:$(LOCAL_BINDIR)" table_version-loader $(TABLE_VERSION_OPTS) contrib_regression
