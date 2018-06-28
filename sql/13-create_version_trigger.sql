@@ -236,6 +236,7 @@ $$ LANGUAGE sql;
 DO $$
 DECLARE
     old_version TEXT;
+    is_extension BOOL;
     rec RECORD;
 BEGIN
     BEGIN
@@ -246,6 +247,10 @@ BEGIN
                     'or coming from version before 1.3';
     END;
 
+    SELECT EXISTS ( SELECT * FROM pg_catalog.pg_extension
+                    WHERE extname = 'table_version' )
+    INTO is_extension;
+
     -- We only need to update triggers when coming
     -- from versions 1.4 or earlier. Function ver_version
     -- was introduced in 1.3 so no need to check any previous
@@ -254,6 +259,7 @@ BEGIN
     -- Note that if old_version would also be NULL for new
     -- installs in which case the SELECT below will do nothing
     -- as the versioned_tables table would be empty
+    --
     IF ( old_version IS NULL OR
        old_version LIKE '1.3.%' OR
        old_version LIKE '1.4.%' ) AND
@@ -265,10 +271,12 @@ BEGIN
                 schema_name, table_name, key_column)
             FROM @extschema@.versioned_tables
         LOOP
-            EXECUTE format('ALTER EXTENSION table_version '
-                ' DROP FUNCTION '
-                '@extschema@.%s_%s_revision()',
-                rec.schema_name, rec.table_name);
+            IF is_extension THEN
+                EXECUTE format('ALTER EXTENSION table_version '
+                    ' DROP FUNCTION '
+                    '@extschema@.%s_%s_revision()',
+                    rec.schema_name, rec.table_name);
+            END IF;
         END LOOP;
     END IF;
 END
