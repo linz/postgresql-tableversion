@@ -25,6 +25,22 @@ or
 
 (Run pgxn --help for more info)
 
+Installation via apt-get
+------------------------
+Add apt repository:
+
+    # Enable fetching packages from packagecloud
+    # production repository:
+    $ curl -s \
+      https://packagecloud.io/install/repositories/linz/prod/script.deb.sh |
+      sudo bash
+
+Then install the package (tweak the PGVER line if needed):
+
+    $ PGVER=$(basename `pg_config --sharedir`) \
+      sudo apt-get install postgresql-${PGVER}-tableversion
+
+
 Hard Installation
 -----------------
 
