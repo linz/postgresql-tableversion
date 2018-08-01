@@ -65,8 +65,8 @@ BEGIN
     
     v_sql :=
     'CREATE TABLE ' || v_revision_table || '(' ||
-        '_revision_created INTEGER NOT NULL,' ||
-        '_revision_expired INTEGER,' ||
+        '_revision_created INTEGER NOT NULL REFERENCES @extschema@.revision,' ||
+        '_revision_expired INTEGER REFERENCES @extschema@.revision,' ||
         'LIKE ' || v_table_oid::text ||
     ');';
     BEGIN
