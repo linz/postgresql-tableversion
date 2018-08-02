@@ -104,14 +104,14 @@ of it (see https://wiki.postgresql.org/wiki/Apt)
 Installing the extension
 ------------------------
 
-Once table_version is installed, you can add it to a database. If you're running
+Once `table_version` is installed, you can add it to a database. If you're running
 PostgreSQL 9.1.0 or greater, it's a simple as connecting to a database as a
 super user and running:
 
     CREATE EXTENSION table_version;
 
 The extension will install support configuration tables and functions into the
-table_version schema.
+`table_version` schema.
 
 If you're ugrading from an older version of the extension run:
 
@@ -119,8 +119,9 @@ If you're ugrading from an older version of the extension run:
 ALTER EXTENSION table_version UPDATE;
 ```
 
-If you've upgraded your cluster to PostgreSQL 9.1 and already had table_version
-installed, you can upgrade it to a properly packaged extension with:
+If you've upgraded your cluster to PostgreSQL 9.1 and already had
+`table_version` installed, you can upgrade it to a properly packaged
+extension with:
 
     CREATE EXTENSION table_version FROM unpackaged;
 
