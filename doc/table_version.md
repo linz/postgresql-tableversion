@@ -127,8 +127,8 @@ How it works
 ------------
 
 When a table is versioned the original table data is left untouched and a new
-revision table is created with all the same fields plus a "_revision_created"
-and "_revision_expired" fields. A row level trigger is then setup on the original
+revision table is created with all the same fields plus a `_revision_created`
+and `_revision_expired` fields. A row level trigger is then setup on the original
 table and whenever an insert, update and delete statement is run the change
 is recorded in the table's revision data table. 
 
@@ -146,8 +146,9 @@ super user and running:
 The extension will install support configuration tables and functions into the
 `table_version` schema.
 
-If you've upgraded your cluster to PostgreSQL 9.1 and already had table_version
-installed, you can upgrade it to a properly packaged extension with:
+If you've upgraded your cluster to PostgreSQL 9.1 and already had
+`table_version` installed, you can upgrade it to a properly packaged
+extension with:
 
     CREATE EXTENSION table_version FROM unpackaged;
 
