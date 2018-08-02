@@ -49,8 +49,8 @@ Synopsis
                     1001
     ```
 
-7. Mark revision as done - yes, there are no data in the able, we just put empty
-   table to our revision.
+7. Mark revision as done - yes, there are no data in the table,
+   we just put empty table to our revision.
     ```
     table_version=# SELECT table_version.ver_complete_revision(); 
      ver_complete_revision 
@@ -234,7 +234,7 @@ from 1001 to 1002) we run:
      I            |  4 | foo bar 4
     (3 rows)
 
-As you can see the updates are recorded below. The '_diff_action' column
+As you can see the updates are recorded below. The `_diff_action` column
 indicates the type of modification:
 
 - 'U' = Update
@@ -343,10 +343,10 @@ are also dumped to ensure the patch history data is persisted.
 Then the configuration tables and their data will be lost. Only drop the
 extension if you are sure the versioning metadata is no longer required.
 
-Migrate existing table_version installation
--------------------------------------------
+Migrate existing `table_version` installation
+---------------------------------------------
 
-If you already have the table_version functions and config tables installed in
+If you already have the `table_version` functions and config tables installed in
 your database not using the PostgreSQL extension, you can upgrade it using the
 following command:
 
@@ -386,9 +386,9 @@ columns
 
 Returns a record of 3 values for the changed applied to the original table.:
 
-- 'number_inserts' = The number of row inserted into the original table
-- 'number_deletes' = The number of row deleted from the original table
-- 'number_updates' = The number of row updated in the original table
+- `number_inserts` = The number of row inserted into the original table
+- `number_deletes` = The number of row deleted from the original table
+- `number_updates` = The number of row updated in the original table
 
 **Exceptions**
 
@@ -499,9 +499,9 @@ Generates a difference between any two given revisions for versioned table
 **Returns**
 
 A tableset of changed rows containing the each row that has been inserted,
-updated or deleted between the start and end revisions. The '_diff_action'
-column contains the type of modification for each row. The _diff_action value
-can be one of:
+updated or deleted between the start and end revisions. The `_diff_action`
+column contains the type of modification for each row.
+The `_diff_action` value can be one of:
 
 - 'U' = Update
 - 'D' = Delete
@@ -628,7 +628,12 @@ All associated objects created for the versioning will be dropped.
 
 Create a new revision within the current SQL session.
 
-    FUNCTION ver_create_revision(p_comment TEXT, p_revision_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, p_schema_change BOOLEAN DEFAULT FALSE)
+    FUNCTION ver_create_revision(
+        p_comment TEXT,
+        p_revision_time
+        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        p_schema_change BOOLEAN DEFAULT FALSE
+    )
     RETURN INTEGER
 
 **Parameters**
