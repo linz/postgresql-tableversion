@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(161);
+SELECT plan(164);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -722,6 +722,30 @@ SELECT lives_ok($$ INSERT INTO "index" VALUES (2, 'b', '24') $$);
 SELECT lives_ok($$ ALTER TABLE table_version.public_index_revision ADD column "desc2" text; $$);
 -- insert new value
 SELECT lives_ok($$ INSERT INTO "index" VALUES (4, 'b', '24') $$);
+
+------------------------------------------------
+-- Test for revision table referencial integrity
+------------------------------------------------
+
+SELECT throws_like($$ INSERT INTO
+table_version.public_index_revision(_revision_created, _revision_expired, k) 
+SELECT MAX(id)+1, MAX(id), 10 FROM table_version.revision
+$$, '% violates foreign key constraint %',
+'Failed throwing expected exception on attempt to use non-existent'
+'revision in _revision_created column of revision table');
+
+SELECT throws_like($$ INSERT INTO
+table_version.public_index_revision(_revision_created, _revision_expired, k) 
+SELECT MAX(id), MAX(id)+1, 10 FROM table_version.revision
+$$, '% violates foreign key constraint %',
+'Failed throwing expected exception on attempt to use non-existent'
+'revision in _revision_expired column of revision table');
+
+SELECT throws_like($$ DELETE FROM table_version.revision
+WHERE id = (SELECT MAX(id) FROM table_version.revision )
+$$, '% violates foreign key constraint %',
+'Failed throwing expected exception on attempt to delete '
+'used revision record');
 
 ---------------------------------------
 -- End of tests
