@@ -258,18 +258,22 @@ BEGIN
     --
     -- Note that if old_version would also be NULL for new
     -- installs in which case the SELECT below will do nothing
-    -- as the versioned_tables table would be empty
+    -- as ver_get_versioned_tables() would return the empty set
     --
     IF ( old_version IS NULL OR
        old_version LIKE '1.3.%' OR
        old_version LIKE '1.4.%' ) AND
-       EXISTS ( SELECT * FROM @extschema@.versioned_tables )
+       EXISTS (
+          SELECT * FROM @extschema@.ver_get_versioned_tables()
+       ) versioned_tables
     THEN
         RAISE NOTICE 'Updating triggers on versioned tables';
         FOR rec IN SELECT schema_name, table_name,
             @extschema@.ver_create_version_trigger(
                 schema_name, table_name, key_column)
-            FROM @extschema@.versioned_tables
+            FROM (
+                SELECT * FROM @extschema@.ver_get_versioned_tables()
+            ) versioned_tables
         LOOP
             IF is_extension THEN
                 EXECUTE format('ALTER EXTENSION table_version '
