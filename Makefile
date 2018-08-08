@@ -184,6 +184,15 @@ installcheck-loader: $(TESTS_built) table_version-loader
 	pg_prove -d contrib_regression test/sql
 	dropdb contrib_regression
 
+#
+# Check functionality when loading and upgrading via table_version-loader
+#
+# Version to upgrade from MUST be specified via PREPAREDB_UPGRADE_FROM
+# environment variable.
+#
+# Custom switches can be passed to table_version-loader via the
+# TABLE_VERSION_OPTS env variable (for example --no-extension)
+#
 installcheck-loader-upgrade: $(TESTS_built) table_version-loader
 	PREPAREDB_NOEXTENSION=1 $(MAKE) test/sql/preparedb
 	dropdb --if-exists contrib_regression
