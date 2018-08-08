@@ -49,8 +49,8 @@ Synopsis
                     1001
     ```
 
-7. Mark revision as done - yes, there are no data in the table,
-   we just put empty table to our revision.
+7. Mark revision as done . There is no data in the table or in the
+   history table.
     ```
     table_version=# SELECT table_version.ver_complete_revision(); 
      ver_complete_revision 
