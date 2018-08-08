@@ -22,6 +22,10 @@ DISTFILES = \
 
 SED = sed
 
+# List of known versions from which we're capable
+# to upgrade automatically from. This should be
+# any version from 1.2.0 onward.
+#
 UPGRADEABLE_VERSIONS = \
     1.2.0 \
     1.3.0dev 1.3.0 1.3.1dev 1.3.1 \
