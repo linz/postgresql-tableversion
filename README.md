@@ -101,8 +101,10 @@ postgresql-server-dev-all package, and consider adding the
 postgresql.org apt repository to get the most versions out
 of it (see https://wiki.postgresql.org/wiki/Apt)
 
-Installing the extension
-------------------------
+Installing the extension in a database
+--------------------------------------
+
+# As an extension
 
 Once `table_version` is installed, you can add it to a database. If you're running
 PostgreSQL 9.1.0 or greater, it's a simple as connecting to a database as a
@@ -124,6 +126,25 @@ If you've upgraded your cluster to PostgreSQL 9.1 and already had
 extension with:
 
     CREATE EXTENSION table_version FROM unpackaged;
+
+As a facility, the `table_version-loader` script can be used to
+both create (but not from unpackaged) and upgrade the extension
+in an existing database. To use it run:
+
+        table_version-loader <dbname>
+
+# As a set of scripts
+
+If it is not possible to install `table_version` as an extension
+in your database cluster system you can still use it by loading
+the support scripts in your database. The `table_version-loader`
+script can be used to make this easy, just run:
+
+    table_version-loader --no-extension <dbname>
+
+Connection information (postgresql hostname, port, username, password)
+can all be set using standard environment variables PGHOST, PGPORT,
+PGUSER, PGPASSWORD.
 
 
 Dependencies
