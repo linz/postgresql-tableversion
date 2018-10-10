@@ -1,4 +1,4 @@
-EXTVERSION   = 1.5.0
+EXTVERSION   = 1.5.1
 REVISION=$(shell test -d .git && which git > /dev/null && git describe --always)
 
 META         = META.json
