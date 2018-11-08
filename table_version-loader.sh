@@ -36,15 +36,19 @@ if test -z "${VER}"; then
 fi
 
 if test -z "$TGT_DB"; then
-  echo "Usage: $0 [--no-extension] [--version <ver>] <dbname>" >&2
+  echo "Usage: $0 [--no-extension] [--version <ver>] { <dbname> | - }" >&2
   exit 1
 fi
 
-export PGDATABASE=$TGT_DB
+DBLBL=${TGT_DB}
+if [ "$DBLBL" = "-" ]; then
+    DBLBL="(stdout)"
+fi
+echo "Loading ver ${VER} in ${DBLBL}.${TGT_SCHEMA} (EXT_MODE ${EXT_MODE})" >&2
 
-echo "Loading ver ${VER} in ${TGT_DB}.${TGT_SCHEMA} (EXT_MODE ${EXT_MODE})";
+{
 
-if test "${EXT_MODE}" = 'on'; then cat<<EOF | psql -tA --set ON_ERROR_STOP=1
+if test "${EXT_MODE}" = 'on'; then cat<<EOF
   DO \$\$
     BEGIN
       IF EXISTS (
@@ -63,11 +67,16 @@ EOF
 else
   TPL_FILE=${EXT_DIR}/${EXT_NAME}-${VER}.sql.tpl
   if test -r ${TPL_FILE}; then
-    echo "Using template file ${TPL_FILE}"
-    cat ${TPL_FILE} | sed "s/@extschema@/${TGT_SCHEMA}/g" |
-    psql --set ON_ERROR_STOP=1 > /dev/null
+    echo "Using template file ${TPL_FILE}" >&2
+    cat ${TPL_FILE} | sed "s/@extschema@/${TGT_SCHEMA}/g"
   else
     echo "Template file ${TPL_FILE} is not readable or does not exist" >&2
     exit 1
   fi
+fi
+
+} | if [ "$TGT_DB" = "-" ]; then
+    cat
+else
+    psql -tA --set ON_ERROR_STOP=1 $TGT_DB > /dev/null
 fi
