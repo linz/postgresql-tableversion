@@ -1,10 +1,12 @@
 # Number of days of inactivity before an issue becomes stale
-daysUntilStale: 45
+daysUntilStale: 14
 # Number of days of inactivity before a stale issue is closed
 daysUntilClose: 14
 # Issues with these labels will never be considered stale
 exemptLabels:
   - StaleBot Ignore
+  - enhancement
+  - Epic
 # Label to use when marking an issue as stale
 staleLabel: Stale
 # Comment to post when marking an issue as stale. Set to `false` to disable
