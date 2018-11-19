@@ -90,13 +90,13 @@ PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
 
 sql/$(EXTENSION).sql: $(SQLSCRIPTS) $(META) $(SQLSCRIPTS_built)
-	echo '\echo Use "CREATE EXTENSION $(EXTENSION)" to load this file. \quit' > $@
+	printf '\\echo Use "CREATE EXTENSION $(EXTENSION)" to load this file. \\quit\n' > $@
 	cat $(SQLSCRIPTS) >> $@
 	echo "GRANT USAGE ON SCHEMA table_version TO public;" >> $@
 
 upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql: sql/$(EXTENSION).sql Makefile
 	mkdir -p upgrade-scripts
-	echo '\echo Use "CREATE EXTENSION $(EXTENSION) FROM unpackaged" to load this file. \quit' > $@
+	printf '\\echo Use "CREATE EXTENSION $(EXTENSION) FROM unpackaged" to load this file. \\quit\n' > $@
 	echo "---- TABLES -- " >> $@
 	cat $< | grep '^CREATE TABLE' | \
 		sed -e 's/^CREATE /ALTER EXTENSION table_version ADD /' \
