@@ -78,5 +78,5 @@ fi
 } | if [ "$TGT_DB" = "-" ]; then
     cat
 else
-    psql -tA --set ON_ERROR_STOP=1 $TGT_DB > /dev/null
+    psql -XtA --set ON_ERROR_STOP=1 $TGT_DB -o /dev/null
 fi
