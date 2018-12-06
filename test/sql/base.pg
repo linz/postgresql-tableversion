@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(161);
+SELECT plan(162);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -536,11 +536,13 @@ SELECT set_has($$
 SELECT is(table_version.ver_get_versioned_table_key('foo','dropme'),
   'id', 'foo.dropme versioned table key is "id"');
 SELECT throws_like('DROP TABLE foo.dropme',
-  'cannot drop%depend on it',
-  'foo.dropme can only be drop with CASCADE') ;
-DROP TABLE foo.dropme CASCADE;
+  'cannot drop%',
+  'foo.dropme can not be drop while versioned');
+SELECT table_version.ver_disable_versioning('foo.dropme');
+SELECT lives_ok('DROP TABLE foo.dropme',
+  'foo.dropme can be drop while non versioned');
 SELECT ok(NOT table_version.ver_is_table_versioned('foo', 'dropme'),
-  'foo.dropme is not versioned after drop cascade');
+  'foo.dropme is not versioned after drop');
 SELECT set_hasnt($$
   SELECT schema_name,table_name
   FROM table_version.ver_get_versioned_tables()

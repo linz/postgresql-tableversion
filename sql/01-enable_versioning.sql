@@ -170,47 +170,47 @@ BEGIN
     -- to avoid simple drop. Some people might forget that the table is
     -- versioned!
     
-    INSERT INTO pg_catalog.pg_depend(
-        classid,
-        objid,
-        objsubid,
-        refclassid,
-        refobjid,
-        refobjsubid,
-        deptype
-    )
-    SELECT
-        cat.oid,
-        fobj.oid,
-        0,
-        cat.oid,
-        tobj.oid,
-        0,
-        'n'
-    FROM
-        pg_class cat, 
-        pg_namespace fnsp, 
-        pg_class fobj,
-        pg_namespace tnsp,
-        pg_class tobj
-    WHERE
-        cat.relname = 'pg_class' AND
-        fnsp.nspname = 'table_version' AND
-        fnsp.oid = fobj.relnamespace AND
-        fobj.relname = @extschema@.ver_get_version_table(v_schema, v_table) AND
-        tnsp.nspname = v_schema AND
-        tnsp.oid = tobj.relnamespace AND
-        tobj.relname   = v_table;
-
-    SELECT
-        id
-    INTO
-        v_table_id
-    FROM
-        @extschema@.versioned_tables
-    WHERE
-        schema_name = v_schema AND
-        table_name = v_table;
+--    INSERT INTO pg_catalog.pg_depend(
+--        classid,
+--        objid,
+--        objsubid,
+--        refclassid,
+--        refobjid,
+--        refobjsubid,
+--        deptype
+--    )
+--    SELECT
+--        cat.oid,
+--        fobj.oid,
+--        0,
+--        cat.oid,
+--        tobj.oid,
+--        0,
+--        'n'
+--    FROM
+--        pg_class cat, 
+--        pg_namespace fnsp, 
+--        pg_class fobj,
+--        pg_namespace tnsp,
+--        pg_class tobj
+--    WHERE
+--        cat.relname = 'pg_class' AND
+--        fnsp.nspname = 'table_version' AND
+--        fnsp.oid = fobj.relnamespace AND
+--        fobj.relname = @extschema@.ver_get_version_table(v_schema, v_table) AND
+--        tnsp.nspname = v_schema AND
+--        tnsp.oid = tobj.relnamespace AND
+--        tobj.relname   = v_table;
+--
+--    SELECT
+--        id
+--    INTO
+--        v_table_id
+--    FROM
+--        @extschema@.versioned_tables
+--    WHERE
+--        schema_name = v_schema AND
+--        table_name = v_table;
     
     IF v_table_id IS NOT NULL THEN
         UPDATE @extschema@.versioned_tables
@@ -252,3 +252,27 @@ CREATE OR REPLACE FUNCTION ver_enable_versioning(p_schema NAME, p_table  NAME)
 RETURNS BOOLEAN AS $$
   SELECT @extschema@.ver_enable_versioning(( p_schema || '.' || p_table)::regclass);
 $$ LANGUAGE sql;
+
+CREATE OR REPLACE FUNCTION _ver_avoid_drop_of_versioned_table()
+RETURNS event_trigger AS $$
+DECLARE
+    obj RECORD;
+BEGIN
+
+    FOR obj IN SELECT *
+               FROM pg_event_trigger_dropped_objects()
+               WHERE object_type = 'table'
+    LOOP
+        IF @extschema@._ver_is_table_versioned(obj.schema_name, obj.object_name)
+        THEN
+            RAISE EXCEPTION
+                'cannot drop versioned table %, unversion it first',
+                obj.object_identity;
+        END IF;
+    END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP EVENT TRIGGER IF EXISTS _ver_abort_on_drop_of_versioned_table;
+CREATE EVENT TRIGGER _ver_abort_on_drop_of_versioned_table
+ON sql_drop EXECUTE PROCEDURE _ver_avoid_drop_of_versioned_table();
