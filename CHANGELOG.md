@@ -4,6 +4,11 @@ All notable changes for the PostgreSQL table version extension are documented
 in this file.
 
 ## [1.6.0dev] - YYYY-MM-DD
+### IMPORTANT
+- Drop of versioned tables is now forbidden,
+  CASCADE will not help. This is done to avoid
+  writing into system catalogs, which is forbidden
+  on some platforms, like AWS (#122)
 ### Improved
 - Add stdout support in `table_version-loader` (#146)
 
