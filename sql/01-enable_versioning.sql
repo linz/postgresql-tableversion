@@ -166,52 +166,6 @@ BEGIN
     
     EXECUTE 'ANALYSE ' || v_revision_table;
 
-    -- Add dependency of the revision table on the newly versioned table 
-    -- to avoid simple drop. Some people might forget that the table is
-    -- versioned!
-    
---    INSERT INTO pg_catalog.pg_depend(
---        classid,
---        objid,
---        objsubid,
---        refclassid,
---        refobjid,
---        refobjsubid,
---        deptype
---    )
---    SELECT
---        cat.oid,
---        fobj.oid,
---        0,
---        cat.oid,
---        tobj.oid,
---        0,
---        'n'
---    FROM
---        pg_class cat, 
---        pg_namespace fnsp, 
---        pg_class fobj,
---        pg_namespace tnsp,
---        pg_class tobj
---    WHERE
---        cat.relname = 'pg_class' AND
---        fnsp.nspname = 'table_version' AND
---        fnsp.oid = fobj.relnamespace AND
---        fobj.relname = @extschema@.ver_get_version_table(v_schema, v_table) AND
---        tnsp.nspname = v_schema AND
---        tnsp.oid = tobj.relnamespace AND
---        tobj.relname   = v_table;
---
---    SELECT
---        id
---    INTO
---        v_table_id
---    FROM
---        @extschema@.versioned_tables
---    WHERE
---        schema_name = v_schema AND
---        table_name = v_table;
-    
     IF v_table_id IS NOT NULL THEN
         UPDATE @extschema@.versioned_tables
         SET    versioned = TRUE
@@ -253,6 +207,7 @@ RETURNS BOOLEAN AS $$
   SELECT @extschema@.ver_enable_versioning(( p_schema || '.' || p_table)::regclass);
 $$ LANGUAGE sql;
 
+-- Avoid drop of versioned tables.
 CREATE OR REPLACE FUNCTION _ver_avoid_drop_of_versioned_table()
 RETURNS event_trigger AS $$
 DECLARE
