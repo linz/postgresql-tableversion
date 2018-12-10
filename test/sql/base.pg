@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(162);
+SELECT plan(165);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -681,6 +681,29 @@ SELECT lives_ok($$ SELECT table_version.ver_create_revision('r3') $$); -- 3
 SELECT lives_ok($$ UPDATE t set v = 'a3' WHERE k = 1 $$);
 SELECT lives_ok($$ SELECT table_version.ver_complete_revision() $$);
 
+-- Test tables_changed population
+SELECT set_eq($$
+    SELECT r.comment, t.schema_name, t.table_name
+    FROM
+        table_version.tables_changed c,
+        table_version.versioned_tables t,
+        table_version.revision r
+    WHERE c.table_id = t.id
+    AND c.revision = r.id
+$$,
+$$
+    VALUES
+        ('r1', 'public', 't'),
+        ('r3', 'public', 't'),
+        ('r2', 'public', 't')
+$$,
+    'tables_changed is correctly populated after first change of t'
+);
+
+--------------------------
+-- Check revisions
+--------------------------
+
 SELECT isnt_empty($$
   SELECT * FROM table_version.public_t_revision
   WHERE _revision_expired < _revision_created
@@ -702,6 +725,25 @@ $$, 'Ordered revisions are found in public_t_revision');
 
 SELECT is(table_version.ver_fix_revision_disorder(), 0::bigint,
   'no revision moved after fix');
+
+--------------------------
+-- Test log_tables_changed
+--------------------------
+
+CREATE TABLE table_version.tables_changed_backup AS
+    SELECT * FROM table_version.tables_changed;
+
+-- Truncate the tables_changed table
+TRUNCATE table_version.tables_changed;
+
+SELECT lives_ok($$SELECT table_version.ver_log_modified_tables()$$);
+
+-- Test tables_changed_backup equals the newly populated table
+SELECT set_eq(
+    'SELECT * from table_version.tables_changed_backup',
+    'SELECT * from table_version.tables_changed',
+    'log_tables_changed correctly populated the tables_changed table'
+);
 
 ---------------------------------------
 -- Test for table triggers
