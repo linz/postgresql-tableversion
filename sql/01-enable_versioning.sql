@@ -166,6 +166,16 @@ BEGIN
     
     EXECUTE 'ANALYSE ' || v_revision_table;
 
+    SELECT
+        id
+    INTO
+        v_table_id
+    FROM
+        @extschema@.versioned_tables
+    WHERE
+        schema_name = v_schema AND
+        table_name = v_table;
+
     IF v_table_id IS NOT NULL THEN
         UPDATE @extschema@.versioned_tables
         SET    versioned = TRUE
