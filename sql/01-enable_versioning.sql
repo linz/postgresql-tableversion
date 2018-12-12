@@ -217,8 +217,8 @@ RETURNS BOOLEAN AS $$
   SELECT @extschema@.ver_enable_versioning(( p_schema || '.' || p_table)::regclass);
 $$ LANGUAGE sql;
 
--- Avoid drop of versioned tables.
-CREATE OR REPLACE FUNCTION _ver_avoid_drop_of_versioned_table()
+-- Abort drop of versioned tables.
+CREATE OR REPLACE FUNCTION _ver_abort_drop_of_versioned_table()
 RETURNS event_trigger AS $$
 DECLARE
     obj RECORD;
@@ -238,6 +238,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP EVENT TRIGGER IF EXISTS _ver_abort_on_drop_of_versioned_table;
-CREATE EVENT TRIGGER _ver_abort_on_drop_of_versioned_table
-ON sql_drop EXECUTE PROCEDURE _ver_avoid_drop_of_versioned_table();
+-- NOTE: we need the DROP EVENT because CREATE OR REPLACE does not
+--       exist for events. We _assume_ this script is being loaded
+--       within a transaction (as done by table_version-loader)
+--       so that the trigger will always be in effect.
+DROP EVENT TRIGGER IF EXISTS _ver_abort_drop_of_versioned_table;
+CREATE EVENT TRIGGER _ver_abort_drop_of_versioned_table
+ON sql_drop EXECUTE PROCEDURE _ver_abort_drop_of_versioned_table();
