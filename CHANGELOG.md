@@ -3,6 +3,8 @@
 All notable changes for the PostgreSQL table version extension are documented 
 in this file.
 
+## [1.6.1dev] - YYYY-MM-DD
+
 ## [1.6.0] - 2019-01-09
 ### IMPORTANT
 - Drop of versioned tables is now forbidden,
