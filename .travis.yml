@@ -39,15 +39,24 @@ matrix:
       env:
         - POSTGRESQL=9.6
 
+    - addons:
+        postgresql: 10
+        apt:
+          packages:
+            - postgresql-10-pgtap
+      env:
+        - POSTGRESQL=10
+
 
 before_install:
   # These are needed to test debian package build
   - sudo apt-get install debhelper fakeroot
-    postgresql-server-dev-9.2
     postgresql-server-dev-all
     libtap-parser-sourcehandler-pgtap-perl
 
 script:
+  # Set PGPORT
+  - export PGPORT=`pg_lsclusters ${POSTGRESQL} | grep ' online ' | tail -1 | awk '{print $3}'`
   # Test https://github.com/linz/postgresql-tableversion/issues/47
   - git tag -a "travis/1.2.3-4-gdeadbeef" -m "test"
   # Set and check PostgreSQL paths
@@ -55,15 +64,19 @@ script:
   - pg_config --version
   - psql --version
   - psql -c "select version()" template1
-  # Build, install and check
+  # Build
   - make
+  # Pre-install tests
   - make check
+  # Pre-install tests
   - sudo env "PATH=$PATH" make install
-  - PGPORT=5432 make installcheck
-  - PGPORT=5432 make installcheck-loader
-  - PGPORT=5432 make installcheck-loader-noext
+  # Post-install tests
+  - make installcheck
+  - make installcheck-loader
+  - make installcheck-loader-noext
   # Test upgrades from all tagged versions
-  - sudo env "PGUSER=$USER" env "PATH=$PATH" env "PGPORT=5432" test/ci/test_all_upgrades.sh
+  - sudo -u postgres createuser --superuser root
+  - sudo env "PATH=$PATH" env "PGPORT=$PGPORT" test/ci/test_all_upgrades.sh
   # Test install from package
   - PG_SUPPORTED_VERSIONS=${POSTGRESQL} make deb
   - sudo env "PATH=$PATH" dpkg -i ../postgresql-${POSTGRESQL}-tableversion_*.deb
