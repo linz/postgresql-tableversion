@@ -53,7 +53,7 @@ REGRESS_PREP = testdeps
 # to your extension.
 #
 #MODULES      = $(patsubst %.c,%,$(wildcard src/*.c))
-PG_CONFIG    = pg_config
+PG_CONFIG    ?= pg_config
 
 EXTNDIR     = $(shell $(PG_CONFIG) --sharedir)
 PG91         = $(shell $(PG_CONFIG) --version | grep -qE " 8\.| 9\.0" && echo no || echo yes)
