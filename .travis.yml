@@ -3,72 +3,45 @@
 dist: trusty
 sudo: true
 
+addons:
+  apt:
+    sources:
+    - sourceline: "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main"
+      key_url: "https://www.postgresql.org/media/keys/ACCC4CF8.asc"
 
-matrix:
-  include:
-
-    - addons:
-        postgresql: 9.3
-        apt:
-          packages:
-            - postgresql-9.3-pgtap
-      env:
-        - POSTGRESQL=9.3
-
-    - addons:
-        postgresql: 9.4
-        apt:
-          packages:
-            - postgresql-9.4-pgtap
-      env:
-        - POSTGRESQL=9.4
-
-    - addons:
-        postgresql: 9.5
-        apt:
-          packages:
-            - postgresql-9.5-pgtap
-      env:
-        - POSTGRESQL=9.5
-
-    - addons:
-        postgresql: 9.6
-        apt:
-          packages:
-            - postgresql-9.6-pgtap
-      env:
-        - POSTGRESQL=9.6
-
-    - addons:
-        postgresql: 10
-        apt:
-          packages:
-            - postgresql-10-pgtap
-      env:
-        - POSTGRESQL=10
-
-    - addons:
-        postgresql: 11
-        apt:
-          packages:
-            - postgresql-11-pgtap
-      env:
-        - POSTGRESQL=11
+env:
+  matrix:
+    - PG=9.3
+    - PG=9.4
+    - PG=9.5
+    - PG=9.6
+    - PG=10
+    - PG=11
 
 
 before_install:
-  # These are needed to test debian package build
-  - sudo apt-get install debhelper fakeroot
+  - sudo apt-get -y --purge remove postgresql libpq-dev libpq5
+    postgresql-client-common postgresql-common
+  - sudo rm -rf /var/lib/postgresql
+  - sudo apt-get update -qq
+  - sudo apt-get install -y
+    postgresql-${PG}
+    postgresql-client-${PG}
+    postgresql-${PG}-pgtap
     postgresql-server-dev-all
+    debhelper fakeroot
     libtap-parser-sourcehandler-pgtap-perl
 
+before_script:
+  - sudo -u postgres createuser -s "$USER"
+  - sudo -u postgres createuser -s root
+
 script:
-  # Set PGPORT
-  - export PGPORT=`pg_lsclusters ${POSTGRESQL} | grep ' online ' | tail -1 | awk '{print $3}'`
+  # Set PATH as postgresql-server-dev-all pretends version is 11
+  - export PATH=/usr/lib/postgresql/${PG}/bin:${PATH}
   # Test https://github.com/linz/postgresql-tableversion/issues/47
   - git tag -a "travis/1.2.3-4-gdeadbeef" -m "test"
   # Set and check PostgreSQL paths
-  - export PATH=/usr/lib/postgresql/${POSTGRESQL}/bin:${PATH}
   - pg_config --version
   - psql --version
   - psql -c "select version()" template1
@@ -83,11 +56,10 @@ script:
   - make installcheck-loader
   - make installcheck-loader-noext
   # Test upgrades from all tagged versions
-  - sudo -u postgres createuser --superuser root
-  - sudo env "PATH=$PATH" env "PGPORT=$PGPORT" test/ci/test_all_upgrades.sh
+  - sudo env "PATH=$PATH" test/ci/test_all_upgrades.sh
   # Test install from package
-  - PG_SUPPORTED_VERSIONS=${POSTGRESQL} make deb
-  - sudo env "PATH=$PATH" dpkg -i ../postgresql-${POSTGRESQL}-tableversion_*.deb
+  - PG_SUPPORTED_VERSIONS=${PG} make deb
+  - sudo dpkg -i ../postgresql-${PG}-tableversion_*.deb
 
 notifications:
   # LINZ corporate email server is dropping messages from Travis
