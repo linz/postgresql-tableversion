@@ -47,6 +47,14 @@ matrix:
       env:
         - POSTGRESQL=10
 
+    - addons:
+        postgresql: 11
+        apt:
+          packages:
+            - postgresql-11-pgtap
+      env:
+        - POSTGRESQL=11
+
 
 before_install:
   # These are needed to test debian package build
