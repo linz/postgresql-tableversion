@@ -24,6 +24,7 @@ before_install:
     postgresql-${PG}-pgtap
     postgresql-server-dev-${PG}
     postgresql-server-dev-all
+    postgresql-server-dev-${PG}
     debhelper fakeroot
     libtap-parser-sourcehandler-pgtap-perl
 
