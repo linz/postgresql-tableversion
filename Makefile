@@ -119,16 +119,16 @@ upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql: sql/$(EXTENSION).sq
 $(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
 	cp $< $@
 
-%.sql: %.sql.in
+%.sql: %.sql.in Makefile
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/;s|@@REVISION@@|$(REVISION)|' $< > $@
 
-%.pg: %.pg.in
+%.pg: %.pg.in Makefile
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/;s|@@REVISION@@|$(REVISION)|' $< > $@
 	
-$(META): $(META).in
+$(META): $(META).in Makefile
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
 
-$(EXTENSION).control: $(EXTENSION).control.in
+$(EXTENSION).control: $(EXTENSION).control.in Makefile
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
 	
 .PHONY: check_control
