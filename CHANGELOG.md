@@ -7,7 +7,9 @@ in this file.
 ### Added
 ...
 ### Changed
-...
+- `table_version-loader` will CREATE EXTENSION from unpackaged
+  when --no-extension is NOT given and db already has the
+  extension-less support (#168)
 
 ## [1.6.0] - 2019-01-09
 ### IMPORTANT
