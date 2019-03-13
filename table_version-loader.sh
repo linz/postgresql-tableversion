@@ -57,7 +57,16 @@ if test "${EXT_MODE}" = 'on'; then cat<<EOF
         AND c.relname = 'revision'
       )
       THEN
-        ALTER EXTENSION ${EXT_NAME} UPDATE TO '${VER}';
+        IF EXISTS (
+            SELECT * FROM pg_catalog.pg_extension
+            WHERE extname = 'table_version'
+        )
+        THEN
+            ALTER EXTENSION ${EXT_NAME} UPDATE TO '${VER}';
+        ELSE
+            CREATE EXTENSION ${EXT_NAME} VERSION '${VER}'
+            FROM unpackaged;
+        END IF;
       ELSE
         CREATE EXTENSION ${EXT_NAME} VERSION '${VER}';
       END IF;
