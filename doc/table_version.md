@@ -1158,6 +1158,19 @@ call this function multiple times, expecting 0 to be returned after
 the first call (in case of uncommitted transactions there could be
 additional revisions to reorder after the first run).
 
+### `ver_log_modified_tables()` ###
+
+Regenerate the metadata table `table_version.tables_changed` from the
+data in `table_version.versioned_tables` and associated revision
+tables.
+
+This may be useful if the table data gets corrupted for any reason.
+Data in that table is a redundancy used to speed up some queries.
+
+The function takes no parameters and returns void.
+You can safely call this function multiple times.
+
+
 Support
 -------
 
