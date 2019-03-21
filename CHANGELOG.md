@@ -6,6 +6,7 @@ in this file.
 ## [1.7.0dev] - 2019-MM-DD
 ### Added
 - New function `ver_log_modified_tables`
+- Ability for `table_version-loader` to upgrade between dev versions
 ### Changed
 - `table_version-loader` will CREATE EXTENSION from unpackaged
   when --no-extension is NOT given and db already has the

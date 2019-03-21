@@ -50,6 +50,8 @@ echo "Loading ver ${VER} in ${DBLBL}.${TGT_SCHEMA} (EXT_MODE ${EXT_MODE})" >&2
 
 if test "${EXT_MODE}" = 'on'; then cat<<EOF
   DO \$\$
+    DECLARE
+        OLDVER TEXT;
     BEGIN
       IF EXISTS (
         SELECT * FROM pg_catalog.pg_class c, pg_catalog.pg_namespace n
@@ -57,11 +59,14 @@ if test "${EXT_MODE}" = 'on'; then cat<<EOF
         AND c.relname = 'revision'
       )
       THEN
-        IF EXISTS (
-            SELECT * FROM pg_catalog.pg_extension
+        SELECT extversion FROM pg_catalog.pg_extension
             WHERE extname = 'table_version'
-        )
+            INTO OLDVER;
+        IF OLDVER IS NOT NULL
         THEN
+            IF OLDVER = '${VER}' THEN
+                ALTER EXTENSION ${EXT_NAME} UPDATE TO '${VER}next';
+            END IF;
             ALTER EXTENSION ${EXT_NAME} UPDATE TO '${VER}';
         ELSE
             CREATE EXTENSION ${EXT_NAME} VERSION '${VER}'
