@@ -71,9 +71,11 @@ LOCAL_SCRIPTS_built = $(EXTENSION)-loader
 
 LOCAL_BINS = $(LOCAL_SCRIPTS_built)
 
+UPGRADE_SCRIPTS_BUILT = $(patsubst %,upgrade-scripts/$(EXTENSION)--%--$(EXTVERSION).sql,$(UPGRADEABLE_VERSIONS))
+
 DATA_built = \
   $(EXTENSION)--$(EXTVERSION).sql \
-  $(wildcard upgrade-scripts/*--*.sql)
+  $(UPGRADE_SCRIPTS_BUILT)
 
 DATA = $(wildcard sql/*--*.sql)
 EXTRA_CLEAN = \
@@ -82,7 +84,7 @@ EXTRA_CLEAN = \
     $(LOCAL_SCRIPTS_built) \
     sql/$(EXTENSION)--$(EXTVERSION).sql \
     sql/$(EXTENSION).sql \
-		sql/20-version.sql \
+    sql/20-version.sql \
     $(EXTENSION).control \
     upgrade-scripts \
     $(META)
@@ -221,6 +223,8 @@ installcheck-loader-noext: table_version-loader
 
 installcheck-loader-upgrade-noext:
 	$(MAKE) installcheck-loader-upgrade TABLE_VERSION_OPTS=--no-extension
+
+$(UPGRADE_SCRIPTS_BUILT): upgrade-scripts
 
 .PHONY: upgrade-scripts
 upgrade-scripts: upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql
