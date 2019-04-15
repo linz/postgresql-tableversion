@@ -70,6 +70,9 @@ LOCAL_SCRIPTS_built = $(EXTENSION)-loader
 LOCAL_BINS = $(LOCAL_SCRIPTS_built)
 
 UPGRADE_SCRIPTS_BUILT = $(patsubst %,upgrade-scripts/$(EXTENSION)--%--$(EXTVERSION).sql,$(UPGRADEABLE_VERSIONS))
+UPGRADE_SCRIPTS_BUILT += upgrade-scripts/$(EXTENSION)--$(EXTVERSION)--$(EXTVERSION)next.sql
+UPGRADE_SCRIPTS_BUILT += upgrade-scripts/$(EXTENSION)--$(EXTVERSION)next--$(EXTVERSION).sql
+UPGRADE_SCRIPTS_BUILT += upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql
 
 DATA_built = \
   $(EXTENSION)--$(EXTVERSION).sql \
