@@ -43,8 +43,8 @@ matrix:
 before_install:
   # These are needed to test debian package build
   - sudo apt-get install debhelper fakeroot
-    postgresql-server-dev-9.2
     postgresql-server-dev-all
+    postgresql-server-dev-${POSTGRESQL}
     libtap-parser-sourcehandler-pgtap-perl
 
 script:
