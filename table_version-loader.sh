@@ -44,7 +44,7 @@ DBLBL=${TGT_DB}
 if [ "$DBLBL" = "-" ]; then
     DBLBL="(stdout)"
 fi
-echo "Loading ver ${VER} in ${DBLBL}.${TGT_SCHEMA} (EXT_MODE ${EXT_MODE})" >&2
+echo "Loading ${EXT_NAME} ${VER} in ${DBLBL}.${TGT_SCHEMA} (EXT_MODE ${EXT_MODE})" >&2
 
 {
 
