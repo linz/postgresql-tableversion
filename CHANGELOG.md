@@ -11,6 +11,8 @@ in this file.
 - `table_version-loader` will CREATE EXTENSION from unpackaged
   when --no-extension is NOT given and db already has the
   extension-less support (#168)
+### Improved
+- Progress message from `table_version-loader` (#177)
 
 ## [1.6.0] - 2019-01-09
 ### IMPORTANT
