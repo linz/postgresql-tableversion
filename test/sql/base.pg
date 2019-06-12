@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(171);
+SELECT plan(172);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -768,9 +768,9 @@ SELECT lives_ok($$ ALTER TABLE table_version.public_index_revision ADD column "d
 SELECT lives_ok($$ INSERT INTO "index" VALUES (4, 'b', '24') $$);
 SELECT lives_ok($$ SELECT table_version.ver_complete_revision() $$);
 
----------------------------------------
--- Test for revision creation/deletion
----------------------------------------
+-------------------------------------------------------------
+-- Test for revision creation/completion/deletion permissions
+-------------------------------------------------------------
 
 SET SESSION AUTHORIZATION test_owner;
 
@@ -780,6 +780,13 @@ SELECT results_eq($$
     SELECT table_version.ver_delete_revision(max(id))
     FROM table_version.revision
 $$, $$ VALUES (FALSE) $$, $$ Cannot delete an incomplete revision $$ );
+
+SET SESSION AUTHORIZATION test_user;
+
+SELECT throws_like($$ SELECT table_version.ver_complete_revision() $$,
+                   $$% can only be completed by its creator %$$);
+
+SET SESSION AUTHORIZATION test_owner;
 
 SELECT lives_ok($$ SELECT table_version.ver_complete_revision() $$);
 
