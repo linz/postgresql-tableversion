@@ -90,6 +90,8 @@ EXTRA_CLEAN = \
     sql/20-version.sql \
     $(EXTENSION).control \
     upgrade-scripts \
+    *.tpl \
+    *.sql \
     $(META)
 endif
 
