@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(170);
+SELECT plan(171);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -775,6 +775,12 @@ SELECT lives_ok($$ SELECT table_version.ver_complete_revision() $$);
 SET SESSION AUTHORIZATION test_owner;
 
 SELECT lives_ok($$ SELECT table_version.ver_create_revision('r4') $$);
+
+SELECT results_eq($$
+    SELECT table_version.ver_delete_revision(max(id))
+    FROM table_version.revision
+$$, $$ VALUES (FALSE) $$, $$ Cannot delete an incomplete revision $$ );
+
 SELECT lives_ok($$ SELECT table_version.ver_complete_revision() $$);
 
 SET SESSION AUTHORIZATION test_user;

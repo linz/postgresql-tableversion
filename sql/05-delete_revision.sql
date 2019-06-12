@@ -17,10 +17,22 @@ BEGIN
     END IF;
 
     IF NOT pg_has_role(session_user, v_user_name, 'usage') THEN
-        RAISE WARNING 'Can not delete revision % created by user %', p_revision, v_user_name;
+        RAISE WARNING 'Can not delete revision % created by user %',
+                       p_revision, v_user_name;
         RETURN FALSE;
     END IF;
 
+    IF @extschema@._ver_get_reversion_temp_table('_changeset_revision')
+    THEN
+        IF EXISTS (
+            SELECT * FROM _changeset_revision
+            WHERE revision = p_revision
+        ) THEN
+            RAISE WARNING 'Revision % is in progress, please complete it'
+                          'before attempting to delete it.', p_revision;
+            RETURN FALSE;
+        END IF;
+    END IF;
 
     BEGIN
         DELETE FROM @extschema@.revision
