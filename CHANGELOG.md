@@ -7,12 +7,14 @@ in this file.
 ### Added
 - New function `ver_log_modified_tables`
 - Ability for `table_version-loader` to upgrade between dev versions
+- Ability to delete an empty revision by its creator (#178)
 ### Changed
 - `table_version-loader` will CREATE EXTENSION from unpackaged
   when --no-extension is NOT given and db already has the
   extension-less support (#168)
 ### Improved
 - Progress message from `table_version-loader` (#177)
+- Forbid deleting an in-progress revision (#181)
 
 ## [1.6.0] - 2019-01-09
 ### IMPORTANT
