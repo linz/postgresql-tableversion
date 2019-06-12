@@ -12,6 +12,8 @@ in this file.
 - `table_version-loader` will CREATE EXTENSION from unpackaged
   when --no-extension is NOT given and db already has the
   extension-less support (#168)
+- Only the creator of a revision can complete it (#181)
+- In-progress revisions cannot be deleted (#178)
 ### Improved
 - Progress message from `table_version-loader` (#177)
 - Forbid deleting an in-progress revision (#181)

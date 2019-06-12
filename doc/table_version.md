@@ -137,8 +137,8 @@ Revisions are more described in the `table_version.revision` table.
 Security model
 --------------
 
-- Anyone can create and complete revisions (even a different user
-  than the one who crated the revision can complete it).
+- Anyone can create revisions.
+- Revisions can only be completed by their creators.
 - Only those who have ownership privileges on a table can
   enable/disable versioning of such table.
 - Only empty revisions can be deleted.
