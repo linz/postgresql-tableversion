@@ -138,11 +138,11 @@ Security model
 --------------
 
 - Anyone can create and complete revisions (even a different user
-  than the one who crated the revision can complete it)
+  than the one who crated the revision can complete it).
 - Only those who have ownership privileges on a table can
-  enable/disable versioning of such table
-- Only the owner of `table_version` extension can delete an unused
-  revision
+  enable/disable versioning of such table.
+- Only empty revisions can be deleted.
+- Only the creator of a revision can delete it.
 
 Note that disabling versioning on a table results in all history for
 that table being deleted.

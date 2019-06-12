@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(165);
+SELECT plan(170);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -766,6 +766,30 @@ SELECT lives_ok($$ INSERT INTO "index" VALUES (2, 'b', '24') $$);
 SELECT lives_ok($$ ALTER TABLE table_version.public_index_revision ADD column "desc2" text; $$);
 -- insert new value
 SELECT lives_ok($$ INSERT INTO "index" VALUES (4, 'b', '24') $$);
+SELECT lives_ok($$ SELECT table_version.ver_complete_revision() $$);
+
+---------------------------------------
+-- Test for revision creation/deletion
+---------------------------------------
+
+SET SESSION AUTHORIZATION test_owner;
+
+SELECT lives_ok($$ SELECT table_version.ver_create_revision('r4') $$);
+SELECT lives_ok($$ SELECT table_version.ver_complete_revision() $$);
+
+SET SESSION AUTHORIZATION test_user;
+
+SELECT results_eq($$
+    SELECT table_version.ver_delete_revision(max(id))
+    FROM table_version.revision
+$$, $$ VALUES (FALSE) $$ );
+
+SET SESSION AUTHORIZATION test_owner;
+
+SELECT results_eq($$
+    SELECT table_version.ver_delete_revision(max(id))
+    FROM table_version.revision
+$$, $$ VALUES (TRUE) $$ );
 
 ---------------------------------------
 -- End of tests
