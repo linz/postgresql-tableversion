@@ -12,7 +12,11 @@ TMP_INSTALL_DIR_PREFIX=/tmp/table_version
 mkdir -p ${TMP_INSTALL_DIR_PREFIX} || exit 1
 
 # Save current table_version
-cp -a `which table_version-loader` ${TMP_INSTALL_DIR_PREFIX} || exit 1
+loader_bin=`which table_version-loader` || {
+    echo "No table_version-loader found in PATH, did you run 'make install'?" >&2
+    exit 1;
+}
+cp -a ${loader_bin} ${TMP_INSTALL_DIR_PREFIX} || exit 1
 
 # Install all older versions
 git fetch --unshallow --tags # to get all commits/tags
