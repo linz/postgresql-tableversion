@@ -63,7 +63,16 @@ INSERT INTO foo.bar (id, d1) VALUES
 (2, 'foo bar 2'),
 (3, 'foo bar 3');
 
+---------------------------------
+-- Setup revision counter record
+---------------------------------
+
+\set last_revision 1000
+
+-- NOTE: ver_enable_versioning currently creates a revision (FIXME!)
+\set last_revision :last_revision + 1
 SELECT ok(table_version.ver_enable_versioning('foo', 'bar'), 'Enable versioning on foo.bar');
+
 SELECT ok(table_version.ver_is_table_versioned('foo', 'bar'), 'Check table is revisioned versioning on foo.bar');
 SELECT is(table_version.ver_get_versioned_table_key('foo', 'bar'), 'id', 'Check table foo.bar table key');
 SELECT is(table_version.ver_get_table_base_revision('foo', 'bar'), 1001, 'Check table base revision');
@@ -72,21 +81,31 @@ SELECT has_function( 'table_version', 'ver_get_foo_bar_revision', ARRAY['integer
 SELECT has_function( 'table_version', 'ver_get_foo_bar_diff', ARRAY['integer','integer'] );
 
 SELECT set_eq(
-    'SELECT * FROM table_version.ver_get_foo_bar_revision(1001)',
+    format($$
+        SELECT * FROM table_version.ver_get_foo_bar_revision(%1$s)
+    $$, :last_revision),
     $$VALUES (1, 'foo bar 1'),(2, 'foo bar 2'),(3, 'foo bar 3')$$,
     'Check get table revision function API'
 );
 
 SELECT results_eq(
-    'SELECT * FROM table_version.ver_get_foo_bar_diff(1000, 1001) ORDER BY id',
+    format($$
+        SELECT * FROM table_version.ver_get_foo_bar_diff(%1$s - 1, %1$s)
+        ORDER BY id$$, :last_revision),
     $$VALUES ('I'::char, 1, 'foo bar 1'),
              ('I'::char, 2, 'foo bar 2'),
              ('I'::char, 3, 'foo bar 3')$$,
     'Foo bar diff for table creation'
 );
 
+-------------------------------
+-- TEST table data editing
+-------------------------------
+
 -- Edit 1 insert, update and delete
-SELECT is(table_version.ver_create_revision('Foo bar edit 1'), 1002, 'Create edit 1 revision');
+\set last_revision :last_revision + 1
+SELECT is(table_version.ver_create_revision('Foo bar edit 1'),
+    :last_revision, 'Create edit 1 revision');
 
 INSERT INTO foo.bar (id, d1) VALUES (4, 'foo bar 4');
 
@@ -100,7 +119,9 @@ WHERE id = 3;
 SELECT ok(table_version.ver_complete_revision(), 'Complete edit 1 revision');
 
 SELECT results_eq(
-    'SELECT * FROM table_version.ver_get_foo_bar_diff(1001, 1002) ORDER BY id',
+    format($$
+        SELECT * FROM table_version.ver_get_foo_bar_diff(%1$s - 1, %1$s)
+        ORDER BY id$$, :last_revision),
     $$VALUES ('U'::char, 1, 'foo bar 1 edit'),
              ('D'::char, 3, 'foo bar 3'),
              ('I'::char, 4, 'foo bar 4')$$,
@@ -108,7 +129,9 @@ SELECT results_eq(
 );
 
 -- Edit 2 insert, update and delete
-SELECT is(table_version.ver_create_revision('Foo bar edit 2'), 1003, 'Create edit 2 revision');
+\set last_revision :last_revision + 1
+SELECT is(table_version.ver_create_revision('Foo bar edit 2'),
+    :last_revision, 'Create edit 2 revision');
 
 INSERT INTO foo.bar (id, d1) VALUES (5, 'foo bar 5');
 
@@ -126,7 +149,9 @@ WHERE id = 1;
 SELECT ok(table_version.ver_complete_revision(), 'Complete edit 2 revision');
 
 SELECT results_eq(
-    'SELECT * FROM table_version.ver_get_foo_bar_diff(1001, 1002) ORDER BY id',
+    format($$
+        SELECT * FROM table_version.ver_get_foo_bar_diff(%1$s - 2, %1$s - 1)
+        ORDER BY id$$, :last_revision),
     $$VALUES ('U'::char, 1, 'foo bar 1 edit'),
              ('D'::char, 3, 'foo bar 3'),
              ('I'::char, 4, 'foo bar 4')$$,
@@ -135,7 +160,9 @@ SELECT results_eq(
 
 
 SELECT results_eq(
-    'SELECT * FROM table_version.ver_get_foo_bar_diff(1002, 1003) ORDER BY id',
+    format($$
+        SELECT * FROM table_version.ver_get_foo_bar_diff(%1$s - 1, %1$s)
+        ORDER BY id$$, :last_revision),
     $$VALUES ('D'::char, 1, 'foo bar 1 edit'),
              ('U'::char, 2, 'foo bar 2 edit'),
              ('U'::char, 4, 'foo bar 4 edit'),
@@ -144,7 +171,9 @@ SELECT results_eq(
 );
 
 SELECT results_eq(
-    'SELECT * FROM table_version.ver_get_foo_bar_diff(1001, 1003) ORDER BY id',
+    format($$
+        SELECT * FROM table_version.ver_get_foo_bar_diff(%1$s - 2, %1$s)
+        ORDER BY id$$, :last_revision),
     $$VALUES ('D'::char, 1, 'foo bar 1 edit'),
              ('U'::char, 2, 'foo bar 2 edit'),
              ('D'::char, 3, 'foo bar 3'),
@@ -154,7 +183,9 @@ SELECT results_eq(
 );
 
 SELECT results_eq(
-    'SELECT * FROM table_version.ver_get_foo_bar_diff(1001, 1010) ORDER BY id',
+    format($$
+        SELECT * FROM table_version.ver_get_foo_bar_diff(%1$s - 2, %1$s + 100 )
+        ORDER BY id$$, :last_revision),
     $$VALUES ('D'::char, 1, 'foo bar 1 edit'),
              ('U'::char, 2, 'foo bar 2 edit'),
              ('D'::char, 3, 'foo bar 3'),
@@ -164,7 +195,9 @@ SELECT results_eq(
 );
 
 -- Edit 3 delete that was added in test edit 2.
-SELECT is(table_version.ver_create_revision('Foo bar edit 3'), 1004, 'Create edit 3 revision');
+\set last_revision :last_revision + 1
+SELECT is(table_version.ver_create_revision('Foo bar edit 3'),
+    :last_revision, 'Create edit 3 revision');
 
 DELETE FROM foo.bar
 WHERE id = 4;
@@ -172,7 +205,9 @@ WHERE id = 4;
 SELECT ok(table_version.ver_complete_revision(), 'Complete edit 3 revision');
 
 SELECT results_eq(
-    'SELECT * FROM table_version.ver_get_foo_bar_diff(1001, 1004) ORDER BY id',
+    format($$
+        SELECT * FROM table_version.ver_get_foo_bar_diff(%1$s - 3, %1$s)
+        ORDER BY id$$, :last_revision),
     $$VALUES ('D'::char, 1, 'foo bar 1 edit'),
              ('U'::char, 2, 'foo bar 2 edit'),
              ('D'::char, 3, 'foo bar 3'),
@@ -182,20 +217,26 @@ SELECT results_eq(
 
 -- Edit 4 add create another revision to check create/delete feature in between revision work
 -- the delete is NOT the last revision.
-SELECT is(table_version.ver_create_revision('Foo bar edit 4'), 1005, 'Create edit 4 revision');
+\set last_revision :last_revision + 1
+SELECT is(table_version.ver_create_revision('Foo bar edit 4'),
+    :last_revision, 'Create edit 4 revision');
 
 INSERT INTO foo.bar (id, d1) VALUES (6, 'foo bar 6');
 
 SELECT ok(table_version.ver_complete_revision(), 'Complete edit 4 revision');
 
 SELECT results_eq(
-    'SELECT * FROM table_version.ver_get_foo_bar_diff(1004, 1005) ORDER BY id',
+    format($$
+        SELECT * FROM table_version.ver_get_foo_bar_diff(%1$s - 1, %1$s)
+        ORDER BY id$$, :last_revision),
     $$VALUES ('I'::char, 6, 'foo bar 6')$$,
     'Foo bar diff for edit 4'
 );
 
 SELECT results_eq(
-    'SELECT * FROM table_version.ver_get_foo_bar_diff(1001, 1005) ORDER BY id',
+    format($$
+        SELECT * FROM table_version.ver_get_foo_bar_diff(%1$s - 4, %1$s)
+        ORDER BY id$$, :last_revision),
     $$VALUES ('D'::char, 1, 'foo bar 1 edit'), 
              ('U'::char, 2, 'foo bar 2 edit'), 
              ('D'::char, 3, 'foo bar 3'), 
@@ -205,20 +246,26 @@ SELECT results_eq(
 );
 
 -- Edit 5 re-insert a delete row
-SELECT is(table_version.ver_create_revision('Foo bar edit 4'), 1006, 'Create edit 4 revision');
+\set last_revision :last_revision + 1
+SELECT is(table_version.ver_create_revision('Foo bar edit 5'),
+    :last_revision, 'Create edit 5 revision');
 
 INSERT INTO foo.bar (id, d1) VALUES (1, 'foo bar 1 (re-insert)');
 
-SELECT ok(table_version.ver_complete_revision(), 'Complete edit 4 revision');
+SELECT ok(table_version.ver_complete_revision(), 'Complete edit 5 revision');
 
 SELECT results_eq(
-    'SELECT * FROM table_version.ver_get_foo_bar_diff(1005, 1006) ORDER BY id',
+    format($$
+        SELECT * FROM table_version.ver_get_foo_bar_diff(%1$s - 1, %1$s)
+        ORDER BY id$$, :last_revision),
     $$VALUES ('I'::char, 1, 'foo bar 1 (re-insert)')$$,
     'Foo bar diff check re-insert a prevoiusly deleted row #1'
 );
 
 SELECT results_eq(
-    'SELECT * FROM table_version.ver_get_foo_bar_diff(1001, 1006) ORDER BY id',
+    format($$
+        SELECT * FROM table_version.ver_get_foo_bar_diff(%1$s - 5, %1$s)
+        ORDER BY id$$, :last_revision),
     $$VALUES ('U'::char, 1, 'foo bar 1 (re-insert)'), 
              ('U'::char, 2, 'foo bar 2 edit'), 
              ('D'::char, 3, 'foo bar 3'), 
@@ -226,6 +273,10 @@ SELECT results_eq(
              ('I'::char, 6, 'foo bar 6')$$,
     'Foo bar diff check re-insert a prevoiusly deleted row #2'
 );
+
+-------------------------------
+-- TEST table structure change
+-------------------------------
 
 SELECT is(table_version.ver_versioned_table_change_column_type('foo', 'bar', 'd1', 'VARCHAR(100)'), TRUE, 'Change column datatype');
 
@@ -245,12 +296,16 @@ SELECT col_type_is( 'table_version', 'foo_bar_revision',
     'foo_bar_revision.baz is of type text' );
 
 -- Verify the new column can be used
-SELECT is(table_version.ver_create_revision('Foo bar edit 6'), 1007, 'Create edit 6 revision');
+\set last_revision :last_revision + 1
+SELECT is(table_version.ver_create_revision('Foo bar edit 6'),
+    :last_revision, 'Create edit 6 revision');
 SELECT lives_ok($$INSERT INTO foo.bar (id,baz) VALUES (4,'baz')$$);
-SELECT ok(table_version.ver_complete_revision(), 'Complete edit 5 revision');
+SELECT ok(table_version.ver_complete_revision(), 'Complete edit 6 revision');
 
 SELECT results_eq(
-    'SELECT * FROM table_version.ver_get_foo_bar_diff(1006, 1007) ORDER BY baz',
+    format($$
+        SELECT * FROM table_version.ver_get_foo_bar_diff(%1$s - 1, %1$s)
+        ORDER BY id$$, :last_revision),
     $$VALUES ('I'::char, 4, null::varchar, 'baz'::text)$$,
     'Foo bar diff for new record after column added'
 );
@@ -276,12 +331,17 @@ INSERT INTO foo.bar2 (baz, qux) VALUES
 ('foo bar 2', 'qux2'),
 ('foo bar 3', 'qux3');
 
+-- NOTE: ver_enable_versioning currently creates a revision (FIXME!)
+\set last_revision :last_revision + 1
 SELECT ok(table_version.ver_enable_versioning('foo', 'bar2'), 'Enable versioning of text primary key on foo.bar2');
+
 SELECT ok(table_version.ver_is_table_versioned('foo', 'bar2'), 'Check table is revisioned versioning on foo.bar2');
 SELECT is(table_version.ver_get_versioned_table_key('foo', 'bar2'), 'baz', 'Check table foo.bar table key');
 
 -- Edit 1 insert, update and delete for text primary key
-SELECT is(table_version.ver_create_revision('Foo bar2 edit'), 1009, 'Create edit text PK');
+\set last_revision :last_revision + 1
+SELECT is(table_version.ver_create_revision('Foo bar2 edit'),
+    :last_revision, 'Create edit text PK');
 
 INSERT INTO foo.bar2 (baz, qux) VALUES ('foo bar 4', 'qux4');
 
@@ -295,7 +355,9 @@ WHERE baz = 'foo bar 3';
 SELECT ok(table_version.ver_complete_revision(), 'Complete edit text PK');
 
 SELECT results_eq(
-    'SELECT * FROM table_version.ver_get_foo_bar2_diff(1008, 1009) ORDER BY baz',
+    format($$
+        SELECT * FROM table_version.ver_get_foo_bar2_diff(%1$s - 1, %1$s)
+        ORDER BY baz $$, :last_revision),
     $$VALUES ('U'::char, 'foo bar 1', 'qux1 edit'),
              ('D'::char, 'foo bar 3', 'qux3'),
              ('I'::char, 'foo bar 4', 'qux4')$$,
@@ -597,7 +659,7 @@ SELECT has_function( 'table_version', 'ver_versioned_table_change_column_type', 
 SELECT has_function( 'table_version', 'ver_create_version_trigger', ARRAY['regclass', 'name'] );
 
 
--- Added after problem found in admin_bouldaries_uploader
+-- Added after problem found in admin_boundaries_uploader
 
 CREATE schema test_schema;
 CREATE TABLE test_schema.table1_with_int_pk (
