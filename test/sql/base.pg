@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(175);
+SELECT plan(176);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -291,6 +291,17 @@ SELECT is_empty(
         ORDER BY id$$, :last_revision),
     'foo.bar diff check for same-val-update'
 );
+
+-- check that table did not result as being changed
+SELECT is_empty( format($$
+    SELECT c.*
+    FROM table_version.tables_changed c,
+         table_version.versioned_tables t
+    WHERE c.table_id = t.id
+      AND t.schema_name = 'foo'
+      AND t.table_name = 'bar'
+      AND c.revision = %s$$, :last_revision),
+    'No entry in tables_changed for same-val-update on foo.bar');
 
 -------------------------------
 -- TEST table structure change
