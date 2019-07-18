@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(176);
+SELECT plan(177);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -290,6 +290,14 @@ SELECT is_empty(
         SELECT * FROM table_version.ver_get_foo_bar_diff(%1$s - 1, %1$s)
         ORDER BY id$$, :last_revision),
     'foo.bar diff check for same-val-update'
+);
+
+-- check that there's actually no record in the revision table
+SELECT is_empty(
+    format($$
+        SELECT * FROM table_version.foo_bar_revision
+        WHERE _revision_created = %1$s$$, :last_revision),
+    'foo.bar revision check for same-val-update'
 );
 
 -- check that table did not result as being changed
