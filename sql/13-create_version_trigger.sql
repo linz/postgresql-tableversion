@@ -106,6 +106,13 @@ CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
             RAISE EXCEPTION 'Table versioning system information is missing for %full_table_name%';
         END IF;
 
+        IF (TG_OP = 'UPDATE') THEN
+            --RAISE NOTICE 'Revision trigger skipping update with same values as old record';
+            IF OLD.* IS NOT DISTINCT FROM NEW.* THEN
+                RETURN NULL;
+            END IF;
+        END IF;
+
         IF NOT EXISTS (
             SELECT TRUE
             FROM   @extschema@.tables_changed
@@ -119,6 +126,7 @@ CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
 
         
         IF (TG_OP <> 'INSERT') THEN
+            -- This is an UPDATE or DELETE
             SELECT 
                 _revision_created INTO v_last_revision
             FROM 
@@ -157,6 +165,7 @@ CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
         END IF;
 
         IF( TG_OP <> 'DELETE') THEN
+            -- This is an UPDATE or INSERT
             INSERT INTO %revision_table% (
                 _revision_created,
                 _revision_expired,
