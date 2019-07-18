@@ -14,6 +14,9 @@ in this file.
   extension-less support (#168)
 - Only the creator of a revision can complete it (#181)
 - In-progress revisions cannot be deleted (#178)
+- UPDATEs to versioned tables that do not really change
+  record values are now skipped and don't record the
+  (fake) change in revision tables and `tables_changed` (#186)
 ### Improved
 - Progress message from `table_version-loader` (#177)
 - Forbid deleting an in-progress revision (#181)
