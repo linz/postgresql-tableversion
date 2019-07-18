@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(172);
+SELECT plan(175);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -272,6 +272,24 @@ SELECT results_eq(
              ('I'::char, 5, 'foo bar 5'), 
              ('I'::char, 6, 'foo bar 6')$$,
     'Foo bar diff check re-insert a prevoiusly deleted row #2'
+);
+
+-- EDIT: Update to same value
+
+\set last_revision :last_revision + 1
+SELECT is(table_version.ver_create_revision('foo.bar same-val-update'),
+    :last_revision, 'Create foo.bar same-val-update revision');
+
+UPDATE foo.bar SET d1 = d1;
+
+SELECT ok(table_version.ver_complete_revision(),
+    'Complete foo.bar same-val-update revision');
+
+SELECT is_empty(
+    format($$
+        SELECT * FROM table_version.ver_get_foo_bar_diff(%1$s - 1, %1$s)
+        ORDER BY id$$, :last_revision),
+    'foo.bar diff check for same-val-update'
 );
 
 -------------------------------
