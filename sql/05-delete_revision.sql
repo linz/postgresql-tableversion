@@ -29,7 +29,7 @@ BEGIN
             WHERE revision = p_revision
         ) THEN
             RAISE WARNING 'Revision % is in progress, please complete it'
-                          'before attempting to delete it.', p_revision;
+                          ' before attempting to delete it.', p_revision;
             RETURN FALSE;
         END IF;
     END IF;
