@@ -53,3 +53,25 @@ Description: PostgreSQL table versioning extension, recording row modifications
  revisions. The extension uses a PL/PgSQL trigger based system to record and
  provide access to the row revisions
 
+Package: postgresql-10-tableversion
+Architecture: all
+Depends: ${misc:Depends},
+         postgresql-10
+Recommends:
+Description: PostgreSQL table versioning extension, recording row modifications
+ and its history. The extension provides APIs for accessing snapshots of a table
+ at certain revisions and the difference generated between any two given
+ revisions. The extension uses a PL/PgSQL trigger based system to record and
+ provide access to the row revisions
+
+Package: postgresql-11-tableversion
+Architecture: all
+Depends: ${misc:Depends},
+         postgresql-11
+Recommends:
+Description: PostgreSQL table versioning extension, recording row modifications
+ and its history. The extension provides APIs for accessing snapshots of a table
+ at certain revisions and the difference generated between any two given
+ revisions. The extension uses a PL/PgSQL trigger based system to record and
+ provide access to the row revisions
+

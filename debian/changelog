@@ -1,3 +1,9 @@
+postgresql-tableversion (1.6.0-1linz~trusty2) trusty; urgency=medium
+
+  * Rebuild with support for PostgreSQL 10 and 11
+
+ -- Ivan Mincik <imincik@linz.govt.nz>  Mon, 28 Jan 2019 15:56:48 +0100
+
 postgresql-tableversion (1.6.0-1linz~trusty1) trusty; urgency=medium
 
   * New upstream version
