@@ -3,6 +3,8 @@
 All notable changes for the PostgreSQL table version extension are documented 
 in this file.
 
+## [1.8.0dev] - YYYY-MM-DD
+
 ## [1.7.0] - 2019-07-25
 ### Added
 - New function `ver_log_modified_tables`
