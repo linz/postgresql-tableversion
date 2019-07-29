@@ -249,7 +249,11 @@ DECLARE
     rec RECORD;
 BEGIN
     BEGIN
-        old_version := @extschema@.ver_version();
+        -- version can be in the form '1.3.3 more-info-here'
+        old_version := regexp_replace(
+            regexp_replace(@extschema@.ver_version(), ' .*', ''),
+            '[^0-9.].*', ''
+        );
     EXCEPTION WHEN undefined_function THEN
         RAISE DEBUG 'ver_version not available, '
                     'we are either doing a new install '
@@ -261,7 +265,7 @@ BEGIN
     INTO is_extension;
 
     -- We only need to update triggers when coming
-    -- from versions 1.4 or earlier. Function ver_version
+    -- from versions 1.7 or earlier. Function ver_version
     -- was introduced in 1.3 so no need to check any previous
     -- version (old_version would be null in those cases)
     --
@@ -270,9 +274,8 @@ BEGIN
     -- as ver_get_versioned_tables() would return the empty set
     --
     IF ( old_version IS NULL OR
-       old_version LIKE '1.3.%' OR
-       old_version LIKE '1.4.%' ) AND
-       EXISTS (
+       string_to_array(old_version, '.')::int[] <= ARRAY[1,7,0]
+       ) AND EXISTS (
           SELECT * FROM @extschema@.ver_get_versioned_tables()
        ) versioned_tables
     THEN
