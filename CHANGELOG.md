@@ -4,6 +4,8 @@ All notable changes for the PostgreSQL table version extension are documented
 in this file.
 
 ## [1.7.1dev] - YYYY-MM-DD
+### Fixed
+- Upgrade of existing revision triggers to skip empty updates (#192)
 
 ## [1.7.0] - 2019-07-25
 ### Added
