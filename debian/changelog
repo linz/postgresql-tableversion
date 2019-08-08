@@ -1,3 +1,9 @@
+postgresql-tableversion (1.7.1-1linz~bionic1) bionic; urgency=medium
+
+  * New distribution
+
+ -- Sandro Santilli <strk@kbt.io>  Thu, 08 Aug 2019 09:12:50 +0200
+
 postgresql-tableversion (1.7.1-1linz~trusty1) trusty; urgency=medium
 
   * New upstream version
