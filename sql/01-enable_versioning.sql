@@ -246,3 +246,64 @@ $$ LANGUAGE plpgsql;
 DROP EVENT TRIGGER IF EXISTS _ver_abort_drop_of_versioned_table;
 CREATE EVENT TRIGGER _ver_abort_drop_of_versioned_table
 ON sql_drop EXECUTE PROCEDURE _ver_abort_drop_of_versioned_table();
+
+--
+-- Fix existing revision table definitions if coming from a version prior to 1.8.0
+--
+-- WARNING: this needs to be sourced _before_ the script defining
+--          ver_version() function
+-- {
+DO $$
+DECLARE
+    old_version TEXT;
+    rec RECORD;
+    sql TEXT;
+BEGIN
+    BEGIN
+        -- version can be in the form '1.3.3 more-info-here'
+        old_version := regexp_replace(
+            regexp_replace(@extschema@.ver_version(), ' .*', ''),
+            '[^0-9.].*', ''
+        );
+    EXCEPTION WHEN undefined_function THEN
+        RAISE DEBUG 'ver_version not available, '
+                    'we are either doing a new install '
+                    'or coming from version before 1.3';
+    END;
+
+    RAISE WARNING 'OLD VERSION IS %', old_version;
+
+    -- We only need to update table definitions when coming
+    -- from versions 1.7 or earlier.
+    -- NOTE: coming from 1.8.0dev won't update triggers
+    IF ( string_to_array(old_version, '.')::int[] >= ARRAY[1,8,0] )
+    THEN
+        RETURN;
+    END IF;
+
+    -- We only need to update table definitions when any table
+    -- is known as versioned. NOTE: we do this before using
+    -- functions that may not even be present in the database
+    -- (as it happens on first install)
+    --
+    IF ( NOT EXISTS ( SELECT * FROM @extschema@.versioned_tables ) )
+    THEN
+        RETURN;
+    END IF;
+
+    RAISE NOTICE 'Updating definition of revision tables';
+    FOR rec IN
+        SELECT
+            @extschema@.ver_get_version_table_full(schema_name, table_name)
+            AS rt
+        FROM @extschema@.ver_get_versioned_tables()
+    LOOP
+        sql := format('ALTER TABLE %s ADD CONSTRAINT expired_after_created '
+                      'CHECK ( _revision_created < _revision_expired)',
+                      rec.rt);
+        RAISE DEBUG 'Executing %', sql;
+        EXECUTE sql;
+    END LOOP;
+END
+$$ LANGUAGE 'plpgsql';
+--}
