@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(177);
+SELECT plan(179);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -771,6 +771,16 @@ SELECT lives_ok($$ SELECT table_version.ver_complete_revision() $$);
 SELECT lives_ok($$ SELECT setval('table_version.revision_id_seq', 1, true) $$);
 
 SELECT lives_ok($$ SELECT table_version.ver_create_revision('r2') $$); -- 1
+
+SELECT throws_like( $$ UPDATE t set v = 'a2' WHERE k = 1 $$,
+    '%violates check constraint%',
+    'ver_create_revision bails out on revision sequence disorder'
+);
+
+SELECT lives_ok($$
+ ALTER TABLE table_version.public_t_revision DROP CONSTRAINT expired_after_created
+$$);
+
 SELECT lives_ok($$ UPDATE t set v = 'a2' WHERE k = 1 $$);
 SELECT lives_ok($$ SELECT table_version.ver_complete_revision() $$);
 
