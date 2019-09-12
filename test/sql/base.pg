@@ -796,7 +796,7 @@ SELECT throws_like( $$ UPDATE t set v = 'a2' WHERE k = 1 $$,
 );
 
 SELECT lives_ok($$
- ALTER TABLE table_version.public_t_revision DROP CONSTRAINT public_t_revision_check
+ ALTER TABLE table_version.public_t_revision DROP CONSTRAINT expired_after_created
 $$);
 
 SELECT lives_ok($$ UPDATE t set v = 'a2' WHERE k = 1 $$);

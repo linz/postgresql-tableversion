@@ -67,7 +67,7 @@ BEGIN
     'CREATE TABLE ' || v_revision_table || '(' ||
         '_revision_created INTEGER NOT NULL,' ||
         '_revision_expired INTEGER,' ||
-        'CHECK ( _revision_created < _revision_expired ), ' ||
+        'CONSTRAINT expired_after_created CHECK ( _revision_created < _revision_expired ), ' ||
         'LIKE ' || v_table_oid::text ||
     ');';
     BEGIN
