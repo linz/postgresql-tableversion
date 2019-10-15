@@ -3,7 +3,7 @@
 
 -- postgresql-table_version - PostgreSQL table versioning extension
 --
--- Copyright 2016 Crown copyright (c)
+-- Copyright 2016-2019 Crown copyright (c)
 -- Land Information New Zealand and the New Zealand Government.
 -- All rights reserved
 --
@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(177);
+SELECT plan(178);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -273,6 +273,17 @@ SELECT results_eq(
              ('I'::char, 6, 'foo bar 6')$$,
     'Foo bar diff check re-insert a prevoiusly deleted row #2'
 );
+
+-- check that table results as being changed by this revision
+SELECT isnt_empty( format($$
+    SELECT c.*
+    FROM table_version.tables_changed c,
+         table_version.versioned_tables t
+    WHERE c.table_id = t.id
+      AND t.schema_name = 'foo'
+      AND t.table_name = 'bar'
+      AND c.revision = %s$$, :last_revision),
+    'Has tables_changed record for re-insert of previously deleted row in foo.bar');
 
 -- EDIT: Update to same value
 
