@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/linz/postgresql-tableversion.svg?branch=master)](https://travis-ci.org/linz/postgresql-tableversion)
+[![Actions Status](https://github.com/linz/postgresql-tableversion/workflows/test/badge.svg?branch=master)](https://github.com/linz/postgresql-tableversion/actions)
 
 postgresql-tableversion
 ========================
