@@ -22,6 +22,7 @@ jobs:
         sudo apt-get -qqy --purge remove \
             libpq5 \
             libpq-dev \
+            *php* \
             postgresql \
             postgresql-client-common \
             postgresql-common
