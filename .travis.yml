@@ -55,6 +55,7 @@ script:
   # Test install from package
   - PG_SUPPORTED_VERSIONS=${PG} make deb
   - sudo dpkg -i ../postgresql-${PG}-tableversion_*.deb
+  - sudo dpkg -i ../tableversion_*.deb
 
 notifications:
   # LINZ corporate email server is dropping messages from Travis

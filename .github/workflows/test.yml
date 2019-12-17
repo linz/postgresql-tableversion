@@ -78,3 +78,4 @@ jobs:
         # Test install from package
         PG_SUPPORTED_VERSIONS=${{ matrix.pg }} make deb
         sudo dpkg -i ../postgresql-${{ matrix.pg }}-tableversion_*.deb
+        sudo dpkg -i ../tableversion_*.deb
