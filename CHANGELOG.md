@@ -5,6 +5,10 @@ in this file.
 
 ## [1.8.0dev] - YYYY-MM-DD
 
+## [1.7.1] - 2019-07-29
+### Fixed
+- Upgrade of existing revision triggers to skip empty updates (#192)
+
 ## [1.7.0] - 2019-07-25
 ### Added
 - New function `ver_log_modified_tables`
