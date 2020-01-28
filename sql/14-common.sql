@@ -105,6 +105,7 @@ RETURNS VARCHAR AS $$
     SELECT quote_ident($1 || '_' || $2 || '_revision_trg');
 $$ LANGUAGE sql IMMUTABLE;
 
+
 /**
 * Gets the changset difference function name and signature that is created for the versioned table.
 *

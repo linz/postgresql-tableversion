@@ -4,6 +4,8 @@ All notable changes for the PostgreSQL table version extension are documented
 in this file.
 
 ## [1.8.0dev] - YYYY-MM-DD
+### Improved
+- Handle TRUNCATE on versioned tables (#204)
 
 ## [1.7.1] - 2019-07-29
 ### Fixed

@@ -18,7 +18,7 @@
 
 BEGIN;
 
-SELECT plan(178);
+SELECT plan(181);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -76,6 +76,12 @@ SELECT ok(table_version.ver_enable_versioning('foo', 'bar'), 'Enable versioning 
 SELECT ok(table_version.ver_is_table_versioned('foo', 'bar'), 'Check table is revisioned versioning on foo.bar');
 SELECT is(table_version.ver_get_versioned_table_key('foo', 'bar'), 'id', 'Check table foo.bar table key');
 SELECT is(table_version.ver_get_table_base_revision('foo', 'bar'), 1001, 'Check table base revision');
+SELECT has_trigger('foo'::name, 'bar'::name, 'foo_bar_revision_trg'::name);
+SELECT has_trigger('foo'::name, 'bar'::name, 'foo_bar_truncate_trg'::name);
+
+-- Check that TRUNCATE is forbidden
+SELECT throws_like('TRUNCATE foo.bar', '% not supported %');
+
 
 SELECT has_function( 'table_version', 'ver_get_foo_bar_revision', ARRAY['integer'] );
 SELECT has_function( 'table_version', 'ver_get_foo_bar_diff', ARRAY['integer','integer'] );
@@ -321,6 +327,7 @@ SELECT is_empty( format($$
       AND t.table_name = 'bar'
       AND c.revision = %s$$, :last_revision),
     'No entry in tables_changed for same-val-update on foo.bar');
+
 
 -------------------------------
 -- TEST table structure change
