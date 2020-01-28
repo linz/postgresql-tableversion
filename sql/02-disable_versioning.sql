@@ -31,7 +31,9 @@ BEGIN
     WHERE  schema_name = v_schema
     AND    table_name = v_table;
 
-    EXECUTE 'DROP TRIGGER IF EXISTS '  || @extschema@._ver_get_version_trigger(v_schema, v_table) || ' ON ' ||  
+    EXECUTE 'DROP TRIGGER IF EXISTS '  || @extschema@._ver_get_version_trigger(v_schema, v_table) || ' ON ' ||
+        quote_ident(v_schema) || '.' || quote_ident(v_table);
+    EXECUTE 'DROP TRIGGER IF EXISTS '  || @extschema@._ver_get_truncate_trigger(v_schema, v_table) || ' ON ' ||
         quote_ident(v_schema) || '.' || quote_ident(v_table);
     EXECUTE 'DROP FUNCTION IF EXISTS ' || @extschema@.ver_get_version_table_full(v_schema, v_table) || '()';
     EXECUTE 'DROP FUNCTION IF EXISTS ' || @extschema@._ver_get_diff_function(v_schema, v_table);

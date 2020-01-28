@@ -1,4 +1,20 @@
 /**
+* Gets the name of the truncate-forbidding trigger
+* that is created on the versioned table.
+*
+* @param p_schema         The table schema
+* @param p_table          The table name
+* @return                 The trigger name
+*/
+CREATE OR REPLACE FUNCTION _ver_get_truncate_trigger(
+    p_schema NAME,
+    p_table NAME
+)
+RETURNS VARCHAR AS $$
+    SELECT quote_ident($1 || '_' || $2 || '_truncate_trg');
+$$ LANGUAGE sql IMMUTABLE;
+
+/**
 * Creates trigger and trigger function required for versioning the table.
 *
 * @param p_table_oid      The table regclass
@@ -76,6 +92,11 @@ CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
        v_last_revision @extschema@.revision.id%TYPE;
        v_table_id      @extschema@.versioned_tables.id%TYPE;
     BEGIN
+
+        IF( TG_OP = 'TRUNCATE' ) THEN
+            RAISE EXCEPTION 'TRUNCATE is not supported on versioned tables';
+        END IF;
+
         BEGIN
             SELECT
                 max(VER.revision)
@@ -125,7 +146,7 @@ CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
         END IF;
 
         
-        IF (TG_OP <> 'INSERT') THEN
+        IF (TG_OP = 'UPDATE' OR TG_OP = 'DELETE') THEN
             -- This is an UPDATE or DELETE
             SELECT 
                 _revision_created INTO v_last_revision
@@ -164,7 +185,7 @@ CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
             END IF;
         END IF;
 
-        IF( TG_OP <> 'DELETE') THEN
+        IF( TG_OP = 'UPDATE' OR TG_OP = 'INSERT' ) THEN
             -- This is an UPDATE or INSERT
             INSERT INTO %revision_table% (
                 _revision_created,
@@ -197,15 +218,36 @@ $TRIGGER$ LANGUAGE plpgsql SECURITY DEFINER;
 
     SELECT @extschema@._ver_get_version_trigger(v_schema, v_table)
     INTO v_trigger_name;
-    
 
-    EXECUTE 'DROP TRIGGER IF EXISTS '  || v_trigger_name || ' ON ' ||  
-        quote_ident(v_schema) || '.' || quote_ident(v_table);
+    v_sql = format('DROP TRIGGER IF EXISTS %I ON %I.%I',
+                   v_trigger_name, v_schema, v_table);
+    -- RAISE DEBUG 'SQL: %', v_sql;
+    EXECUTE v_sql;
 
-    EXECUTE 'CREATE TRIGGER '  || v_trigger_name || ' AFTER INSERT OR UPDATE OR DELETE ON ' ||  
-        quote_ident(v_schema) || '.' || quote_ident(v_table) ||
-        ' FOR EACH ROW EXECUTE PROCEDURE ' || v_revision_table || '()';
-    
+    v_sql = format('CREATE TRIGGER %I '
+                   'AFTER INSERT OR UPDATE OR DELETE '
+                   'ON %I.%I FOR EACH ROW EXECUTE PROCEDURE %s()',
+                   v_trigger_name, v_schema, v_table,
+                   v_revision_table);
+    -- RAISE DEBUG 'SQL: %', v_sql;
+    EXECUTE v_sql;
+
+    SELECT @extschema@._ver_get_truncate_trigger(v_schema, v_table)
+    INTO v_trigger_name;
+
+    v_sql = format('DROP TRIGGER IF EXISTS %I ON %I.%I',
+                   v_trigger_name, v_schema, v_table);
+    -- RAISE DEBUG 'SQL: %', v_sql;
+    EXECUTE v_sql;
+
+    v_sql = format('CREATE TRIGGER %I '
+                   'BEFORE TRUNCATE '
+                   'ON %I.%I FOR EACH STATEMENT EXECUTE PROCEDURE %s()',
+                   v_trigger_name, v_schema, v_table,
+                   v_revision_table);
+    -- RAISE DEBUG 'SQL: %', v_sql;
+    EXECUTE v_sql;
+
     RETURN TRUE;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -237,7 +279,8 @@ $$ LANGUAGE sql;
 -- }
 
 --
--- Fix existing table triggers if coming from a version prior to 1.5.0
+-- Fix existing table triggers if coming from a version prior to 1.8.0
+-- to add support for TRUNCATE
 --
 -- WARNING: this needs to be sourced _before_ the script defining
 --          ver_version() function
@@ -264,8 +307,8 @@ BEGIN
                     WHERE extname = 'table_version' )
     INTO is_extension;
 
-    -- We only need to update triggers when coming
-    -- from versions 1.7 or earlier. Function ver_version
+    -- We need to update triggers when coming from versions earlier
+    -- than 1.8.0. Function ver_version
     -- was introduced in 1.3 so no need to check any previous
     -- version (old_version would be null in those cases)
     --
@@ -274,7 +317,7 @@ BEGIN
     -- as ver_get_versioned_tables() would return the empty set
     --
     IF ( old_version IS NULL OR
-       string_to_array(old_version, '.')::int[] <= ARRAY[1,7,0]
+       string_to_array(old_version, '.')::int[] <= ARRAY[1,8,0]
        ) AND EXISTS (
           SELECT * FROM @extschema@.ver_get_versioned_tables()
        ) versioned_tables

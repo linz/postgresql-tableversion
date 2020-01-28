@@ -130,7 +130,8 @@ When a table is versioned the original table data is left untouched and a new
 revision table is created with all the same fields plus a `_revision_created`
 and `_revision_expired` fields. A row level trigger is then setup on the original
 table and whenever an insert, update and delete statement is run the change
-is recorded in the table's revision data table. 
+is recorded in the table's revision data table. And a statement level
+trigger is setup to forbid TRUNCATE.
 
 Revisions are more described in the `table_version.revision` table.
 
@@ -189,9 +190,9 @@ Then to enable versioning on a table you need to run the following command:
 
     SELECT table_version.ver_enable_versioning('foo', 'bar');
 
-After you have run this command a trigger `table_version.foo_bar_revision()`
-should have been created on the `foo.bar` table. Also the
-`table_version.foo_bar_revision` table is created to store the revision
+After you have run this command, triggers `foo_bar_revision_trg`
+and `foo_bar_truncate_trg` should have been created on the `foo.bar` table.
+Also the `table_version.foo_bar_revision` table is created to store the revision
 data. If you execute a select from the table you can see the base revision
 data:
 
@@ -592,8 +593,8 @@ Versioning a table will do the following things:
    SQL session is not currently in an active revision, a revision will be
    will be automatically created, then completed once the data has been
    inserted.
-3. A trigger will be created on the versioned table that will maintain the changes
-   in the revision table.
+3. Triggers will be created on the versioned table to maintain the
+   changes in the revision table and forbid TRUNCATE.
 4. A function will be created with the `ver_schema_name_revision_diff` naming 
    convention in the `table_version` schema that allow you to get changeset data
    for a range of revisions.
