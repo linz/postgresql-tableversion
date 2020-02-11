@@ -1,3 +1,9 @@
+postgresql-tableversion (1.8.0-1linz~bionic1) bionic; urgency=medium
+
+  * Package rebuild for bionic
+
+ -- Ivan Mincik <imincik@linz.govt.nz>  Tue, 11 Feb 2020 16:11:12 +0100
+
 postgresql-tableversion (1.7.1-1linz~bionic1) bionic; urgency=medium
 
   * New distribution
