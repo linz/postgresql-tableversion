@@ -63,4 +63,3 @@ Description: PostgreSQL table versioning extension, recording row modifications
  at certain revisions and the difference generated between any two given
  revisions. The extension uses a PL/PgSQL trigger based system to record and
  provide access to the row revisions
-
