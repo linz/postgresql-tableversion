@@ -20,11 +20,11 @@ NEWEST_POSTGRES_VERSION = $(shell pg_buildext supported-versions $(CURDIR) | tai
 override_dh_auto_install:
 	+pg_buildext install $(CURDIR) . postgresql-%v-tableversion
 	# Move the scripts only parts
-	mkdir -p $(CURDIR)/debian/tableversion/usr/bin/
-	mkdir -p $(CURDIR)/debian/tableversion/usr/share/table_version
+	mkdir -p $(CURDIR)/debian/tableversion/usr/share/
 	mv $(CURDIR)/debian/postgresql-$(NEWEST_POSTGRES_VERSION)-tableversion/usr/share/table_version/ \
-	   $(CURDIR)/debian/tableversion/usr/share/table_version/
+	   $(CURDIR)/debian/tableversion/usr/share/
 	# Shall we copy instead of moving ?
+	mkdir -p $(CURDIR)/debian/tableversion/usr/bin/
 	mv $(CURDIR)/debian/postgresql-$(NEWEST_POSTGRES_VERSION)-tableversion/usr/bin/table_version-loader \
 	   $(CURDIR)/debian/tableversion/usr/bin/
 
