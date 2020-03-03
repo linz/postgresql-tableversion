@@ -35,6 +35,7 @@ jobs:
             debhelper \
             fakeroot \
             libtap-parser-sourcehandler-pgtap-perl \
+            pgxnclient \
             postgresql-client-${{ matrix.pg }} \
             postgresql-${{ matrix.pg }} \
             postgresql-${{ matrix.pg }}-pgtap \
@@ -75,7 +76,19 @@ jobs:
         sudo env "PATH=$PATH" test/ci/test_all_upgrades.sh
     - name: Test packaging
       run: |
-        # Test install from package
+        # Build the packages
         PG_SUPPORTED_VERSIONS=${{ matrix.pg }} make deb
-        sudo dpkg -i ../postgresql-${{ matrix.pg }}-tableversion_*.deb
+        # Uninstall directly installed files
+        sudo make uninstall
+        # Clean PATH to avoid finding binaries left-over by upgrade tests
+        PATH=/bin:/usr/bin:/usr/local/bin
+        # Install postgresql-agnostic tableversion package
         sudo dpkg -i ../tableversion_*.deb
+        dpkg -L tableversion
+        # Run post-install postgresql-agnostic tests
+        make installcheck-loader-noext
+        # Install postgresql-specific tableversion package
+        sudo dpkg -i ../postgresql-${{ matrix.pg }}-tableversion_*.deb
+        # Run post-install extension based checks
+        make installcheck
+        make installcheck-loader
