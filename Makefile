@@ -44,10 +44,8 @@ SQLSCRIPTS = \
     sql/[0-9][0-9]-*.sql \
     $(END)
 
-DOCS         = $(wildcard doc/*.md)
+DOCS         = $(wildcard doc/table_version.md)
 TESTS        = $(wildcard test/sql/*.sql)
-#REGRESS      = $(patsubst test/sql/%.sql,%,$(TESTS))
-#REGRESS_OPTS = --inputdir=test --load-language=plpgsql
 REGRESS_PREP = testdeps
 
 #
