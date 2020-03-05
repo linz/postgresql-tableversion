@@ -44,10 +44,8 @@ SQLSCRIPTS = \
     sql/[0-9][0-9]-*.sql \
     $(END)
 
-DOCS         = $(wildcard doc/*.md)
+DOCS         = $(wildcard doc/table_version.md)
 TESTS        = $(wildcard test/sql/*.sql)
-#REGRESS      = $(patsubst test/sql/%.sql,%,$(TESTS))
-#REGRESS_OPTS = --inputdir=test --load-language=plpgsql
 REGRESS_PREP = testdeps
 
 #
@@ -257,20 +255,11 @@ dist: distclean $(DISTFILES)
 	rm -rf $(EXTENSION)-$(EXTVERSION)
 
 #
-# pgtap
-#
-.PHONY: pgtap
-pgtap: $(EXTNDIR)/extension/pgtap.control
-
-$(EXTNDIR)/extension/pgtap.control:
-	pgxn install pgtap
-
-#
 # testdeps
 # Hook for test to ensure dependencies in control file are set correctly
 #
 .PHONY: testdeps
-testdeps: pgtap test/sql/preparedb
+testdeps: test/sql/preparedb
 
 
 $(EXTENSION)-$(EXTVERSION).sql.tpl: $(EXTENSION)--$(EXTVERSION).sql Makefile sql/noextension.sql.in
