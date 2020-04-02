@@ -1,3 +1,9 @@
+postgresql-tableversion (1.8.0-2linz~bionic1) bionic; urgency=medium
+
+  * Non PostgreSQL dependant packaging
+
+ -- Ivan Mincik <imincik@linz.govt.nz>  Thu, 02 Apr 2020 17:43:04 +0200
+
 postgresql-tableversion (1.8.0-1linz~bionic1) bionic; urgency=medium
 
   * Package rebuild for bionic
