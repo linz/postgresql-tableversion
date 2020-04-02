@@ -15,8 +15,18 @@ override_dh_auto_build:
 override_dh_auto_test:
 	# nothing to do here, see debian/tests/* instead
 
+NEWEST_POSTGRES_VERSION = $(shell pg_buildext supported-versions $(CURDIR) | tail -1)
+
 override_dh_auto_install:
 	+pg_buildext install $(CURDIR) . postgresql-%v-tableversion
+	# Move the scripts only parts
+	mkdir -p $(CURDIR)/debian/tableversion/usr/share/
+	mv $(CURDIR)/debian/postgresql-$(NEWEST_POSTGRES_VERSION)-tableversion/usr/share/table_version/ \
+	   $(CURDIR)/debian/tableversion/usr/share/
+	# Shall we copy instead of moving ?
+	mkdir -p $(CURDIR)/debian/tableversion/usr/
+	mv $(CURDIR)/debian/postgresql-$(NEWEST_POSTGRES_VERSION)-tableversion/usr/bin/ \
+	   $(CURDIR)/debian/tableversion/usr/
 
 
 %:
