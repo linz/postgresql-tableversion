@@ -248,6 +248,26 @@ deb:
 	# See https://github.com/linz/postgresql-tableversion/issues/29
 	dpkg-buildpackage -us -uc -b
 
+deb-check:
+	# Test postgresql dependent packages do NOT contain loader
+	@for pkg in ../postgresql-*tableversion_*.deb; do \
+		dpkg -c $$pkg > $$pkg.contents || break; \
+		if grep -q loader $$pkg.contents; then  \
+                echo "Package $$pkg contains loader" >&2 \
+                && false; \
+		fi; \
+	done
+	# Test postgresql-agnostic package DOES contain loader
+	@for pkg in ../tableversion_*.deb; do \
+		dpkg -c $$pkg > $$pkg.contents || break; \
+			if grep -q loader $$pkg.contents; then  \
+				:; \
+			else \
+				echo "Package $$pkg does NOT contain loader" >&2 \
+				&& false; \
+			fi; \
+		done
+
 dist: distclean $(DISTFILES)
 	mkdir $(EXTENSION)-$(EXTVERSION)
 	cp -r $(DISTFILES) $(EXTENSION)-$(EXTVERSION)
