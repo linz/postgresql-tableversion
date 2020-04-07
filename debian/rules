@@ -23,10 +23,14 @@ override_dh_auto_install:
 	mkdir -p $(CURDIR)/debian/tableversion/usr/share/
 	mv $(CURDIR)/debian/postgresql-$(NEWEST_POSTGRES_VERSION)-tableversion/usr/share/table_version/ \
 	   $(CURDIR)/debian/tableversion/usr/share/
+	# Make sure not to include /usr/share/table_version/ in postgresql packages
+	rm -rf $(CURDIR)/debian/postgresql-*-tableversion/usr/share/table_version/
 	# Shall we copy instead of moving ?
 	mkdir -p $(CURDIR)/debian/tableversion/usr/
 	mv $(CURDIR)/debian/postgresql-$(NEWEST_POSTGRES_VERSION)-tableversion/usr/bin/ \
 	   $(CURDIR)/debian/tableversion/usr/
+	# Make sure not to include /usr/bin/ in postgresql packages
+	rm -rf $(CURDIR)/debian/postgresql-*-tableversion/usr/bin/
 
 
 %:
