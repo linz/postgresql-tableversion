@@ -92,3 +92,6 @@ jobs:
         # Run post-install extension based checks
         make installcheck
         make installcheck-loader
+        # Test build of packages for all supported PG versions
+        make deb
+        make deb-check
