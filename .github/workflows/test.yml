@@ -5,6 +5,9 @@ on:
     branches:
       - master
       - packagecloud
+      - 'release-*'
+    tags:
+      - '*'
   pull_request:
     branches:
       - '*'
@@ -123,7 +126,9 @@ jobs:
         if test "${{ github.event_name }}" = 'push'; then
           if expr "${{ github.ref }}" : "refs/tags/" > /dev/null; then
             REPO=test
-          else
+          elif test "${{ github.ref }}" = 'refs/heads/packagecloud' \
+                 -o "${{ github.ref }}" = 'refs/heads/master'
+          then
             REPO=dev
           fi
         fi
