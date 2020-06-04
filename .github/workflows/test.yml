@@ -107,7 +107,7 @@ jobs:
         make deb-check
 
   package:
-    if: ${{ success() }}
+    needs: test
     name: Package for Debian
     runs-on: ubuntu-18.04
     strategy:
