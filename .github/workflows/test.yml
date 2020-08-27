@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
         matrix:
-            pg: [ '9.4', '9.5', '9.6', '10', '11' ]
+            pg: [ '9.3', '9.6', '10', '11' ]
             os: [ ubuntu-18.04 ]
     env:
       # Set PATH as postgresql-server-dev-all pretends version is 11
