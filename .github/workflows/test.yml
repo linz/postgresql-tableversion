@@ -133,8 +133,7 @@ jobs:
             REPO=dev
           fi
         fi
-        echo "REPO: $REPO"
-        echo ::set-env name=REPO::"$REPO"
+        echo "REPO=$REPO" | tee -a $GITHUB_ENV
 
     - uses: linz/linz-software-repository@v4
       with:
