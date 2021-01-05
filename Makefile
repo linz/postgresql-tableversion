@@ -1,4 +1,4 @@
-EXTVERSION   = 1.8.0
+EXTVERSION   = 1.9.0
 REVISION=$(shell test -d .git && which git > /dev/null && git describe --always)
 
 META         = META.json
@@ -33,6 +33,8 @@ UPGRADEABLE_VERSIONS = \
     1.5.0dev 1.5.0 1.5.1dev 1.5.1 \
     1.6.0dev 1.6.0 1.6.1dev \
     1.7.0dev 1.7.0 \
+    1.8.0dev 1.8.0 \
+    1.9.0dev 1.9.0
 
 SQLSCRIPTS_built = \
     sql/20-version.sql \
@@ -131,13 +133,13 @@ $(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
 
 %.pg: %.pg.in Makefile
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/;s|@@REVISION@@|$(REVISION)|' $< > $@
-	
+
 $(META): $(META).in Makefile
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
 
 $(EXTENSION).control: $(EXTENSION).control.in Makefile
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
-	
+
 .PHONY: check_control
 check_control:
 	grep -q "pgTAP" $(META)
