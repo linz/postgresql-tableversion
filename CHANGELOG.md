@@ -3,6 +3,10 @@
 All notable changes for the PostgreSQL table version extension are documented 
 in this file.
 
+## [1.9.0] - 2021-01-05
+### Added
+- [debian] provide a postgresql-agnostic package "tableversion"
+
 ## [1.8.0] - 2020-02-11
 ### Improved
 - Forbid TRUNCATE on versioned tables (#204)
