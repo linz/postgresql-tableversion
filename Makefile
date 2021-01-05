@@ -1,4 +1,4 @@
-EXTVERSION   = 1.8.0
+EXTVERSION   = 1.10.0dev
 REVISION=$(shell test -d .git && which git > /dev/null && git describe --always)
 
 META         = META.json
@@ -33,6 +33,9 @@ UPGRADEABLE_VERSIONS = \
     1.5.0dev 1.5.0 1.5.1dev 1.5.1 \
     1.6.0dev 1.6.0 1.6.1dev \
     1.7.0dev 1.7.0 \
+    1.8.0dev 1.8.0 \
+    1.9.0dev 1.9.0 \
+    1.10.0dev
 
 SQLSCRIPTS_built = \
     sql/20-version.sql \
