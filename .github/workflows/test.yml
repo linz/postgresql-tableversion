@@ -21,7 +21,7 @@ jobs:
     strategy:
         fail-fast: false
         matrix:
-            pg: [ '10', '11' ]
+            pg: [ '10', '11', '12' ]
             os: [ ubuntu-18.04, ubuntu-20.04, ubuntu-latest ]
     env:
       # Set PATH as postgresql-server-dev-all pretends version is 11
