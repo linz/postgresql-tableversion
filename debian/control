@@ -9,34 +9,6 @@ Homepage: http://www.linz.govt.nz
 Vcs-Git: git://github.com/linz/postgresql-tableversion.git
 Vcs-Browser: https://github.com/linz/postgresql-tableversion
 
-Package: postgresql-9.5-tableversion
-Architecture: all
-Depends: ${misc:Depends},
-         postgresql-9.5
-Recommends:
-Description: PostgreSQL table versioning extension, recording row modifications
- and its history. The extension provides APIs for accessing snapshots of a table
- at certain revisions and the difference generated between any two given
- revisions. The extension uses a PL/PgSQL trigger based system to record and
- provide access to the row revisions
- .
- This package contains the EXTENSION version of the code
- (requires access to server filesystem)
-
-Package: postgresql-9.6-tableversion
-Architecture: all
-Depends: ${misc:Depends},
-         postgresql-9.6
-Recommends:
-Description: PostgreSQL table versioning extension, recording row modifications
- and its history. The extension provides APIs for accessing snapshots of a table
- at certain revisions and the difference generated between any two given
- revisions. The extension uses a PL/PgSQL trigger based system to record and
- provide access to the row revisions
- .
- This package contains the EXTENSION version of the code
- (requires access to server filesystem)
-
 Package: postgresql-10-tableversion
 Architecture: all
 Depends: ${misc:Depends},
