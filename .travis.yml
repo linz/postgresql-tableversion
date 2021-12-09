@@ -7,6 +7,7 @@ env:
     - PG=10
     - PG=11
     - PG=12
+    - PG=13
 
 before_install:
   - sudo apt-get -y --purge remove postgresql libpq-dev libpq5 postgresql-client-common
