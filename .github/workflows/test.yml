@@ -19,6 +19,7 @@ jobs:
     name: Test PostgreSQL ${{ matrix.pg }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+        fail-fast: false
         matrix:
             pg: [ '10', '11' ]
             os: [ ubuntu-18.04, ubuntu-20.04 ]
