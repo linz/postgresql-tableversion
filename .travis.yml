@@ -5,10 +5,6 @@ sudo: true
 
 env:
   matrix:
-    - PG=9.3
-    - PG=9.4
-    - PG=9.5
-    - PG=9.6
     - PG=10
     - PG=11
 
