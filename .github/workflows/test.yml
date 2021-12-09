@@ -21,7 +21,7 @@ jobs:
     strategy:
         matrix:
             pg: [ '10', '11' ]
-            os: [ ubuntu-18.04 ]
+            os: [ ubuntu-18.04, ubuntu-20.04 ]
     env:
       # Set PATH as postgresql-server-dev-all pretends version is 11
       PATH: /usr/lib/postgresql/${{ matrix.pg }}/bin:/bin:/usr/bin:/usr/local/bin
