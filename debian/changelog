@@ -1,3 +1,9 @@
+postgresql-tableversion (1.10.0-linz~bionic) bionic; urgency=medium
+
+  * New version
+
+ -- GitHub <noreply@github.com>  Tue, 11 Jan 2022 22:13:29 +0000
+
 postgresql-tableversion (1.8.0-3linz~bionic1) bionic; urgency=medium
 
   * Fix split postgresql-X.Y-tableversion and tableversion packaging
