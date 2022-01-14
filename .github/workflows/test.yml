@@ -136,7 +136,7 @@ jobs:
         fi
         echo "REPO=$REPO" | tee -a $GITHUB_ENV
 
-    - uses: linz/linz-software-repository@v4
+    - uses: linz/linz-software-repository@v5
       with:
         packagecloud_token: ${{ secrets.LINZCI_PACKAGECLOUD_TOKEN }}
         packagecloud_repository: ${{ env.REPO }}
