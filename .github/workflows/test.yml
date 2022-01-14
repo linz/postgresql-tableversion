@@ -27,7 +27,7 @@ jobs:
       # Set PATH as postgresql-server-dev-all pretends version is 11
       PATH: /usr/lib/postgresql/${{ matrix.pg }}/bin:/bin:/usr/bin:/usr/local/bin
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2.4.0
     - name: Install dependencies
       run: |
         sudo apt-get -qqy --purge remove \
@@ -115,7 +115,7 @@ jobs:
         matrix:
             distro: [ 'bionic' ]
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2.4.0
 
     - name: Determine packagecloud publication target
       run: |
