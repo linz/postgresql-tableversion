@@ -315,13 +315,9 @@ revision system. Here the steps:
         );
 
 5.  Now to maintain your base copy you can select an difference change set and then apply that to
-    your base copy:
-            -- Where 'my_last_revision' is the last revision that your dataset has on
-            -- your remote system
-            SELECT * FROM table_version.ver_get_foo_bar_diff(
-                my_last_revision,
-                table_version.ver_get_table_last_revision('foo', 'bar')
-            );
+    your base copy: -- Where 'my_last_revision' is the last revision that your dataset has on --
+    your remote system SELECT \* FROM table_version.ver_get_foo_bar_diff( my_last_revision,
+    table_version.ver_get_table_last_revision('foo', 'bar') );
 
 ## Configuration tables
 
