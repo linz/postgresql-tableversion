@@ -8,3 +8,9 @@ repos:
           - id: prettier
             stages: [commit]
             language_version: system
+
+    - repo: https://github.com/koalaman/shellcheck-precommit
+      rev: 81c4cafc55d9f3da32b88aaad05ffb50a52ddfb2 # v0.8.0
+      hooks:
+          - id: shellcheck
+            stages: [commit]
