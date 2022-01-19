@@ -82,7 +82,7 @@ jobs:
             - name: Test upgrades
               run: |
                   # Test upgrades from all tagged versions
-                  sudo env "PATH=$PATH" test/ci/test_all_upgrades.sh
+                  sudo env "PATH=$PATH" test/ci/test_all_upgrades.bash
             - name: Test packaging
               run: |
                   # Build the packages

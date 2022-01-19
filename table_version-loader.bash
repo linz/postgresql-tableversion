@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 TGT_SCHEMA=table_version
 TGT_DB=
