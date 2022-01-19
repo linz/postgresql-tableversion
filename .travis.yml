@@ -41,7 +41,7 @@ script:
     - make installcheck-loader
     - make installcheck-loader-noext
     # Test upgrades from all tagged versions
-    - sudo env "PATH=$PATH" test/ci/test_all_upgrades.sh
+    - sudo env "PATH=$PATH" test/ci/test_all_upgrades.bash
     # Test install from package
     - PG_SUPPORTED_VERSIONS=${PG} make deb
     - sudo dpkg -i ../postgresql-${PG}-tableversion_*.deb

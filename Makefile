@@ -16,7 +16,7 @@ DISTFILES = \
 	$(META) \
 	$(META).in \
 	README.md \
-	table_version-loader.sh \
+	table_version-loader.bash \
 	table_version.control.in \
 	$(NULL)
 
@@ -293,7 +293,7 @@ $(EXTENSION)-$(EXTVERSION).sql.tpl: $(EXTENSION)--$(EXTVERSION).sql Makefile sql
 	>> $@
 	echo "COMMIT;" >> $@
 
-$(EXTENSION)-loader: $(EXTENSION)-loader.sh Makefile
+$(EXTENSION)-loader: $(EXTENSION)-loader.bash Makefile
 	cat $< | sed 's|@@LOCAL_SHAREDIR@@|$(LOCAL_SHAREDIR)|' > $@
 	chmod +x $@
 
