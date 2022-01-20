@@ -1,4 +1,5 @@
-name: test
+---
+name: Test
 
 on:
     push:
@@ -25,7 +26,9 @@ jobs:
             # Set PATH as postgresql-server-dev-all pretends version is 11
             PATH: /usr/lib/postgresql/${{ matrix.pg }}/bin:/bin:/usr/bin:/usr/local/bin
         steps:
-            - uses: actions/checkout@v1
+            - name: Check out repository
+              uses: actions/checkout@v1
+
             - name: Install dependencies
               run: |
                   sudo apt-get -qqy --purge remove \
@@ -50,10 +53,12 @@ jobs:
                       postgresql-${{ matrix.pg }}-pgtap \
                       postgresql-server-dev-all \
                       postgresql-server-dev-${{ matrix.pg }}
+
             - name: Setup PostgreSQL user
               run: |
                   sudo -u postgres createuser -s "$USER"
                   sudo -u postgres createuser -s root
+
             - name: Build
               run: |
                   # Test https://github.com/linz/postgresql-tableversion/issues/47
@@ -62,6 +67,7 @@ jobs:
                   git tag -fa "travis/1.2.3-4-gdeadbeef" -m "test"
                   # Build
                   make
+
             - name: Test build
               run: |
                   # Check PostgreSQL versions
@@ -70,19 +76,23 @@ jobs:
                   psql -c "select version()" template1
                   # Pre-install tests
                   make check
+
             - name: Install
               run: |
                   sudo env "PATH=$PATH" make install
+
             - name: Test installation
               run: |
                   # Post-install tests
                   make installcheck
                   make installcheck-loader
                   make installcheck-loader-noext
+
             - name: Test upgrades
               run: |
                   # Test upgrades from all tagged versions
                   sudo env "PATH=$PATH" test/ci/test_all_upgrades.bash
+
             - name: Test packaging
               run: |
                   # Build the packages
@@ -113,7 +123,8 @@ jobs:
             matrix:
                 distro: ['bionic']
         steps:
-            - uses: actions/checkout@v1
+            - name: Check out repository
+              uses: actions/checkout@v1
 
             - name: Determine packagecloud publication target
               run: |
@@ -134,7 +145,8 @@ jobs:
                   fi
                   echo "REPO=$REPO" | tee -a $GITHUB_ENV
 
-            - uses: linz/linz-software-repository@v5
+            - name: Upload to Packagecloud
+              uses: linz/linz-software-repository@v5
               with:
                   packagecloud_token: ${{ secrets.LINZCI_PACKAGECLOUD_TOKEN }}
                   packagecloud_repository: ${{ env.REPO }}
