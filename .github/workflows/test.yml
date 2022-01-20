@@ -12,6 +12,8 @@ on:
     pull_request:
         branches:
             - '*'
+    schedule:
+        - cron: '0 12 * * 0'
 
 jobs:
     test:
