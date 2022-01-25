@@ -21,7 +21,7 @@ cp -a "$loader_bin" "$TMP_INSTALL_DIR_PREFIX" || exit 1
 # Install all older versions
 git fetch --unshallow --tags # to get all commits/tags
 git clone . older-versions
-cd older-versions
+cd older-versions || exit 1
 for v in $VER; do
   echo "-------------------------------------"
   echo "Installing version ${v}"
