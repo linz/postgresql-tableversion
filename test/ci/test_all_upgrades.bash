@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd "$(dirname "$0")/../../" || exit 1
+project_root="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
 
 #
 # Versions/tags known to build
@@ -20,7 +20,9 @@ versions=(
     '1.4.3'
 )
 
-tmp_install_dir_prefix=/tmp/table_version
+trap 'rm -r "$work_directory"' EXIT
+work_directory="$(mktemp --directory)"
+tmp_install_dir_prefix="${work_directory}/table_version"
 mkdir -p "$tmp_install_dir_prefix" || exit 1
 
 # Save current table_version
@@ -31,8 +33,9 @@ loader_bin="$(which table_version-loader)" || {
 cp -a "$loader_bin" "$tmp_install_dir_prefix" || exit 1
 
 # Install all older versions
-git clone . older-versions
-cd older-versions || exit 1
+project_copy="${work_directory}/copy"
+git clone "$project_root" "$project_copy"
+cd "$project_copy"
 for version in "${versions[@]}"
 do
     echo "-------------------------------------"
@@ -54,8 +57,7 @@ do
         make install || exit 1
     fi
 done
-cd ..
-rm -rf older-versions
+cd -
 
 # Restore current table_version after installing/overriding new one
 # (effectively moving to wherever will be found first)
