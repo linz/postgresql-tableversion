@@ -6,8 +6,31 @@ shopt -s failglob inherit_errexit
 project_root="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
 
 # Supported version tags
-versions=(
-    '1.9.0'
+mapfile -t versions < <(
+    git tag --list '[0-9]*.[0-9]*.[0-9]*' \
+    | grep --fixed-strings --invert-match --line-regexp \
+        --regexp=1.0.1 \
+        --regexp=1.1.0 \
+        --regexp=1.1.1 \
+        --regexp=1.1.2 \
+        --regexp=1.1.3 \
+        --regexp=1.2.0 \
+        --regexp=1.3.0 \
+        --regexp=1.3.1 \
+        --regexp=1.3.2 \
+        --regexp=1.3.3 \
+        --regexp=1.4.0 \
+        --regexp=1.4.1 \
+        --regexp=1.4.2 \
+        --regexp=1.4.3 \
+        --regexp=1.5.0 \
+        --regexp=1.5.1 \
+        --regexp=1.6.0 \
+        --regexp=1.7.0 \
+        --regexp=1.7.1 \
+        --regexp=1.8.0 \
+        --regexp=1.10.0 \
+    | sort --version-sort
 )
 
 trap 'rm -r "$work_directory"' EXIT
