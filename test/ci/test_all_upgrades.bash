@@ -12,7 +12,7 @@ TMP_INSTALL_DIR_PREFIX=/tmp/table_version
 mkdir -p "$TMP_INSTALL_DIR_PREFIX" || exit 1
 
 # Save current table_version
-loader_bin=`which table_version-loader` || {
+loader_bin="$(which table_version-loader)" || {
     echo "No table_version-loader found in PATH, did you run 'make install'?" >&2
     exit 1;
 }
@@ -33,7 +33,7 @@ for v in $VER; do
   sed -ie '/echo .*load this file/{s/echo /printf /;s|\\|\\\\|g}' Makefile
   # Since 1.4.0 we have a loader
   if test "$(echo "$v" | tr -d .)" -ge 140; then
-    TPL_INSTALL_DIR=`make install | grep tpl | tail -1 | sed "s/.* //;s/'$//;s/^'//"`
+    TPL_INSTALL_DIR="$(make install | grep tpl | tail -1 | sed "s/.* //;s/'$//;s/^'//")"
     test -n "$TPL_INSTALL_DIR" || exit 1
     mkdir -p "${TMP_INSTALL_DIR_PREFIX}/${v}/share" || exit 1
     cp -f "${TPL_INSTALL_DIR}/"*.tpl "${TMP_INSTALL_DIR_PREFIX}/${v}/share" || exit 1
