@@ -247,7 +247,7 @@ all: upgrade-scripts
 
 deb:
 	pg_buildext updatecontrol
-	# The -b switch is beacause only binary package works,
+	# The -b switch is because only binary package works,
 	# See https://github.com/linz/postgresql-tableversion/issues/29
 	dpkg-buildpackage -us -uc -b
 
