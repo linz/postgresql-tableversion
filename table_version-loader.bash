@@ -82,7 +82,7 @@ else
   TPL_FILE=${EXT_DIR}/${EXT_NAME}-${VER}.sql.tpl
   if test -r ${TPL_FILE}; then
     echo "Using template file ${TPL_FILE}" >&2
-    cat ${TPL_FILE} | sed "s/@extschema@/${TGT_SCHEMA}/g"
+    sed "s/@extschema@/${TGT_SCHEMA}/g" "$TPL_FILE"
   else
     echo "Template file ${TPL_FILE} is not readable or does not exist" >&2
     exit 1

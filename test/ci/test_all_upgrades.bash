@@ -9,7 +9,7 @@ cd `dirname $0`/../../
 VER="1.1.0 1.1.1 1.1.2 1.1.3 1.2.0 1.3.0 1.3.1 1.4.0 1.4.1 1.4.2 1.4.3";
 
 TMP_INSTALL_DIR_PREFIX=/tmp/table_version
-mkdir -p ${TMP_INSTALL_DIR_PREFIX} || exit 1
+mkdir -p "$TMP_INSTALL_DIR_PREFIX" || exit 1
 
 # Save current table_version
 loader_bin=`which table_version-loader` || {
