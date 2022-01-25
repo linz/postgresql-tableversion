@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-set -o errexit
-shopt -s inherit_errexit
+set -o errexit -o noclobber -o nounset -o pipefail
+shopt -s failglob inherit_errexit
 
 project_root="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
 
