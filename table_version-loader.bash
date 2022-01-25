@@ -80,7 +80,7 @@ if test "${EXT_MODE}" = 'on'; then cat<<EOF
 EOF
 else
   TPL_FILE=${EXT_DIR}/${EXT_NAME}-${VER}.sql.tpl
-  if test -r ${TPL_FILE}; then
+  if test -r "$TPL_FILE"; then
     echo "Using template file ${TPL_FILE}" >&2
     sed "s/@extschema@/${TGT_SCHEMA}/g" "$TPL_FILE"
   else
@@ -92,5 +92,5 @@ fi
 } | if [ "$TGT_DB" = "-" ]; then
     cat
 else
-    psql -XtA --set ON_ERROR_STOP=1 $TGT_DB -o /dev/null
+    psql -XtA --set ON_ERROR_STOP=1 "$TGT_DB" -o /dev/null
 fi
