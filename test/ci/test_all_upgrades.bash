@@ -31,7 +31,6 @@ loader_bin="$(which table_version-loader)" || {
 cp -a "$loader_bin" "$tmp_install_dir_prefix" || exit 1
 
 # Install all older versions
-git fetch --unshallow --tags # to get all commits/tags
 git clone . older-versions
 cd older-versions || exit 1
 for v in "${ver[@]}"
