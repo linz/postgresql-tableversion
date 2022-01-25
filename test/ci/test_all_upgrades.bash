@@ -66,4 +66,3 @@ for v in $VER; do
       || exit 1
   fi
 done
-
