@@ -6,7 +6,19 @@ cd "$(dirname "$0")/../../" || exit 1
 # Versions/tags known to build
 # NOTE: tag 1.0.1 does not build, so we skip that
 #
-ver="1.1.0 1.1.1 1.1.2 1.1.3 1.2.0 1.3.0 1.3.1 1.4.0 1.4.1 1.4.2 1.4.3"
+ver=(
+    '1.1.0'
+    '1.1.1'
+    '1.1.2'
+    '1.1.3'
+    '1.2.0'
+    '1.3.0'
+    '1.3.1'
+    '1.4.0'
+    '1.4.1'
+    '1.4.2'
+    '1.4.3'
+)
 
 tmp_install_dir_prefix=/tmp/table_version
 mkdir -p "$tmp_install_dir_prefix" || exit 1
@@ -22,7 +34,7 @@ cp -a "$loader_bin" "$tmp_install_dir_prefix" || exit 1
 git fetch --unshallow --tags # to get all commits/tags
 git clone . older-versions
 cd older-versions || exit 1
-for v in $ver
+for v in "${ver[@]}"
 do
   echo "-------------------------------------"
   echo "Installing version ${v}"
@@ -51,7 +63,7 @@ rm -rf older-versions
 cp -a "${tmp_install_dir_prefix}/table_version-loader" "$(which table_version-loader)" || exit 1
 
 # Test upgrade from all older versions
-for v in $ver
+for v in "${ver[@]}"
 do
   echo "-------------------------------------"
   echo "Checking upgrade from version ${v}"
