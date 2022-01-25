@@ -1,64 +1,64 @@
 #!/usr/bin/env bash
 
-TGT_SCHEMA=table_version
-TGT_DB=
-EXT_MODE=on
-EXT_NAME=table_version
-EXT_DIR=@@LOCAL_SHAREDIR@@
-TPL_FILE=
-VER=
+tgt_schema=table_version
+tgt_db=
+ext_mode=on
+ext_name=table_version
+ext_dir=@@LOCAL_SHAREDIR@@
+tpl_file=
+ver=
 
 if test -n "$TABLE_VERSION_EXT_DIR"
 then
-  EXT_DIR="$TABLE_VERSION_EXT_DIR"
+  ext_dir="$TABLE_VERSION_EXT_DIR"
 fi
 
 while test -n "$1"
 do
   if test "$1" = "--no-extension"
   then
-    EXT_MODE=off
+    ext_mode=off
   elif test "$1" = "--version"
   then
     shift
-    VER=$1
-  elif test -z "${TGT_DB}"
+    ver=$1
+  elif test -z "${tgt_db}"
   then
-    TGT_DB=$1
+    tgt_db=$1
   else
     echo "Unused argument $1" >&2
   fi
   shift
 done
 
-if test -z "${VER}"
+if test -z "${ver}"
 then
-# TPL_FILE is expected to have the following format:
+# tpl_file is expected to have the following format:
 #   table_version-1.4.0dev.sql.tpl
-  VER="$(echo "${EXT_DIR}/${EXT_NAME}"-*.sql.tpl | sed "s/^.*${EXT_NAME}-//;s/\.sql\.tpl//" | tail -1)"
-  if test -z "${VER}"
+  ver="$(echo "${ext_dir}/${ext_name}"-*.sql.tpl | sed "s/^.*${ext_name}-//;s/\.sql\.tpl//" | tail -1)"
+  if test -z "${ver}"
   then
     echo "Cannot find template loader, maybe set TABLE_VERSION_EXT_DIR?" >&2
     exit 1
   fi
 fi
 
-if test -z "$TGT_DB"
+if test -z "$tgt_db"
 then
   echo "Usage: $0 [--no-extension] [--version <ver>] { <dbname> | - }" >&2
   exit 1
 fi
 
-DBLBL=${TGT_DB}
-if [ "$DBLBL" = "-" ]
+dblbl=${tgt_db}
+if [ "$dblbl" = "-" ]
 then
-    DBLBL="(stdout)"
+    dblbl="(stdout)"
 fi
-echo "Loading ${EXT_NAME} ${VER} in ${DBLBL}.${TGT_SCHEMA} (EXT_MODE ${EXT_MODE})" >&2
+echo "Loading ${ext_name} ${ver} in ${dblbl}.${tgt_schema} (ext_mode ${ext_mode})" >&2
 
 {
 
-if test "${EXT_MODE}" = 'on'
+if test "${ext_mode}" = 'on'
 then cat<<EOF
   DO \$\$
     DECLARE
@@ -75,35 +75,35 @@ then cat<<EOF
             INTO OLDVER;
         IF OLDVER IS NOT NULL
         THEN
-            IF OLDVER = '${VER}' THEN
-                ALTER EXTENSION ${EXT_NAME} UPDATE TO '${VER}next';
+            IF OLDVER = '${ver}' THEN
+                ALTER EXTENSION ${ext_name} UPDATE TO '${ver}next';
             END IF;
-            ALTER EXTENSION ${EXT_NAME} UPDATE TO '${VER}';
+            ALTER EXTENSION ${ext_name} UPDATE TO '${ver}';
         ELSE
-            CREATE EXTENSION ${EXT_NAME} VERSION '${VER}'
+            CREATE EXTENSION ${ext_name} VERSION '${ver}'
             FROM unpackaged;
         END IF;
       ELSE
-        CREATE EXTENSION ${EXT_NAME} VERSION '${VER}';
+        CREATE EXTENSION ${ext_name} VERSION '${ver}';
       END IF;
     END
   \$\$ LANGUAGE 'plpgsql';
 EOF
 else
-  TPL_FILE=${EXT_DIR}/${EXT_NAME}-${VER}.sql.tpl
-  if test -r "$TPL_FILE"
+  tpl_file=${ext_dir}/${ext_name}-${ver}.sql.tpl
+  if test -r "$tpl_file"
   then
-    echo "Using template file ${TPL_FILE}" >&2
-    sed "s/@extschema@/${TGT_SCHEMA}/g" "$TPL_FILE"
+    echo "Using template file ${tpl_file}" >&2
+    sed "s/@extschema@/${tgt_schema}/g" "$tpl_file"
   else
-    echo "Template file ${TPL_FILE} is not readable or does not exist" >&2
+    echo "Template file ${tpl_file} is not readable or does not exist" >&2
     exit 1
   fi
 fi
 
-} | if [ "$TGT_DB" = "-" ]
+} | if [ "$tgt_db" = "-" ]
 then
     cat
 else
-    psql -XtA --set ON_ERROR_STOP=1 "$TGT_DB" -o /dev/null
+    psql -XtA --set ON_ERROR_STOP=1 "$tgt_db" -o /dev/null
 fi
