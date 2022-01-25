@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+set -o errexit
+shopt -s inherit_errexit
+
 project_root="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
 
 #
@@ -23,14 +26,11 @@ versions=(
 trap 'rm -r "$work_directory"' EXIT
 work_directory="$(mktemp --directory)"
 tmp_install_dir_prefix="${work_directory}/table_version"
-mkdir -p "$tmp_install_dir_prefix" || exit 1
+mkdir -p "$tmp_install_dir_prefix"
 
 # Save current table_version
-loader_bin="$(which table_version-loader)" || {
-    echo "No table_version-loader found in PATH, did you run 'make install'?" >&2
-    exit 1
-}
-cp -a "$loader_bin" "$tmp_install_dir_prefix" || exit 1
+loader_bin="$(which table_version-loader)"
+cp -a "$loader_bin" "$tmp_install_dir_prefix"
 
 # Install all older versions
 project_copy="${work_directory}/copy"
@@ -42,7 +42,8 @@ do
     echo "Installing version ${version}"
     echo "-------------------------------------"
     git checkout . # revert local patches
-    git checkout "$version" && git clean -dxf || exit 1
+    git checkout "$version"
+    git clean -dxf
     # Workaround for Makefile bug which was fixed by
     # 2dee5082e0e89e4cf2430b566e8013ac1afd92be...
     sed -ie '/echo .*load this file/{s/echo /printf /;s|\\|\\\\|g}' Makefile
@@ -50,18 +51,18 @@ do
     if test "$(echo "$version" | tr -d .)" -ge 140
     then
         tpl_install_dir="$(make install | grep tpl | tail -1 | sed "s/.* //;s/'$//;s/^'//")"
-        test -n "$tpl_install_dir" || exit 1
-        mkdir -p "${tmp_install_dir_prefix}/${version}/share" || exit 1
-        cp -f "${tpl_install_dir}/"*.tpl "${tmp_install_dir_prefix}/${version}/share" || exit 1
+        test -n "$tpl_install_dir"
+        mkdir -p "${tmp_install_dir_prefix}/${version}/share"
+        cp -f "${tpl_install_dir}/"*.tpl "${tmp_install_dir_prefix}/${version}/share"
     else
-        make install || exit 1
+        make install
     fi
 done
 cd -
 
 # Restore current table_version after installing/overriding new one
 # (effectively moving to wherever will be found first)
-cp -a "${tmp_install_dir_prefix}/table_version-loader" "$(which table_version-loader)" || exit 1
+cp -a "${tmp_install_dir_prefix}/table_version-loader" "$(which table_version-loader)"
 
 # Test upgrade from all older versions
 for version in "${versions[@]}"
@@ -69,17 +70,15 @@ do
     echo "-------------------------------------"
     echo "Checking upgrade from version ${version}"
     echo "-------------------------------------"
-    make installcheck-upgrade PREPAREDB_UPGRADE_FROM="$version" || exit 1
+    make installcheck-upgrade PREPAREDB_UPGRADE_FROM="$version"
     # Since 1.4.0 we have a loader
     if test "$(echo "$version" | tr -d .)" -ge 140
     then
         make installcheck-loader-upgrade \
             PREPAREDB_UPGRADE_FROM="$version" \
-            PREPAREDB_UPGRADE_FROM_EXT_DIR="${tmp_install_dir_prefix}/${version}/share" ||
-            exit 1
+            PREPAREDB_UPGRADE_FROM_EXT_DIR="${tmp_install_dir_prefix}/${version}/share"
         make installcheck-loader-upgrade-noext \
             PREPAREDB_UPGRADE_FROM="$version" \
-            PREPAREDB_UPGRADE_FROM_EXT_DIR="${tmp_install_dir_prefix}/${version}/share" ||
-            exit 1
+            PREPAREDB_UPGRADE_FROM_EXT_DIR="${tmp_install_dir_prefix}/${version}/share"
     fi
 done
