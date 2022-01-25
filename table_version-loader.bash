@@ -28,7 +28,7 @@ done
 if test -z "${VER}"; then
 # TPL_FILE is expected to have the following format:
 #   table_version-1.4.0dev.sql.tpl
-  VER=`ls ${EXT_DIR}/${EXT_NAME}-*.sql.tpl | sed "s/^.*${EXT_NAME}-//;s/\.sql\.tpl//" | tail -1`
+  VER="$(echo "${EXT_DIR}/${EXT_NAME}"-*.sql.tpl | sed "s/^.*${EXT_NAME}-//;s/\.sql\.tpl//" | tail -1)"
   if test -z "${VER}"; then
     echo "Cannot find template loader, maybe set TABLE_VERSION_EXT_DIR?" >&2
     exit 1
