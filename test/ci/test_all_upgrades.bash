@@ -6,7 +6,7 @@ cd "$(dirname "$0")/../../" || exit 1
 # Versions/tags known to build
 # NOTE: tag 1.0.1 does not build, so we skip that
 #
-VER="1.1.0 1.1.1 1.1.2 1.1.3 1.2.0 1.3.0 1.3.1 1.4.0 1.4.1 1.4.2 1.4.3";
+VER="1.1.0 1.1.1 1.1.2 1.1.3 1.2.0 1.3.0 1.3.1 1.4.0 1.4.1 1.4.2 1.4.3"
 
 TMP_INSTALL_DIR_PREFIX=/tmp/table_version
 mkdir -p "$TMP_INSTALL_DIR_PREFIX" || exit 1
@@ -14,7 +14,7 @@ mkdir -p "$TMP_INSTALL_DIR_PREFIX" || exit 1
 # Save current table_version
 loader_bin="$(which table_version-loader)" || {
     echo "No table_version-loader found in PATH, did you run 'make install'?" >&2
-    exit 1;
+    exit 1
 }
 cp -a "$loader_bin" "$TMP_INSTALL_DIR_PREFIX" || exit 1
 
@@ -40,7 +40,7 @@ for v in $VER; do
   else
     make install || exit 1
   fi
-done;
+done
 cd ..
 rm -rf older-versions
 
