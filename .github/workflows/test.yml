@@ -139,7 +139,7 @@ jobs:
         runs-on: ubuntu-18.04
         strategy:
             matrix:
-                distro: ['bionic']
+                distro: [bionic, focal]
         steps:
             - name: Check out repository
               uses: actions/checkout@v1
