@@ -24,11 +24,11 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v2
 
-      - name: Install Dependencies
-        run: sudo snap install --classic pre-commit
+      - name: Install Nix
+        uses: cachix/install-nix-action@v16
 
       - name: Run pre-commit hooks
-        run: pre-commit run --all-files
+        run: nix-shell --pure --run 'pre-commit run --all-files'
 
   test:
     name: Test PostgreSQL ${{ matrix.pg }} on ${{ matrix.os }}
