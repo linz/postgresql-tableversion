@@ -1,11 +1,4 @@
 # http://editorconfig.org
 
-# Makefiles want tab indentation
-[{Makefile.in,Makefile}]
-indent_style = tab
-
-# All other files have space indentation
 [*]
-indent_style = space
-indent_size = 4
 trim_trailing_whitespace = true
