@@ -4,83 +4,83 @@
 
 1. Let's start from scratch and create empty database `table_version`
 
-    ```
-    $ createdb table_version
-    $ psql table_version
-    ```
+   ```
+   $ createdb table_version
+   $ psql table_version
+   ```
 
 2. First step we need to do, is to install `table_version` extension to our database
 
-    ```
-    table_version=# CREATE EXTENSION table_version;
-    CREATE EXTENSION
-    ```
+   ```
+   table_version=# CREATE EXTENSION table_version;
+   CREATE EXTENSION
+   ```
 
 3. Next, we create schema `foo` and add it to our search path
 
-    ```
-    table_version=# CREATE SCHEMA foo;
-    CREATE SCHEMA
+   ```
+   table_version=# CREATE SCHEMA foo;
+   CREATE SCHEMA
 
-    table_version=# SET search_path TO foo,public;
-    ```
+   table_version=# SET search_path TO foo,public;
+   ```
 
 4. Our table to be versioned will be called `bar` and will be located in `foo` schema
 
-    ```
-    table_version=# CREATE TABLE foo.bar (
-        id INTEGER NOT NULL PRIMARY KEY,
-        baz TEXT
-    );
-    CREATE TABLE
-    ```
+   ```
+   table_version=# CREATE TABLE foo.bar (
+       id INTEGER NOT NULL PRIMARY KEY,
+       baz TEXT
+   );
+   CREATE TABLE
+   ```
 
 5. Enable versioning on created table by calling `ver_enable_versioning` function. The function
    accepts two parameters - schema and table name
 
-    ```
-    table_version=# SELECT table_version.ver_enable_versioning('foo', 'bar');
-     ver_enable_versioning
-    -----------------------
-     t
-    ```
+   ```
+   table_version=# SELECT table_version.ver_enable_versioning('foo', 'bar');
+    ver_enable_versioning
+   -----------------------
+    t
+   ```
 
 6. Create first revision of our created table, called `My test edit`
 
-    ```
-    table_version=# SELECT table_version.ver_create_revision('My test edit');
-     ver_create_revision
-    ---------------------
-                    1001
-    ```
+   ```
+   table_version=# SELECT table_version.ver_create_revision('My test edit');
+    ver_create_revision
+   ---------------------
+                   1001
+   ```
 
 7. Mark revision as done . There is no data in the table or in the history table.
 
-    ```
-    table_version=# SELECT table_version.ver_complete_revision();
-     ver_complete_revision
-    -----------------------
-     t
-    ```
+   ```
+   table_version=# SELECT table_version.ver_complete_revision();
+    ver_complete_revision
+   -----------------------
+    t
+   ```
 
 8. Create next revision of our created table, called `Insert data`
 
-    ```
-    table_version=# SELECT table_version.ver_create_revision('Insert data');
-     ver_create_revision
-    ---------------------
-                    1002
-    ```
+   ```
+   table_version=# SELECT table_version.ver_create_revision('Insert data');
+    ver_create_revision
+   ---------------------
+                   1002
+   ```
 
 9. Insert some initial set of data
 
-    ```
-    table_version=# INSERT INTO foo.bar (id, baz) VALUES
-    (1, 'foo bar 1'),
-    (2, 'foo bar 2'),
-    (3, 'foo bar 3');
-    INSERT 0 3
-    ```
+   ```
+   table_version=# INSERT INTO foo.bar (id, baz) VALUES
+   (1, 'foo bar 1'),
+   (2, 'foo bar 2'),
+   (3, 'foo bar 3');
+   INSERT 0 3
+   ```
 
 10. Mark revision as done
 
@@ -122,8 +122,8 @@ materialised views were a real option in PostgreSQL.
 
 To enable versioning on a table the following conditions must be met:
 
--   The table must have a have a unique non-composite integer, bigint, text or varchar column
--   The table must not be temporary
+- The table must have a have a unique non-composite integer, bigint, text or varchar column
+- The table must not be temporary
 
 ## How it works
 
@@ -137,11 +137,11 @@ Revisions are more described in the `table_version.revision` table.
 
 ## Security model
 
--   Anyone can create revisions.
--   Revisions can only be completed by their creators.
--   Only those who have ownership privileges on a table can enable/disable versioning of such table.
--   Only empty revisions can be deleted.
--   Only the creator of a revision can delete it.
+- Anyone can create revisions.
+- Revisions can only be completed by their creators.
+- Only those who have ownership privileges on a table can enable/disable versioning of such table.
+- Only empty revisions can be deleted.
+- Only the creator of a revision can delete it.
 
 Note that disabling versioning on a table results in all history for that table being deleted.
 
@@ -241,9 +241,9 @@ run:
 As you can see the updates are recorded below. The `_diff_action` column indicates the type of
 modification:
 
--   'U' = Update
--   'D' = Delete
--   'I' = Insert
+- 'U' = Update
+- 'D' = Delete
+- 'I' = Insert
 
 If you would like to gain access to a snapshot of the data at a given time then call the following
 function:
@@ -323,9 +323,9 @@ revision system. Here the steps:
 
 The extension creates the following configuration tables:
 
--   `table_version.revision`
--   `table_version.tables_changed`
--   `table_version.versioned_tables`
+- `table_version.revision`
+- `table_version.tables_changed`
+- `table_version.versioned_tables`
 
 Whenever a new table is setup for versioning or an versioned table is edited the metadata of that
 transaction is recorded in these tables. When databases using the `table_version` extension are
@@ -375,17 +375,16 @@ only done between common table columns
 
 Returns a record of 3 values for the changed applied to the original table.:
 
--   `number_inserts` = The number of row inserted into the original table
--   `number_deletes` = The number of row deleted from the original table
--   `number_updates` = The number of row updated in the original table
+- `number_inserts` = The number of row inserted into the original table
+- `number_deletes` = The number of row deleted from the original table
+- `number_updates` = The number of row updated in the original table
 
 **Exceptions**
 
 throws an exception if the source table:
 
--   either tables's key column is not a unique non-composite integer, bigint, text, or varchar
-    column
--   no common columns between tables were found
+- either tables's key column is not a unique non-composite integer, bigint, text, or varchar column
+- no common columns between tables were found
 
 **Example**
 
@@ -414,8 +413,8 @@ Comparisons are only done between common table columns
 
 Returns a generic set of records. Each row contains the following columns:
 
--   action CHAR(1)
--   id {key's datatype}
+- action CHAR(1)
+- id {key's datatype}
 
 Because the function returns a generic set of records the schema type for the the returned record
 needs to be defined. This definition will be dependent on the key column's datatype.
@@ -424,9 +423,8 @@ needs to be defined. This definition will be dependent on the key column's datat
 
 throws an exception if the source table:
 
--   either tables's key column is not a unique non-composite integer, bigint, text, or varchar
-    column
--   no common columns between tables were found
+- either tables's key column is not a unique non-composite integer, bigint, text, or varchar column
+- no common columns between tables were found
 
 **Example**
 
@@ -482,16 +480,16 @@ A tableset of changed rows containing the each row that has been inserted, updat
 between the start and end revisions. The `_diff_action` column contains the type of modification for
 each row. The `_diff_action` value can be one of:
 
--   'U' = Update
--   'D' = Delete
--   'I' = Insert
+- 'U' = Update
+- 'D' = Delete
+- 'I' = Insert
 
 **Exceptions**
 
 throws an exception if the source table:
 
--   is not versioned
--   revision 1 is greater than revision 2
+- is not versioned
+- revision 1 is greater than revision 2
 
 **Example**
 
@@ -539,9 +537,9 @@ This function enable versioning for a table.
 
 Throws an exception if the source table:
 
--   does not exist
--   is already versioned
--   does not have a unique non-composite integer, bigint, text or varchar column
+- does not exist
+- is already versioned
+- does not have a unique non-composite integer, bigint, text or varchar column
 
 **Notes**
 
@@ -584,7 +582,7 @@ Disables versioning on a table
 
 throws an exception if the source table:
 
--   is not versioned
+- is not versioned
 
 **Notes**
 
@@ -624,7 +622,7 @@ The identifier for the new revision.
 
 throws an exception if:
 
--   a revision is still in progress within the current SQL session
+- a revision is still in progress within the current SQL session
 
 **Notes**
 
@@ -819,7 +817,7 @@ The revision id
 
 throws an exception if:
 
--   the table is not versioned
+- the table is not versioned
 
 **Example**
 
@@ -846,7 +844,7 @@ The revision id
 
 throws an exception if:
 
--   the table is not versioned
+- the table is not versioned
 
 **Example**
 
@@ -907,7 +905,7 @@ A tableset of modified table records including the schema and table name.
 
 throws an exception if:
 
--   the revision does not exist
+- the revision does not exist
 
 **Example**
 
@@ -985,7 +983,7 @@ Modify a column datatype for a versioned table.
 
 throws an exception if:
 
--   the table is not versioned
+- the table is not versioned
 
 **Example**
 
@@ -1021,7 +1019,7 @@ Add a column to a versioned table.
 
 throws an exception if:
 
--   the table is not versioned
+- the table is not versioned
 
 **Notes**
 
@@ -1058,7 +1056,7 @@ Delete a column from a versioned table.
 
 throws an exception if:
 
--   the table is not versioned
+- the table is not versioned
 
 **Example**
 
