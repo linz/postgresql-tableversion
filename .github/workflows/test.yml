@@ -16,6 +16,20 @@ on:
         - cron: '0 12 * * 0'
 
 jobs:
+    lint:
+        name: Lint
+        runs-on: ubuntu-20.04
+
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v2
+
+            - name: Install Dependencies
+              run: sudo snap install --classic pre-commit
+
+            - name: Run pre-commit hooks
+              run: pre-commit run --all-files
+
     test:
         name: Test PostgreSQL ${{ matrix.pg }} on ${{ matrix.os }}
         runs-on: ${{ matrix.os }}
@@ -30,6 +44,8 @@ jobs:
         steps:
             - name: Check out repository
               uses: actions/checkout@v1
+              with:
+                  fetch-depth: 0
 
             - name: Install dependencies
               run: |
@@ -120,10 +136,10 @@ jobs:
     package:
         needs: test
         name: Package for Debian
-        runs-on: ubuntu-18.04
+        runs-on: ubuntu-20.04
         strategy:
             matrix:
-                distro: ['bionic']
+                distro: [bionic, focal]
         steps:
             - name: Check out repository
               uses: actions/checkout@v1
@@ -148,7 +164,8 @@ jobs:
                   echo "REPO=$REPO" | tee -a $GITHUB_ENV
 
             - name: Upload to Packagecloud
-              uses: linz/linz-software-repository@v5
+              uses: linz/linz-software-repository@v6
               with:
+                  release: ${{ matrix.distro }}
                   packagecloud_token: ${{ secrets.LINZCI_PACKAGECLOUD_TOKEN }}
                   packagecloud_repository: ${{ env.REPO }}
