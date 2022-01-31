@@ -166,5 +166,6 @@ jobs:
             - name: Upload to Packagecloud
               uses: linz/linz-software-repository@v6
               with:
+                  release: ${{ matrix.distro }}
                   packagecloud_token: ${{ secrets.LINZCI_PACKAGECLOUD_TOKEN }}
                   packagecloud_repository: ${{ env.REPO }}
