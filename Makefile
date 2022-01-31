@@ -16,7 +16,7 @@ DISTFILES = \
 	$(META) \
 	$(META).in \
 	README.md \
-	table_version-loader.sh \
+	table_version-loader.bash \
 	table_version.control.in \
 	$(NULL)
 
@@ -134,13 +134,13 @@ $(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
 
 %.pg: %.pg.in Makefile
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/;s|@@REVISION@@|$(REVISION)|' $< > $@
-	
+
 $(META): $(META).in Makefile
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
 
 $(EXTENSION).control: $(EXTENSION).control.in Makefile
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
-	
+
 .PHONY: check_control
 check_control:
 	grep -q "pgTAP" $(META)
@@ -247,7 +247,7 @@ all: upgrade-scripts
 
 deb:
 	pg_buildext updatecontrol
-	# The -b switch is beacause only binary package works,
+	# The -b switch is because only binary package works,
 	# See https://github.com/linz/postgresql-tableversion/issues/29
 	dpkg-buildpackage -us -uc -b
 
@@ -293,7 +293,7 @@ $(EXTENSION)-$(EXTVERSION).sql.tpl: $(EXTENSION)--$(EXTVERSION).sql Makefile sql
 	>> $@
 	echo "COMMIT;" >> $@
 
-$(EXTENSION)-loader: $(EXTENSION)-loader.sh Makefile
+$(EXTENSION)-loader: $(EXTENSION)-loader.bash Makefile
 	cat $< | sed 's|@@LOCAL_SHAREDIR@@|$(LOCAL_SHAREDIR)|' > $@
 	chmod +x $@
 
