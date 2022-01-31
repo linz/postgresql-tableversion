@@ -16,6 +16,20 @@ on:
         - cron: '0 12 * * 0'
 
 jobs:
+    lint:
+        name: Lint
+        runs-on: ubuntu-20.04
+
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v2
+
+            - name: Install Dependencies
+              run: sudo snap install --classic pre-commit
+
+            - name: Run pre-commit hooks
+              run: pre-commit run --all-files
+
     test:
         name: Test PostgreSQL ${{ matrix.pg }} on ${{ matrix.os }}
         runs-on: ${{ matrix.os }}
