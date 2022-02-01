@@ -80,8 +80,7 @@ then cat<<EOF
             END IF;
             ALTER EXTENSION ${ext_name} UPDATE TO '${ver}';
         ELSE
-            CREATE EXTENSION ${ext_name} VERSION '${ver}'
-            FROM unpackaged;
+            CREATE EXTENSION ${ext_name} VERSION '${ver}';
         END IF;
       ELSE
         CREATE EXTENSION ${ext_name} VERSION '${ver}';
