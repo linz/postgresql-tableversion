@@ -165,7 +165,7 @@ jobs:
           echo "REPO=$REPO" | tee -a $GITHUB_ENV
 
       - name: Upload to Packagecloud
-        uses: linz/linz-software-repository@v6
+        uses: linz/linz-software-repository@v7
         with:
           release: ${{ matrix.distro }}
           packagecloud_token: ${{ secrets.LINZCI_PACKAGECLOUD_TOKEN }}
