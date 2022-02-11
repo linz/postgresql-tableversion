@@ -222,7 +222,10 @@ jobs:
         run: make deb-check
 
   package:
-    needs: test
+    needs:
+      - lint
+      - test-source
+      - test-package
     name: Package for Debian
     runs-on: ubuntu-20.04
     strategy:
