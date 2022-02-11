@@ -111,9 +111,6 @@ jobs:
       - name: Uninstall directly installed files
         run: sudo make uninstall
 
-      - name: Clean PATH to avoid finding binaries left-over by upgrade tests
-        run: PATH=/bin:/usr/bin:/usr/local/bin
-
       - name: Install postgresql-agnostic tableversion package
         run: |
           sudo dpkg -i ../tableversion_*.deb
@@ -125,15 +122,17 @@ jobs:
       - name: Install postgresql-specific tableversion package
         run: sudo dpkg -i ../postgresql-${{ matrix.pg }}-tableversion_*.deb
 
-      - name: Run post-install extension based checks
-        run: |
-          make installcheck
-          make installcheck-loader
+      - name: Run post-install extension installcheck
+        run: make installcheck
+
+      - name: Run post-install extension installcheck-loader
+        run: make installcheck-loader
+
+      - name: Build packages for all supported PG versions
+        run: make deb
 
       - name: Test build of packages for all supported PG versions
-        run: |
-          make deb
-          make deb-check
+        run: make deb-check
 
   package:
     needs: test
