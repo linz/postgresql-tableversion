@@ -105,25 +105,33 @@ jobs:
           # Test upgrades from all tagged versions
           sudo env "PATH=$PATH" test/ci/test_all_upgrades.bash
 
-      - name: Test packaging
+      - name: Build the packages
+        run: PG_SUPPORTED_VERSIONS=${{ matrix.pg }} make deb
+
+      - name: Uninstall directly installed files
+        run: sudo make uninstall
+
+      - name: Clean PATH to avoid finding binaries left-over by upgrade tests
+        run: PATH=/bin:/usr/bin:/usr/local/bin
+
+      - name: Install postgresql-agnostic tableversion package
         run: |
-          # Build the packages
-          PG_SUPPORTED_VERSIONS=${{ matrix.pg }} make deb
-          # Uninstall directly installed files
-          sudo make uninstall
-          # Clean PATH to avoid finding binaries left-over by upgrade tests
-          PATH=/bin:/usr/bin:/usr/local/bin
-          # Install postgresql-agnostic tableversion package
           sudo dpkg -i ../tableversion_*.deb
           dpkg -L tableversion
-          # Run post-install postgresql-agnostic tests
-          make installcheck-loader-noext
-          # Install postgresql-specific tableversion package
-          sudo dpkg -i ../postgresql-${{ matrix.pg }}-tableversion_*.deb
-          # Run post-install extension based checks
+
+      - name: Run post-install postgresql-agnostic tests
+        run: make installcheck-loader-noext
+
+      - name: Install postgresql-specific tableversion package
+        run: sudo dpkg -i ../postgresql-${{ matrix.pg }}-tableversion_*.deb
+
+      - name: Run post-install extension based checks
+        run: |
           make installcheck
           make installcheck-loader
-          # Test build of packages for all supported PG versions
+
+      - name: Test build of packages for all supported PG versions
+        run: |
           make deb
           make deb-check
 
