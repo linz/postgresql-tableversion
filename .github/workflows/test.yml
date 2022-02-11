@@ -78,13 +78,7 @@ jobs:
           sudo -u postgres createuser -s root
 
       - name: Build
-        run: |
-          # Test https://github.com/linz/postgresql-tableversion/issues/47
-          git config --global user.email "ci@github.actions"
-          git config --global user.name "CI"
-          git tag -fa "travis/1.2.3-4-gdeadbeef" -m "test"
-          # Build
-          make
+        run: make
 
       - name: Test build
         run: |
