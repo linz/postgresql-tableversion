@@ -244,12 +244,6 @@ upgrade-scripts: $(EXTENSION)--$(EXTVERSION).sql
 
 all: upgrade-scripts
 
-deb:
-	pg_buildext updatecontrol
-	# The -b switch is because only binary package works,
-	# See https://github.com/linz/postgresql-tableversion/issues/29
-	dpkg-buildpackage -us -uc -b
-
 deb-check:
 	# Test postgresql dependent packages do NOT contain loader
 	@for pkg in build-area/postgresql-*tableversion_*.deb; do \
