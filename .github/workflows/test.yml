@@ -207,8 +207,6 @@ jobs:
         env:
           PG_SUPPORTED_VERSIONS: ${{ matrix.pg }}
 
-
-
       - name: Install postgresql-agnostic tableversion package
         run: sudo dpkg -i build-area/tableversion_*.deb
 
