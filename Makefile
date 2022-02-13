@@ -1,5 +1,4 @@
 EXTVERSION   = 1.10.0dev
-REVISION=$(shell test -d .git && which git > /dev/null && git describe --always)
 
 META         = META.json
 EXTENSION    = $(shell grep -m 1 '"name":' $(META).in | sed -e 's/[[:space:]]*"name":[[:space:]]*"\([^"]*\)",/\1/')
@@ -130,10 +129,10 @@ $(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
 	cp $< $@
 
 %.sql: %.sql.in Makefile
-	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/;s|@@REVISION@@|$(REVISION)|' $< > $@
+	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
 
 %.pg: %.pg.in Makefile
-	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/;s|@@REVISION@@|$(REVISION)|' $< > $@
+	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
 
 $(META): $(META).in Makefile
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
@@ -245,15 +244,9 @@ upgrade-scripts: $(EXTENSION)--$(EXTVERSION).sql
 
 all: upgrade-scripts
 
-deb:
-	pg_buildext updatecontrol
-	# The -b switch is because only binary package works,
-	# See https://github.com/linz/postgresql-tableversion/issues/29
-	dpkg-buildpackage -us -uc -b
-
 deb-check:
 	# Test postgresql dependent packages do NOT contain loader
-	@for pkg in ../postgresql-*tableversion_*.deb; do \
+	@for pkg in build-area/postgresql-*tableversion_*.deb; do \
 		dpkg -c $$pkg > $$pkg.contents || break; \
 		if grep -q loader $$pkg.contents; then  \
                 echo "Package $$pkg contains loader" >&2 \
@@ -261,7 +254,7 @@ deb-check:
 		fi; \
 	done
 	# Test postgresql-agnostic package DOES contain loader
-	@for pkg in ../tableversion_*.deb; do \
+	@for pkg in build-area/tableversion_*.deb; do \
 		dpkg -c $$pkg > $$pkg.contents || break; \
 			if grep -q loader $$pkg.contents; then  \
 				:; \
