@@ -292,10 +292,10 @@ DECLARE
     rec RECORD;
 BEGIN
     BEGIN
-        -- version can be in the form '1.3.3 more-info-here'
         old_version := regexp_replace(
-            regexp_replace(@extschema@.ver_version(), ' .*', ''),
-            '[^0-9.].*', ''
+            @extschema@.ver_version(),
+            '[^0-9.].*',
+            ''
         );
     EXCEPTION WHEN undefined_function THEN
         RAISE DEBUG 'ver_version not available, '

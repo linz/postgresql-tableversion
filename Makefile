@@ -1,5 +1,4 @@
 EXTVERSION   = 1.10.0dev
-REVISION=$(shell test -d .git && which git > /dev/null && git describe --always)
 
 META         = META.json
 EXTENSION    = $(shell grep -m 1 '"name":' $(META).in | sed -e 's/[[:space:]]*"name":[[:space:]]*"\([^"]*\)",/\1/')
@@ -130,10 +129,10 @@ $(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
 	cp $< $@
 
 %.sql: %.sql.in Makefile
-	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/;s|@@REVISION@@|$(REVISION)|' $< > $@
+	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
 
 %.pg: %.pg.in Makefile
-	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/;s|@@REVISION@@|$(REVISION)|' $< > $@
+	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
 
 $(META): $(META).in Makefile
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
