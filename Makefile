@@ -229,11 +229,11 @@ installcheck-loader-noext: table_version-loader
 installcheck-loader-upgrade-noext:
 	$(MAKE) installcheck-loader-upgrade TABLE_VERSION_OPTS=--no-extension
 
-$(UPGRADE_SCRIPTS_BUILT): upgrade-scripts
+$(UPGRADE_SCRIPTS_BUILT): upgrade_scripts
 
-.PHONY: upgrade-scripts
-upgrade-scripts: upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql
-upgrade-scripts: $(EXTENSION)--$(EXTVERSION).sql
+.PHONY: upgrade_scripts
+upgrade_scripts: upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql
+upgrade_scripts: $(EXTENSION)--$(EXTVERSION).sql
 	mkdir -p upgrade-scripts
 	for OLD_VERSION in $(UPGRADEABLE_VERSIONS); do \
 		cat $< > upgrade-scripts/$(EXTENSION)--$$OLD_VERSION--$(EXTVERSION).sql; \
@@ -242,7 +242,7 @@ upgrade-scripts: $(EXTENSION)--$(EXTVERSION).sql
 	cat $< > upgrade-scripts/$(EXTENSION)--$(EXTVERSION)--$(EXTVERSION)next.sql
 	cat $< > upgrade-scripts/$(EXTENSION)--$(EXTVERSION)next--$(EXTVERSION).sql
 
-all: upgrade-scripts
+all: upgrade_scripts
 
 deb-check:
 	# Test postgresql dependent packages do NOT contain loader
