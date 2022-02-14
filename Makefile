@@ -170,7 +170,7 @@ installcheck: $(TESTS_built)
 	$(MAKE) test/sql/preparedb
 	dropdb --if-exists contrib_regression
 	createdb contrib_regression
-	pg_prove -d contrib_regression test/sql
+	pg_prove --dbname=contrib_regression --verbose test/sql
 	dropdb contrib_regression
 
 check-noext: $(TESTS_built) table_version-loader
@@ -179,7 +179,7 @@ check-noext: $(TESTS_built) table_version-loader
 	createdb contrib_regression
 	TABLE_VERSION_EXT_DIR=. \
 		./table_version-loader --no-extension contrib_regression
-	pg_prove -d contrib_regression test/sql
+	pg_prove --dbname=contrib_regression --verbose test/sql
 	dropdb contrib_regression
 
 installcheck-upgrade:
@@ -190,7 +190,7 @@ installcheck-loader: $(TESTS_built) table_version-loader
 	dropdb --if-exists contrib_regression
 	createdb contrib_regression
 	PATH="$$PATH:$(LOCAL_BINDIR)" table_version-loader $(TABLE_VERSION_OPTS) contrib_regression
-	pg_prove -d contrib_regression test/sql
+	pg_prove --dbname=contrib_regression --verbose test/sql
 	dropdb contrib_regression
 
 #
@@ -220,7 +220,7 @@ installcheck-loader-upgrade: $(TESTS_built) table_version-loader
 		$(TABLE_VERSION_OPTS) contrib_regression
 	psql -f test/sql/upgrade-post.sql contrib_regression
 	sed -ie 's/^\\i test.sql.preparedb//' test/sql-loader-upgrade/base.pg
-	pg_prove -d contrib_regression test/sql-loader-upgrade
+	pg_prove --dbname=contrib_regression --verbose test/sql-loader-upgrade
 	dropdb contrib_regression
 
 installcheck-loader-noext: table_version-loader
@@ -229,11 +229,11 @@ installcheck-loader-noext: table_version-loader
 installcheck-loader-upgrade-noext:
 	$(MAKE) installcheck-loader-upgrade TABLE_VERSION_OPTS=--no-extension
 
-$(UPGRADE_SCRIPTS_BUILT): upgrade-scripts
+$(UPGRADE_SCRIPTS_BUILT): upgrade_scripts
 
-.PHONY: upgrade-scripts
-upgrade-scripts: upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql
-upgrade-scripts: $(EXTENSION)--$(EXTVERSION).sql
+.PHONY: upgrade_scripts
+upgrade_scripts: upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql
+upgrade_scripts: $(EXTENSION)--$(EXTVERSION).sql
 	mkdir -p upgrade-scripts
 	for OLD_VERSION in $(UPGRADEABLE_VERSIONS); do \
 		cat $< > upgrade-scripts/$(EXTENSION)--$$OLD_VERSION--$(EXTVERSION).sql; \
@@ -242,7 +242,7 @@ upgrade-scripts: $(EXTENSION)--$(EXTVERSION).sql
 	cat $< > upgrade-scripts/$(EXTENSION)--$(EXTVERSION)--$(EXTVERSION)next.sql
 	cat $< > upgrade-scripts/$(EXTENSION)--$(EXTVERSION)next--$(EXTVERSION).sql
 
-all: upgrade-scripts
+all: upgrade_scripts
 
 deb-check:
 	# Test postgresql dependent packages do NOT contain loader
