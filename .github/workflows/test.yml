@@ -124,6 +124,93 @@ jobs:
       - name: Uninstall directly installed files
         run: sudo make uninstall
 
+  test-source-without-git-metadata:
+    name: Test PostgreSQL ${{ matrix.pg }} source install without Git metadata on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        pg: [ '14' ]
+        os: [ ubuntu-20.04 ]
+    env:
+      # Set PATH as postgresql-server-dev-all pretends version is 11
+      PATH: /usr/lib/postgresql/${{ matrix.pg }}/bin:/bin:/usr/bin:/usr/local/bin
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2.4.0
+
+      - name: Remove conflicting packages
+        run: |
+          sudo apt-get -qqy --purge remove \
+              libpq5 \
+              libpq-dev \
+              *php* \
+              postgresql \
+              postgresql-client-common \
+              postgresql-common
+
+      - name: Remove PostgreSQL install files
+        run: sudo rm --force --recursive /var/lib/postgresql
+
+      - name: Update package database
+        run: sudo apt-get update
+
+      - name: Install setup dependencies
+        run: sudo apt-get install curl ca-certificates gnupg
+
+      - name: Trust PostgreSQL repository key
+        run: curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+
+      - name: Get release codename
+        id: distro
+        run: echo "::set-output name=codename::$(lsb_release --codename --short)"
+
+      - name: Add PostgreSQL APT repo
+        run:
+          echo "deb http://apt.postgresql.org/pub/repos/apt/ ${{ steps.distro.outputs.codename
+          }}-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+
+      - name: Update package database with PostgreSQL repo
+        run: sudo apt-get update
+
+      - name: Install test dependencies
+        run: |
+          sudo apt-get install --assume-yes \
+              debhelper \
+              fakeroot \
+              libtap-parser-sourcehandler-pgtap-perl \
+              pgxnclient \
+              postgresql-client-${{ matrix.pg }} \
+              postgresql-${{ matrix.pg }} \
+              postgresql-${{ matrix.pg }}-pgtap \
+              postgresql-server-dev-all \
+              postgresql-server-dev-${{ matrix.pg }}
+
+      - name: Setup current user as PostgreSQL superuser
+        run: sudo --user=postgres createuser --superuser "$USER"
+
+      - name: Setup PostgreSQL root user
+        run: sudo --user=postgres createuser --superuser root
+
+      - name: Remove Git metadata
+        run: rm --recursive .git
+
+      - name: Install
+        run: sudo env "PATH=$PATH" make install
+
+      - name: Test installation
+        run: make installcheck
+
+      - name: Test loader
+        run: make installcheck-loader
+
+      - name: Test loader without extension
+        run: make installcheck-loader-noext
+
+      - name: Uninstall
+        run: sudo make uninstall
+
   test-package:
     name: Test PostgreSQL ${{ matrix.pg }} package install on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
