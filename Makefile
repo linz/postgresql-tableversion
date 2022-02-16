@@ -3,9 +3,6 @@ EXTVERSION   = 1.10.0dev
 META         = META.json
 EXTENSION    = $(shell grep -m 1 '"name":' $(META).in | sed -e 's/[[:space:]]*"name":[[:space:]]*"\([^"]*\)",/\1/')
 
-TGT_VERSION=$(subst dev,,$(EXTVERSION))
-PREV_VERSION=$(shell ls sql/table_version--*--*.sql | sed 's/.*$(EXTENSION)--.*--//;s/\.sql//' | grep -Fv $(TGT_VERSION) | sort -n | tail -1)
-
 DISTFILES = \
 	doc \
 	sql \
@@ -48,7 +45,6 @@ SQLSCRIPTS = \
 
 DOCS         = $(wildcard doc/table_version.md)
 TESTS        = $(wildcard test/sql/*.sql)
-REGRESS_PREP = testdeps
 
 #
 # Uncomment the MODULES line if you are adding C files
