@@ -103,7 +103,7 @@ sql/$(EXTENSION).sql: $(SQLSCRIPTS) $(META) $(SQLSCRIPTS_built)
 	cat $(SQLSCRIPTS) >> $@
 	echo "GRANT USAGE ON SCHEMA table_version TO public;" >> $@
 
-upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql: sql/$(EXTENSION).sql Makefile
+upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql: sql/$(EXTENSION).sql
 	mkdir -p upgrade-scripts
 	printf '\\echo Use "CREATE EXTENSION $(EXTENSION) FROM unpackaged" to load this file. \\quit\n' > $@
 	echo "---- TABLES -- " >> $@
@@ -128,23 +128,23 @@ upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql: sql/$(EXTENSION).sq
 $(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
 	cp $< $@
 
-%.sql: %.sql.in Makefile
+%.sql: %.sql.in
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
 
-%.pg: %.pg.in Makefile
+%.pg: %.pg.in
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
 
-$(META): $(META).in Makefile
+$(META): $(META).in
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
 
-$(EXTENSION).control: $(EXTENSION).control.in Makefile
+$(EXTENSION).control: $(EXTENSION).control.in
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
 
 .PHONY: check_control
 check_control:
 	grep -q "pgTAP" $(META)
 
-test/sql/version.pg: Makefile
+test/sql/version.pg:
 
 # This is phony because it depends on env variables
 .PHONY: test/sql/preparedb
@@ -278,7 +278,7 @@ dist: distclean $(DISTFILES)
 testdeps: test/sql/preparedb
 
 
-$(EXTENSION)-$(EXTVERSION).sql.tpl: $(EXTENSION)--$(EXTVERSION).sql Makefile sql/noextension.sql.in
+$(EXTENSION)-$(EXTVERSION).sql.tpl: $(EXTENSION)--$(EXTVERSION).sql sql/noextension.sql.in
 	echo "BEGIN;" > $@
 	cat sql/noextension.sql.in >> $@
 	grep -v 'CREATE EXTENSION' $< \
@@ -286,7 +286,7 @@ $(EXTENSION)-$(EXTVERSION).sql.tpl: $(EXTENSION)--$(EXTVERSION).sql Makefile sql
 	>> $@
 	echo "COMMIT;" >> $@
 
-$(EXTENSION)-loader: $(EXTENSION)-loader.bash Makefile
+$(EXTENSION)-loader: $(EXTENSION)-loader.bash
 	cat $< | sed 's|@@LOCAL_SHAREDIR@@|$(LOCAL_SHAREDIR)|' > $@
 	chmod +x $@
 
