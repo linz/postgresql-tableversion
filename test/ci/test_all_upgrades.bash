@@ -22,6 +22,7 @@ versions=(
     '1.4.2'
     '1.4.3'
     '1.5.0'
+    '1.7.0'
 )
 
 trap 'rm -r "$work_directory"' EXIT
