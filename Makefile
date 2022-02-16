@@ -58,9 +58,6 @@ REGRESS_PREP = testdeps
 PG_CONFIG    ?= pg_config
 
 EXTNDIR     = $(shell $(PG_CONFIG) --sharedir)
-PG91         = $(shell $(PG_CONFIG) --version | grep -qE " 8\.| 9\.0" && echo no || echo yes)
-
-ifeq ($(PG91),yes)
 
 PREFIX ?= /usr/local
 LOCAL_BINDIR = $(PREFIX)/bin
@@ -93,7 +90,6 @@ EXTRA_CLEAN = \
     *.tpl \
     *.sql \
     $(META)
-endif
 
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
