@@ -17,9 +17,7 @@ DISTFILES = \
 	$(NULL)
 
 # List of known versions from which we're capable
-# to upgrade automatically from. This should be
-# any version from 1.2.0 onward.
-#
+# to upgrade automatically from.
 UPGRADEABLE_VERSIONS = \
     1.9.0dev 1.9.0 \
     1.10.0dev
