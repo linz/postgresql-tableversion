@@ -37,7 +37,28 @@ SQLSCRIPTS_built = sql/20-version.sql
 
 TESTS_built = test/sql/version.pg
 
-SQLSCRIPTS = sql/[0-9][0-9]-*.sql
+SQLSCRIPTS = \
+	sql/00-common.sql \
+	sql/00-config_tables.sql \
+	sql/01-enable_versioning.sql \
+	sql/02-disable_versioning.sql \
+	sql/03-create_revision.sql \
+	sql/04-complete_revision.sql \
+	sql/05-delete_revision.sql \
+	sql/06-get_revisions.sql \
+	sql/07-get_modified_tables.sql \
+	sql/08-is_table_versioned.sql \
+	sql/09-table_change_column_type.sql \
+	sql/10-table_add_column.sql \
+	sql/11-get_versioned_tables.sql \
+	sql/12-create_table_functions.sql \
+	sql/13-create_version_trigger.sql \
+	sql/14-common.sql \
+	sql/15-table_diff_functions.sql \
+	sql/16-table_drop_column.sql \
+	sql/17-fix_revision_disorder.sql \
+	sql/18-log_modified_tables.sql \
+	$(SQLSCRIPTS_built)
 
 DOCS         = doc/table_version.md
 TESTS        = $(wildcard test/sql/*.sql)
