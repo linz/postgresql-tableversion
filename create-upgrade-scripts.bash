@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -o errexit -o noclobber -o nounset -o pipefail
+set -o errexit -o noclobber -o nounset -o pipefail -o xtrace
 shopt -s failglob inherit_errexit
 
 path="$1"
