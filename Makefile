@@ -33,15 +33,11 @@ UPGRADEABLE_VERSIONS = \
     1.9.0dev 1.9.0 \
     1.10.0dev
 
-SQLSCRIPTS_built = \
-    sql/20-version.sql \
-    $(END)
+SQLSCRIPTS_built = sql/20-version.sql
 
 TESTS_built = test/sql/version.pg
 
-SQLSCRIPTS = \
-    sql/[0-9][0-9]-*.sql \
-    $(END)
+SQLSCRIPTS = sql/[0-9][0-9]-*.sql
 
 DOCS         = $(wildcard doc/table_version.md)
 TESTS        = $(wildcard test/sql/*.sql)
