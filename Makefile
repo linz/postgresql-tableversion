@@ -140,14 +140,8 @@ $(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
 	cp $< $@
 
 %.sql: %.sql.in
-	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
-
 %.pg: %.pg.in
-	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
-
 $(META): $(META).in
-	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
-
 $(EXTENSION).control: $(EXTENSION).control.in
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
 
