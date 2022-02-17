@@ -131,7 +131,7 @@ jobs:
       fail-fast: false
       matrix:
         pg: ['14']
-        os: [ubuntu-20.04]
+        os: [ubuntu-latest]
     env:
       # Set PATH as postgresql-server-dev-all pretends version is 11
       PATH: /usr/lib/postgresql/${{ matrix.pg }}/bin:/bin:/usr/bin:/usr/local/bin
