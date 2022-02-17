@@ -36,11 +36,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pg: ['10', '11', '12', '13', '14']
+        pg: ['10', '12', '14']
         os: [ubuntu-18.04, ubuntu-20.04, ubuntu-latest]
     env:
       # Set PATH as postgresql-server-dev-all pretends version is 11
       PATH: /usr/lib/postgresql/${{ matrix.pg }}/bin:/bin:/usr/bin:/usr/local/bin
+      package_name: postgresql-${{ matrix.pg }}-tableversion
     steps:
       - name: Check out repository
         uses: actions/checkout@v2.4.0
@@ -118,10 +119,46 @@ jobs:
       - name: Test loader without extension
         run: make installcheck-loader-noext
 
-      - name: Test upgrades from all tagged versions
-        run: sudo env "PATH=$PATH" test/ci/test_all_upgrades.bash
+      - name: Configure packagecloud.io repository
+        run:
+          curl --silent https://packagecloud.io/install/repositories/linz/prod/script.deb.sh | sudo
+          bash
 
-      - name: Uninstall directly installed files
+      - name: Install latest package (1)
+        run: sudo apt-get --assume-yes install "$package_name"
+
+      - name: Get installed package version
+        id: package
+        run:
+          echo "::set-output name=version::$(dpkg-query --showformat='${Version}' --show
+          "$package_name" | cut --delimiter=- --fields=1)"
+
+      - name: Upgrade without loader
+        run: make installcheck-upgrade PREPAREDB_UPGRADE_FROM="${{ steps.package.outputs.version }}"
+
+      - name: Uninstall (1)
+        run: sudo make uninstall
+
+      - name: Install latest package (2)
+        run: sudo apt-get --assume-yes install "$package_name"
+
+      - name: Run loader upgrade in extension mode
+        run:
+          sudo make installcheck-loader-upgrade PREPAREDB_UPGRADE_FROM="${{
+          steps.package.outputs.version }}"
+
+      - name: Uninstall (2)
+        run: sudo make uninstall
+
+      - name: Install latest package (3)
+        run: sudo apt-get --assume-yes install "$package_name"
+
+      - name: Run loader upgrade without extension mode
+        run:
+          make installcheck-loader-upgrade-noext PREPAREDB_UPGRADE_FROM="${{
+          steps.package.outputs.version }}"
+
+      - name: Uninstall (3)
         run: sudo make uninstall
 
   test-source-without-git-metadata:

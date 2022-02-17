@@ -1,3 +1,4 @@
 \i test/sql/preparedb
 SELECT plan(1);
-SELECT is( table_version.ver_version(), '@@VERSION@@' );
+-- TODO: Revert to `is` check once 1.10 is no longer supported - see commit ea884afeed7fc3342a31cd6e3b5f0695c0487fd9
+SELECT matches( table_version.ver_version(), '^@@VERSION@@' );
