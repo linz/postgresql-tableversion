@@ -140,20 +140,7 @@ test/sql/version.pg:
 # This is phony because it depends on env variables
 .PHONY: test/sql/preparedb
 test/sql/preparedb: test/sql/preparedb.in
-	cat $< | \
-	  if test "${PREPAREDB_UPGRADE}" = 1; then \
-        if test -n "${PREPAREDB_UPGRADE_FROM}"; then \
-          UPGRADE_FROM="version '${PREPAREDB_UPGRADE_FROM}'"; \
-        else \
-          UPGRADE_FROM=""; \
-        fi; \
-        $(SED) -e 's/^--UPGRADE-- //' -e "s/@@FROM_VERSION@@/$$UPGRADE_FROM/"; \
-	  elif test "${PREPAREDB_NOEXTENSION}" = 1; then \
-        grep -v table_version; \
-      else \
-        cat; \
-      fi | \
-	  $(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' -e 's/@@FROM_VERSION@@//' > $@
+	./create-prepare-db-sql.bash "$(PREPAREDB_UPGRADE)" "$(PREPAREDB_UPGRADE_FROM)" "$(PREPAREDB_NOEXTENSION)" "$(EXTVERSION)" < $< > $@
 
 check: check-noext
 
