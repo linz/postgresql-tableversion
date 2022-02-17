@@ -16,8 +16,6 @@ DISTFILES = \
 	table_version.control.in \
 	$(NULL)
 
-SED = sed
-
 # List of known versions from which we're capable
 # to upgrade automatically from. This should be
 # any version from 1.2.0 onward.
@@ -123,16 +121,16 @@ $(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
 	cp $< $@
 
 %.sql: %.sql.in
-	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
+	sed -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
 
 %.pg: %.pg.in
-	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
+	sed -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
 
 $(META): $(META).in
-	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
+	sed -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
 
 $(EXTENSION).control: $(EXTENSION).control.in
-	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
+	sed -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
 
 .PHONY: check_control
 check_control:
