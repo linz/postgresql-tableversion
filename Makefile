@@ -39,7 +39,7 @@ TESTS_built = test/sql/version.pg
 
 SQLSCRIPTS = sql/[0-9][0-9]-*.sql
 
-DOCS         = $(wildcard doc/table_version.md)
+DOCS         = doc/table_version.md
 TESTS        = $(wildcard test/sql/*.sql)
 
 #
