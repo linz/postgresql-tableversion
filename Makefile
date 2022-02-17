@@ -254,12 +254,7 @@ testdeps: test/sql/preparedb
 
 
 $(EXTENSION)-$(EXTVERSION).sql.tpl: $(EXTENSION)--$(EXTVERSION).sql sql/noextension.sql.in
-	echo "BEGIN;" > $@
-	cat sql/noextension.sql.in >> $@
-	grep -v 'CREATE EXTENSION' $< \
-  | grep -v 'pg_extension_config_dump' \
-	>> $@
-	echo "COMMIT;" >> $@
+	./create-version-template.bash < $< > $@
 
 $(EXTENSION)-loader: $(EXTENSION)-loader.bash
 	cat $< | sed 's|@@LOCAL_SHAREDIR@@|$(LOCAL_SHAREDIR)|' > $@
