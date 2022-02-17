@@ -61,7 +61,9 @@ SQLSCRIPTS = \
 	$(SQLSCRIPTS_built)
 
 DOCS         = doc/table_version.md
-TESTS        = $(wildcard test/sql/*.sql)
+TESTS        = \
+	test/sql/upgrade-pre.sql \
+	test/sql/upgrade-post.sql
 
 #
 # Uncomment the MODULES line if you are adding C files
