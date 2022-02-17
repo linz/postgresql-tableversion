@@ -218,24 +218,7 @@ upgrade_scripts: $(EXTENSION)--$(EXTVERSION).sql
 all: upgrade_scripts
 
 deb-check:
-	# Test postgresql dependent packages do NOT contain loader
-	@for pkg in build-area/postgresql-*tableversion_*.deb; do \
-		dpkg -c $$pkg > $$pkg.contents || break; \
-		if grep -q loader $$pkg.contents; then  \
-                echo "Package $$pkg contains loader" >&2 \
-                && false; \
-		fi; \
-	done
-	# Test postgresql-agnostic package DOES contain loader
-	@for pkg in build-area/tableversion_*.deb; do \
-		dpkg -c $$pkg > $$pkg.contents || break; \
-			if grep -q loader $$pkg.contents; then  \
-				:; \
-			else \
-				echo "Package $$pkg does NOT contain loader" >&2 \
-				&& false; \
-			fi; \
-		done
+	./check-packages.bash
 
 dist: distclean $(DISTFILES)
 	mkdir $(EXTENSION)-$(EXTVERSION)
