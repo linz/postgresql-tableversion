@@ -117,25 +117,7 @@ sql/$(EXTENSION).sql: $(SQLSCRIPTS) $(META) $(SQLSCRIPTS_built)
 
 upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql: sql/$(EXTENSION).sql
 	mkdir -p upgrade-scripts
-	printf '\\echo Use "CREATE EXTENSION $(EXTENSION) FROM unpackaged" to load this file. \\quit\n' > $@
-	echo "---- TABLES -- " >> $@
-	cat $< | grep '^CREATE TABLE' | \
-		sed -e 's/^CREATE /ALTER EXTENSION table_version ADD /' \
-		    -e 's/ IF NOT EXISTS//' \
-		    -e 's/(.*/;/' \
-		>> $@
-	echo "---- FUNCTIONS -- " >> $@
-	cat $< | grep -A10 '^CREATE OR REPLACE FUNCTION [^%]' | \
-		tr '\n' '\r' | \
-		sed -e 's/CREATE OR REPLACE/\nALTER EXTENSION table_version ADD/g' \
-		    -e 's/ IF NOT EXISTS//g' \
-		    -e 's/)[^\r]*\r/);\n/g' | \
-		grep '^ALTER EXTENSION' | \
-		sed -e 's/\r/ /g' \
-		    -e 's/  */ /g' \
-		    -e 's/ DEFAULT [^,)]*//g' \
-		    -e 's/ = [^,)]*//g' \
-		>> $@
+	./create-update-script-sql.bash $(EXTENSION) $< > $@
 
 $(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
 	cp $< $@
