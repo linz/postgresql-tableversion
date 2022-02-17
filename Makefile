@@ -108,9 +108,7 @@ PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
 
 sql/$(EXTENSION).sql: $(SQLSCRIPTS) $(META) $(SQLSCRIPTS_built)
-	printf '\\echo Use "CREATE EXTENSION $(EXTENSION)" to load this file. \\quit\n' > $@
-	cat $(SQLSCRIPTS) >> $@
-	echo "GRANT USAGE ON SCHEMA table_version TO public;" >> $@
+	./create-extension-sql.bash $(EXTENSION) $(SQLSCRIPTS) > $@
 
 upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql: sql/$(EXTENSION).sql
 	mkdir -p upgrade-scripts
