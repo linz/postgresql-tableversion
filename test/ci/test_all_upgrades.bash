@@ -8,6 +8,7 @@ project_root="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd
 # Supported version tags
 versions=(
     '1.9.0'
+    '1.10.0'
 )
 
 trap 'rm -r "$work_directory"' EXIT
