@@ -215,13 +215,7 @@ $(UPGRADE_SCRIPTS_BUILT): upgrade_scripts
 .PHONY: upgrade_scripts
 upgrade_scripts: upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql
 upgrade_scripts: $(EXTENSION)--$(EXTVERSION).sql
-	mkdir -p upgrade-scripts
-	for OLD_VERSION in $(UPGRADEABLE_VERSIONS); do \
-		cat $< > upgrade-scripts/$(EXTENSION)--$$OLD_VERSION--$(EXTVERSION).sql; \
-	done
-	# allow upgrading to same version (for same-version-but-different-revision)
-	cat $< > upgrade-scripts/$(EXTENSION)--$(EXTVERSION)--$(EXTVERSION)next.sql
-	cat $< > upgrade-scripts/$(EXTENSION)--$(EXTVERSION)next--$(EXTVERSION).sql
+	./create-upgrade-scripts.bash $< $(EXTENSION) $(EXTVERSION) $(UPGRADEABLE_VERSIONS)
 
 all: upgrade_scripts
 
