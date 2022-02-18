@@ -110,7 +110,7 @@ include $(PGXS)
 foo:
 	printf '\\echo Use "CREATE EXTENSION $(EXTENSION)" to load this file. \\quit\n'
 
-sql/$(EXTENSION).sql: $(SQLSCRIPTS) $(META) $(SQLSCRIPTS_built)
+sql/$(EXTENSION).sql: $(SQLSCRIPTS) $(META)
 	./create-extension-sql.bash $(EXTENSION) $(SQLSCRIPTS) > $@
 
 upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql: sql/$(EXTENSION).sql
