@@ -107,9 +107,6 @@ EXTRA_CLEAN = \
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
 
-foo:
-	printf '\\echo Use "CREATE EXTENSION $(EXTENSION)" to load this file. \\quit\n'
-
 sql/$(EXTENSION).sql: $(SQLSCRIPTS)
 	./create-extension-sql.bash $(EXTENSION) $(SQLSCRIPTS) > $@
 
