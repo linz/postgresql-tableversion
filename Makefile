@@ -241,15 +241,14 @@ $(EXTENSION)-loader: $(EXTENSION)-loader.bash
 
 all: $(LOCAL_BINS) $(LOCAL_SHARES)
 
-install: local-install
-uninstall: local-uninstall
-
-local-install:
+.PHONY: install
+install:
 	$(INSTALL) -d $(DESTDIR)$(LOCAL_BINDIR)
 	$(INSTALL) $(LOCAL_BINS) $(DESTDIR)$(LOCAL_BINDIR)
 	$(INSTALL) -d $(DESTDIR)$(LOCAL_SHAREDIR)
 	$(INSTALL) -m 644 $(LOCAL_SHARES) $(DESTDIR)$(LOCAL_SHAREDIR)
 
-local-uninstall:
+.PHONY: uninstall
+uninstall:
 	for b in $(LOCAL_BINS); do rm -f $(DESTIDIR)$(LOCAL_BINDIR)/$$b; done
 	for b in $(LOCAL_SHARES); do rm -f $(DESTIDIR)$(LOCAL_SHAREDIR)/$$b; done
