@@ -77,9 +77,7 @@ LOCAL_BINDIR = $(PREFIX)/bin
 LOCAL_SHAREDIR = $(PREFIX)/share/$(EXTENSION)
 LOCAL_SHARES = $(EXTENSION)-$(EXTVERSION).sql.tpl
 
-LOCAL_SCRIPTS_built = $(EXTENSION)-loader
-
-LOCAL_BINS = $(LOCAL_SCRIPTS_built)
+LOCAL_BINS = $(EXTENSION)-loader
 
 UPGRADE_SCRIPTS_BUILT = $(patsubst %,upgrade-scripts/$(EXTENSION)--%--$(EXTVERSION).sql,$(UPGRADEABLE_VERSIONS))
 UPGRADE_SCRIPTS_BUILT += upgrade-scripts/$(EXTENSION)--$(EXTVERSION)--$(EXTVERSION)next.sql
@@ -94,7 +92,7 @@ DATA = $(wildcard sql/*--*.sql)
 EXTRA_CLEAN = \
     $(SQLSCRIPTS_built) \
     $(TESTS_built) \
-    $(LOCAL_SCRIPTS_built) \
+    $(LOCAL_BINS) \
     sql/$(EXTENSION)--$(EXTVERSION).sql \
     sql/$(EXTENSION).sql \
     sql/20-version.sql \
@@ -110,7 +108,7 @@ include $(PGXS)
 foo:
 	printf '\\echo Use "CREATE EXTENSION $(EXTENSION)" to load this file. \\quit\n'
 
-sql/$(EXTENSION).sql: $(SQLSCRIPTS) $(META) $(SQLSCRIPTS_built)
+sql/$(EXTENSION).sql: $(SQLSCRIPTS)
 	./create-extension-sql.bash $(EXTENSION) $(SQLSCRIPTS) > $@
 
 upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql: sql/$(EXTENSION).sql
@@ -223,14 +221,6 @@ dist: distclean $(DISTFILES)
 	cp -r $(DISTFILES) $(EXTENSION)-$(EXTVERSION)
 	zip -r $(EXTENSION)-$(EXTVERSION).zip $(EXTENSION)-$(EXTVERSION)
 	rm -rf $(EXTENSION)-$(EXTVERSION)
-
-#
-# testdeps
-# Hook for test to ensure dependencies in control file are set correctly
-#
-.PHONY: testdeps
-testdeps: test/sql/preparedb
-
 
 $(EXTENSION)-$(EXTVERSION).sql.tpl: $(EXTENSION)--$(EXTVERSION).sql sql/noextension.sql.in
 	./create-version-template.bash < $< > $@
