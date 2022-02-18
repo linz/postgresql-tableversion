@@ -226,7 +226,7 @@ $(EXTENSION)-$(EXTVERSION).sql.tpl: $(EXTENSION)--$(EXTVERSION).sql sql/noextens
 	./create-version-template.bash < $< > $@
 
 $(EXTENSION)-loader: $(EXTENSION)-loader.bash
-	cat $< | sed 's|@@LOCAL_SHAREDIR@@|$(LOCAL_SHAREDIR)|' > $@
+	sed 's|@@LOCAL_SHAREDIR@@|$(LOCAL_SHAREDIR)|' $< > $@
 	chmod +x $@
 
 all: $(LOCAL_BINS) $(LOCAL_SHARES)
