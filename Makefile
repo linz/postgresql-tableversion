@@ -132,10 +132,6 @@ $(META): $(META).in
 $(EXTENSION).control: $(EXTENSION).control.in
 	sed -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
 
-.PHONY: check_control
-check_control:
-	grep -q "pgTAP" $(META)
-
 # This is phony because it depends on env variables
 .PHONY: test/sql/preparedb
 test/sql/preparedb: test/sql/preparedb.in
