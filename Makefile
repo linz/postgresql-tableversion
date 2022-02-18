@@ -63,11 +63,6 @@ TESTS        = \
 	test/sql/upgrade-pre.sql \
 	test/sql/upgrade-post.sql
 
-#
-# Uncomment the MODULES line if you are adding C files
-# to your extension.
-#
-#MODULES      = $(patsubst %.c,%,$(wildcard src/*.c))
 PG_CONFIG    ?= pg_config
 
 EXTNDIR     = $(shell $(PG_CONFIG) --sharedir)
