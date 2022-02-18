@@ -77,9 +77,7 @@ LOCAL_BINDIR = $(PREFIX)/bin
 LOCAL_SHAREDIR = $(PREFIX)/share/$(EXTENSION)
 LOCAL_SHARES = $(EXTENSION)-$(EXTVERSION).sql.tpl
 
-LOCAL_SCRIPTS_built = $(EXTENSION)-loader
-
-LOCAL_BINS = $(LOCAL_SCRIPTS_built)
+LOCAL_BINS = $(EXTENSION)-loader
 
 UPGRADE_SCRIPTS_BUILT = $(patsubst %,upgrade-scripts/$(EXTENSION)--%--$(EXTVERSION).sql,$(UPGRADEABLE_VERSIONS))
 UPGRADE_SCRIPTS_BUILT += upgrade-scripts/$(EXTENSION)--$(EXTVERSION)--$(EXTVERSION)next.sql
@@ -94,7 +92,7 @@ DATA = $(wildcard sql/*--*.sql)
 EXTRA_CLEAN = \
     $(SQLSCRIPTS_built) \
     $(TESTS_built) \
-    $(LOCAL_SCRIPTS_built) \
+    $(LOCAL_BINS) \
     sql/$(EXTENSION)--$(EXTVERSION).sql \
     sql/$(EXTENSION).sql \
     sql/20-version.sql \
