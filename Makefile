@@ -224,14 +224,6 @@ dist: distclean $(DISTFILES)
 	zip -r $(EXTENSION)-$(EXTVERSION).zip $(EXTENSION)-$(EXTVERSION)
 	rm -rf $(EXTENSION)-$(EXTVERSION)
 
-#
-# testdeps
-# Hook for test to ensure dependencies in control file are set correctly
-#
-.PHONY: testdeps
-testdeps: test/sql/preparedb
-
-
 $(EXTENSION)-$(EXTVERSION).sql.tpl: $(EXTENSION)--$(EXTVERSION).sql sql/noextension.sql.in
 	./create-version-template.bash < $< > $@
 
