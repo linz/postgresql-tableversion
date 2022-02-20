@@ -34,9 +34,6 @@ do
     git checkout . # revert local patches
     git checkout "$version"
     git clean -dxf
-    # Workaround for Makefile bug which was fixed by
-    # 2dee5082e0e89e4cf2430b566e8013ac1afd92be...
-    sed -ie '/echo .*load this file/{s/echo /printf /;s|\\|\\\\|g}' Makefile
     tpl_install_dir="$(make install | grep tpl | tail -1 | sed "s/.* //;s/'$//;s/^'//")"
     test -n "$tpl_install_dir"
     mkdir -p "${tmp_install_dir_prefix}/${version}/share"
