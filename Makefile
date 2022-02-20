@@ -218,7 +218,7 @@ all: $(LOCAL_BINS) $(LOCAL_SHARES)
 install: local-install
 uninstall: local-uninstall
 
-local-install:
+local-install: $(LOCAL_BINS) $(LOCAL_SHARES)
 	$(INSTALL) -d $(DESTDIR)$(LOCAL_BINDIR)
 	$(INSTALL) $(LOCAL_BINS) $(DESTDIR)$(LOCAL_BINDIR)
 	$(INSTALL) -d $(DESTDIR)$(LOCAL_SHAREDIR)
