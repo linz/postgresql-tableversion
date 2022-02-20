@@ -308,11 +308,9 @@ BEGIN
     INTO is_extension;
 
     -- We need to update triggers when coming from versions earlier
-    -- than 1.8.0. Function ver_version
-    -- was introduced in 1.3 so no need to check any previous
-    -- version (old_version would be null in those cases)
+    -- than 1.8.0.
     --
-    -- Note that if old_version would also be NULL for new
+    -- Note that if old_version would be NULL for new
     -- installs in which case the SELECT below will do nothing
     -- as ver_get_versioned_tables() would return the empty set
     --
