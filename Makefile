@@ -58,6 +58,7 @@ TESTS        = \
 	test/sql/upgrade-pre.sql \
 	test/sql/upgrade-post.sql
 
+INSTALL ?= install
 PG_CONFIG    ?= pg_config
 
 EXTNDIR     = $(shell $(PG_CONFIG) --sharedir)
@@ -217,7 +218,7 @@ all: $(LOCAL_BINS) $(LOCAL_SHARES)
 install: local-install
 uninstall: local-uninstall
 
-local-install:
+local-install: $(LOCAL_BINS) $(LOCAL_SHARES)
 	$(INSTALL) -d $(DESTDIR)$(LOCAL_BINDIR)
 	$(INSTALL) $(LOCAL_BINS) $(DESTDIR)$(LOCAL_BINDIR)
 	$(INSTALL) -d $(DESTDIR)$(LOCAL_SHAREDIR)
