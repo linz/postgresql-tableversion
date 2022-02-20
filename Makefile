@@ -75,9 +75,7 @@ LOCAL_BINDIR = $(PREFIX)/bin
 LOCAL_SHAREDIR = $(PREFIX)/share/$(EXTENSION)
 LOCAL_SHARES = $(EXTENSION)-$(EXTVERSION).sql.tpl
 
-LOCAL_SCRIPTS_built = $(EXTENSION)-loader
-
-LOCAL_BINS = $(LOCAL_SCRIPTS_built)
+LOCAL_BINS = $(EXTENSION)-loader
 
 UPGRADE_SCRIPTS_BUILT = $(patsubst %,upgrade-scripts/$(EXTENSION)--%--$(EXTVERSION).sql,$(UPGRADEABLE_VERSIONS))
 UPGRADE_SCRIPTS_BUILT += upgrade-scripts/$(EXTENSION)--$(EXTVERSION)--$(EXTVERSION)next.sql
@@ -92,7 +90,7 @@ DATA = $(wildcard sql/*--*.sql)
 EXTRA_CLEAN = \
     $(SQLSCRIPTS_built) \
     $(TESTS_built) \
-    $(LOCAL_SCRIPTS_built) \
+    $(LOCAL_BINS) \
     sql/$(EXTENSION)--$(EXTVERSION).sql \
     sql/$(EXTENSION).sql \
     sql/20-version.sql \
@@ -108,7 +106,7 @@ include $(PGXS)
 foo:
 	printf '\\echo Use "CREATE EXTENSION $(EXTENSION)" to load this file. \\quit\n'
 
-sql/$(EXTENSION).sql: $(SQLSCRIPTS) $(META) $(SQLSCRIPTS_built)
+sql/$(EXTENSION).sql: $(SQLSCRIPTS)
 	./create-extension-sql.bash $(EXTENSION) $(SQLSCRIPTS) > $@
 
 upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql: sql/$(EXTENSION).sql
@@ -129,12 +127,6 @@ $(META): $(META).in
 
 $(EXTENSION).control: $(EXTENSION).control.in
 	sed -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
-
-.PHONY: check_control
-check_control:
-	grep -q "pgTAP" $(META)
-
-test/sql/version.pg:
 
 # This is phony because it depends on env variables
 .PHONY: test/sql/preparedb
@@ -216,24 +208,7 @@ upgrade_scripts: $(EXTENSION)--$(EXTVERSION).sql
 all: upgrade_scripts
 
 deb-check:
-	# Test postgresql dependent packages do NOT contain loader
-	@for pkg in build-area/postgresql-*tableversion_*.deb; do \
-		dpkg -c $$pkg > $$pkg.contents || break; \
-		if grep -q loader $$pkg.contents; then  \
-                echo "Package $$pkg contains loader" >&2 \
-                && false; \
-		fi; \
-	done
-	# Test postgresql-agnostic package DOES contain loader
-	@for pkg in build-area/tableversion_*.deb; do \
-		dpkg -c $$pkg > $$pkg.contents || break; \
-			if grep -q loader $$pkg.contents; then  \
-				:; \
-			else \
-				echo "Package $$pkg does NOT contain loader" >&2 \
-				&& false; \
-			fi; \
-		done
+	./check-packages.bash
 
 dist: distclean $(DISTFILES)
 	mkdir $(EXTENSION)-$(EXTVERSION)
@@ -241,19 +216,11 @@ dist: distclean $(DISTFILES)
 	zip -r $(EXTENSION)-$(EXTVERSION).zip $(EXTENSION)-$(EXTVERSION)
 	rm -rf $(EXTENSION)-$(EXTVERSION)
 
-#
-# testdeps
-# Hook for test to ensure dependencies in control file are set correctly
-#
-.PHONY: testdeps
-testdeps: test/sql/preparedb
-
-
 $(EXTENSION)-$(EXTVERSION).sql.tpl: $(EXTENSION)--$(EXTVERSION).sql sql/noextension.sql.in
 	./create-version-template.bash < $< > $@
 
 $(EXTENSION)-loader: $(EXTENSION)-loader.bash
-	cat $< | sed 's|@@LOCAL_SHAREDIR@@|$(LOCAL_SHAREDIR)|' > $@
+	sed 's|@@LOCAL_SHAREDIR@@|$(LOCAL_SHAREDIR)|' $< > $@
 	chmod +x $@
 
 all: $(LOCAL_BINS) $(LOCAL_SHARES)
