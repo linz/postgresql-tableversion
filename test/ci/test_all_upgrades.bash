@@ -10,10 +10,6 @@ project_root="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd
 # NOTE: tag 1.0.1 does not build, so we skip that
 #
 versions=(
-    '1.1.0'
-    '1.1.1'
-    '1.1.2'
-    '1.1.3'
     '1.2.0'
     '1.3.0'
     '1.3.1'
