@@ -701,8 +701,6 @@ SELECT has_function( 'table_version', 'ver_version'::name );
 
 SELECT has_function( 'table_version', 'ver_enable_versioning', ARRAY['regclass'] );
 
--- New in 1.5
-
 SELECT has_function( 'table_version', 'ver_disable_versioning', ARRAY['regclass'] );
 SELECT has_function( 'table_version', 'ver_versioned_table_add_column', ARRAY['regclass', 'name', 'text'] );
 SELECT has_function( 'table_version', 'ver_versioned_table_drop_column', ARRAY['regclass', 'name'] );
