@@ -699,8 +699,6 @@ SELECT throws_like(
 
 SELECT has_function( 'table_version', 'ver_version'::name );
 
--- New in 1.4
-
 SELECT has_function( 'table_version', 'ver_enable_versioning', ARRAY['regclass'] );
 
 -- New in 1.5
