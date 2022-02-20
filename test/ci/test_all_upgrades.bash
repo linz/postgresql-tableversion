@@ -12,6 +12,7 @@ project_root="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd
 versions=(
     '1.7.0'
     '1.7.1'
+    '1.8.0'
 )
 
 trap 'rm -r "$work_directory"' EXIT
