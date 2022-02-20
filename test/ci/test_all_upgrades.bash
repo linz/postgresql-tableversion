@@ -35,7 +35,7 @@ do
     git checkout . # revert local patches
     git checkout "$version"
     git clean -dxf
-    tpl_install_dir="$(make install | grep tpl | tail -1 | sed "s/.* //;s/'$//;s/^'//")"
+    tpl_install_dir="$(make install | grep tpl | tail --lines=1 | sed "s/.* //;s/'$//;s/^'//")"
     test -n "$tpl_install_dir"
     mkdir -p "${tmp_install_dir_prefix}/${version}/share"
     cp -f "${tpl_install_dir}/"*.tpl "${tmp_install_dir_prefix}/${version}/share"
