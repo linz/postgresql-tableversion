@@ -15,10 +15,10 @@ then
         upgrade_from="version '${upgrade_from}'"
     fi
 
-    sed -e 's/^--UPGRADE-- //' -e "s/@@FROM_VERSION@@/${upgrade_from-}/"
+    sed --expression='s/^--UPGRADE-- //' --expression="s/@@FROM_VERSION@@/${upgrade_from-}/"
 elif [[ "$preparedb_noextension" -eq 1 ]]
 then
-    grep -v table_version
+    grep --invert-match table_version
 else
     cat
-fi | sed -e "s/@@VERSION@@/${extversion}/" -e 's/@@FROM_VERSION@@//'
+fi | sed --expression="s/@@VERSION@@/${extversion}/" --expression='s/@@FROM_VERSION@@//'
