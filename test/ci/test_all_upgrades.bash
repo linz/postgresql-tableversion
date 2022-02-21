@@ -5,12 +5,8 @@ shopt -s failglob inherit_errexit
 
 project_root="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
 
-#
-# Versions/tags known to build
-# NOTE: tag 1.0.1 does not build, so we skip that
-#
+# Supported version tags
 versions=(
-    '1.8.0'
     '1.9.0'
 )
 
