@@ -27,7 +27,7 @@ $$ LANGUAGE sql IMMUTABLE;
 CREATE OR REPLACE FUNCTION ver_create_version_trigger(
     p_table_oid   REGCLASS,
     p_key_col NAME
-) 
+)
 RETURNS BOOLEAN AS
 $$
 DECLARE
@@ -58,9 +58,9 @@ BEGIN
     IF NOT @extschema@._ver_is_table_versioned(v_schema, v_table) THEN
         RAISE EXCEPTION 'Table %.% is not versioned', quote_ident(v_schema), quote_ident(v_table);
     END IF;
-    
+
     v_revision_table := @extschema@.ver_get_version_table_full(v_schema, v_table);
-    
+
 
     SELECT string_agg(quote_ident(att_name), ',') INTO v_col_insert_col
     FROM unnest(@extschema@._ver_get_table_columns(v_schema || '.' ||  v_table));
@@ -79,11 +79,11 @@ BEGIN
         IF v_column_update != '' THEN
             v_column_update := v_column_update || E',\n                        ';
         END IF;
-        
-        v_column_update := v_column_update || quote_ident(v_column_name) || ' = NEW.' 
+
+        v_column_update := v_column_update || quote_ident(v_column_name) || ' = NEW.'
             || quote_ident(v_column_name);
     END LOOP;
-    
+
     v_sql := $template$
 
 CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
@@ -104,7 +104,7 @@ CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
                 v_revision
             FROM
                 _changeset_revision VER;
-                
+
             IF v_revision IS NULL THEN
                 RAISE EXCEPTION 'Versioning system information is missing';
             END IF;
@@ -122,7 +122,7 @@ CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
         WHERE
             VTB.table_name = %table_name% AND
             VTB.schema_name = %schema_name%;
-        
+
         IF v_table_id IS NULL THEN
             RAISE EXCEPTION 'Table versioning system information is missing for %full_table_name%';
         END IF;
@@ -145,14 +145,14 @@ CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
             VALUES (v_revision, v_table_id);
         END IF;
 
-        
+
         IF (TG_OP = 'UPDATE' OR TG_OP = 'DELETE') THEN
             -- This is an UPDATE or DELETE
-            SELECT 
+            SELECT
                 _revision_created INTO v_last_revision
-            FROM 
+            FROM
                 %revision_table%
-            WHERE 
+            WHERE
                 %key_col% = OLD.%key_col% AND
                 _revision_expired IS NULL;
 
@@ -168,7 +168,7 @@ CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
                         _revision_expired IS NULL;
                     RETURN NEW;
                 ELSE
-                    DELETE FROM 
+                    DELETE FROM
                         %revision_table%
                     WHERE
                         %key_col% = OLD.%key_col% AND
@@ -198,7 +198,7 @@ CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
                 %revision_insert_vals%;
             RETURN NEW;
         END IF;
-        
+
         RETURN NULL;
     END;
 $TRIGGER$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -213,7 +213,7 @@ $TRIGGER$ LANGUAGE plpgsql SECURITY DEFINER;
     v_sql := REPLACE(v_sql, '%revision_update_cols%', v_column_update);
     v_sql := REPLACE(v_sql, '%revision_insert_cols%', v_col_insert_col);
     v_sql := REPLACE(v_sql, '%revision_insert_vals%', v_col_insert_val);
-    
+
     EXECUTE v_sql;
 
     SELECT @extschema@._ver_get_version_trigger(v_schema, v_table)
@@ -268,7 +268,7 @@ CREATE OR REPLACE FUNCTION ver_create_version_trigger(
     p_schema  NAME,
     p_table   NAME,
     p_key_col NAME
-) 
+)
 RETURNS BOOLEAN AS
 $$
     SELECT @extschema@.ver_create_version_trigger(
@@ -277,67 +277,3 @@ $$
     );
 $$ LANGUAGE sql;
 -- }
-
---
--- Fix existing table triggers if coming from a version prior to 1.8.0
--- to add support for TRUNCATE
---
--- WARNING: this needs to be sourced _before_ the script defining
---          ver_version() function
--- {
-DO $$
-DECLARE
-    old_version TEXT;
-    is_extension BOOL;
-    rec RECORD;
-BEGIN
-    BEGIN
-        -- version can be in the form '1.3.3 more-info-here'
-        old_version := regexp_replace(
-            regexp_replace(@extschema@.ver_version(), ' .*', ''),
-            '[^0-9.].*', ''
-        );
-    EXCEPTION WHEN undefined_function THEN
-        RAISE DEBUG 'ver_version not available, '
-                    'we are either doing a new install '
-                    'or coming from version before 1.3';
-    END;
-
-    SELECT EXISTS ( SELECT * FROM pg_catalog.pg_extension
-                    WHERE extname = 'table_version' )
-    INTO is_extension;
-
-    -- We need to update triggers when coming from versions earlier
-    -- than 1.8.0. Function ver_version
-    -- was introduced in 1.3 so no need to check any previous
-    -- version (old_version would be null in those cases)
-    --
-    -- Note that if old_version would also be NULL for new
-    -- installs in which case the SELECT below will do nothing
-    -- as ver_get_versioned_tables() would return the empty set
-    --
-    IF ( old_version IS NULL OR
-       string_to_array(old_version, '.')::int[] <= ARRAY[1,8,0]
-       ) AND EXISTS (
-          SELECT * FROM @extschema@.ver_get_versioned_tables()
-       ) versioned_tables
-    THEN
-        RAISE NOTICE 'Updating triggers on versioned tables';
-        FOR rec IN SELECT schema_name, table_name,
-            @extschema@.ver_create_version_trigger(
-                schema_name, table_name, key_column)
-            FROM (
-                SELECT * FROM @extschema@.ver_get_versioned_tables()
-            ) versioned_tables
-        LOOP
-            IF is_extension THEN
-                EXECUTE format('ALTER EXTENSION table_version '
-                    ' DROP FUNCTION '
-                    '@extschema@.%s_%s_revision()',
-                    rec.schema_name, rec.table_name);
-            END IF;
-        END LOOP;
-    END IF;
-END
-$$ LANGUAGE 'plpgsql';
---}

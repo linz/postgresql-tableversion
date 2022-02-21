@@ -1,4 +1,3 @@
-\set ECHO none
 --------------------------------------------------------------------------------
 
 -- postgresql-table_version - PostgreSQL table versioning extension
@@ -7,7 +6,7 @@
 -- Land Information New Zealand and the New Zealand Government.
 -- All rights reserved
 --
--- This software is released under the terms of the new BSD license. See the 
+-- This software is released under the terms of the new BSD license. See the
 -- LICENSE file for more information.
 --
 --------------------------------------------------------------------------------
@@ -243,10 +242,10 @@ SELECT results_eq(
     format($$
         SELECT * FROM table_version.ver_get_foo_bar_diff(%1$s - 4, %1$s)
         ORDER BY id$$, :last_revision),
-    $$VALUES ('D'::char, 1, 'foo bar 1 edit'), 
-             ('U'::char, 2, 'foo bar 2 edit'), 
-             ('D'::char, 3, 'foo bar 3'), 
-             ('I'::char, 5, 'foo bar 5'), 
+    $$VALUES ('D'::char, 1, 'foo bar 1 edit'),
+             ('U'::char, 2, 'foo bar 2 edit'),
+             ('D'::char, 3, 'foo bar 3'),
+             ('I'::char, 5, 'foo bar 5'),
              ('I'::char, 6, 'foo bar 6')$$,
     'Foo bar diff check to ensure a feature created and delete in between revision does not show (delete does not occur in last revision)'
 );
@@ -272,10 +271,10 @@ SELECT results_eq(
     format($$
         SELECT * FROM table_version.ver_get_foo_bar_diff(%1$s - 5, %1$s)
         ORDER BY id$$, :last_revision),
-    $$VALUES ('U'::char, 1, 'foo bar 1 (re-insert)'), 
-             ('U'::char, 2, 'foo bar 2 edit'), 
-             ('D'::char, 3, 'foo bar 3'), 
-             ('I'::char, 5, 'foo bar 5'), 
+    $$VALUES ('U'::char, 1, 'foo bar 1 (re-insert)'),
+             ('U'::char, 2, 'foo bar 2 edit'),
+             ('D'::char, 3, 'foo bar 3'),
+             ('I'::char, 5, 'foo bar 5'),
              ('I'::char, 6, 'foo bar 6')$$,
     'Foo bar diff check re-insert a prevoiusly deleted row #2'
 );
@@ -697,15 +696,9 @@ SELECT throws_like(
   'Table % is already versioned',
   'ver_enable_versioning throws when called on already-versioned table');
 
--- New in 1.3
-
 SELECT has_function( 'table_version', 'ver_version'::name );
 
--- New in 1.4
-
 SELECT has_function( 'table_version', 'ver_enable_versioning', ARRAY['regclass'] );
-
--- New in 1.5
 
 SELECT has_function( 'table_version', 'ver_disable_versioning', ARRAY['regclass'] );
 SELECT has_function( 'table_version', 'ver_versioned_table_add_column', ARRAY['regclass', 'name', 'text'] );
@@ -753,18 +746,18 @@ INSERT INTO test_schema.table2_with_varchar_pk VALUES
     ('300','ZZZ');
 
 
-PREPARE "test1" AS SELECT T.id, T.code 
+PREPARE "test1" AS SELECT T.id, T.code
 	from table_version.ver_get_table_differences(
 	'test_schema.table1_with_int_pk',
 	'test_schema.table2_with_int_pk',
-	'id') 
+	'id')
 	AS T(code char(1), id int);
 
-PREPARE "test2" AS SELECT T.id, T.code 
+PREPARE "test2" AS SELECT T.id, T.code
 	from table_version.ver_get_table_differences(
 	'test_schema.table1_with_varchar_pk',
 	'test_schema.table2_with_varchar_pk',
-	'id') 
+	'id')
 	AS T(code char(1), id varchar);
 
 SELECT lives_ok('"test1"','1. Request char/integer set result');
