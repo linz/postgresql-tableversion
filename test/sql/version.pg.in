@@ -1,4 +1,3 @@
-\set ECHO none
 \i test/sql/preparedb
 SELECT plan(1);
 SELECT is( table_version.ver_version(), '@@VERSION@@' );
