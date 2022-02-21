@@ -84,7 +84,6 @@ EXTRA_CLEAN = \
     $(LOCAL_BINS) \
     sql/$(EXTENSION)--$(EXTVERSION).sql \
     sql/$(EXTENSION).sql \
-    sql/20-version.sql \
     $(EXTENSION).control \
     upgrade-scripts \
     *.tpl \
