@@ -21,7 +21,6 @@ DISTFILES = \
 # any version from 1.2.0 onward.
 #
 UPGRADEABLE_VERSIONS = \
-    1.8.0dev 1.8.0 \
     1.9.0dev 1.9.0 \
     1.10.0dev
 
