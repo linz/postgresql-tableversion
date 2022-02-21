@@ -1,26 +1,13 @@
 #!/usr/bin/env bash
 
-set -o errexit -o noclobber -o nounset -o pipefail
+set -o errexit -o noclobber -o nounset -o pipefail -o xtrace
 shopt -s failglob inherit_errexit
 
 project_root="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
 
-#
-# Versions/tags known to build
-# NOTE: tag 1.0.1 does not build, so we skip that
-#
+# Supported version tags
 versions=(
-    '1.1.0'
-    '1.1.1'
-    '1.1.2'
-    '1.1.3'
-    '1.2.0'
-    '1.3.0'
-    '1.3.1'
-    '1.4.0'
-    '1.4.1'
-    '1.4.2'
-    '1.4.3'
+    '1.9.0'
 )
 
 trap 'rm -r "$work_directory"' EXIT
@@ -43,20 +30,11 @@ do
     echo "-------------------------------------"
     git checkout . # revert local patches
     git checkout "$version"
-    git clean -dxf
-    # Workaround for Makefile bug which was fixed by
-    # 2dee5082e0e89e4cf2430b566e8013ac1afd92be...
-    sed -ie '/echo .*load this file/{s/echo /printf /;s|\\|\\\\|g}' Makefile
-    # Since 1.4.0 we have a loader
-    if test "$(echo "$version" | tr -d .)" -ge 140
-    then
-        tpl_install_dir="$(make install | grep tpl | tail -1 | sed "s/.* //;s/'$//;s/^'//")"
-        test -n "$tpl_install_dir"
-        mkdir -p "${tmp_install_dir_prefix}/${version}/share"
-        cp -f "${tpl_install_dir}/"*.tpl "${tmp_install_dir_prefix}/${version}/share"
-    else
-        make install
-    fi
+    git clean -dx --force
+    tpl_install_dir="$(make install | grep tpl | tail --lines=1 | sed --expression="s/.* //;s/'$//;s/^'//")"
+    test -n "$tpl_install_dir"
+    mkdir -p "${tmp_install_dir_prefix}/${version}/share"
+    cp -f "${tpl_install_dir}/"*.tpl "${tmp_install_dir_prefix}/${version}/share"
 done
 cd -
 
@@ -71,14 +49,10 @@ do
     echo "Checking upgrade from version ${version}"
     echo "-------------------------------------"
     make installcheck-upgrade PREPAREDB_UPGRADE_FROM="$version"
-    # Since 1.4.0 we have a loader
-    if test "$(echo "$version" | tr -d .)" -ge 140
-    then
-        make installcheck-loader-upgrade \
-            PREPAREDB_UPGRADE_FROM="$version" \
-            PREPAREDB_UPGRADE_FROM_EXT_DIR="${tmp_install_dir_prefix}/${version}/share"
-        make installcheck-loader-upgrade-noext \
-            PREPAREDB_UPGRADE_FROM="$version" \
-            PREPAREDB_UPGRADE_FROM_EXT_DIR="${tmp_install_dir_prefix}/${version}/share"
-    fi
+    make installcheck-loader-upgrade \
+        PREPAREDB_UPGRADE_FROM="$version" \
+        PREPAREDB_UPGRADE_FROM_EXT_DIR="${tmp_install_dir_prefix}/${version}/share"
+    make installcheck-loader-upgrade-noext \
+        PREPAREDB_UPGRADE_FROM="$version" \
+        PREPAREDB_UPGRADE_FROM_EXT_DIR="${tmp_install_dir_prefix}/${version}/share"
 done
