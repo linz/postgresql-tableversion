@@ -8,20 +8,20 @@ shift
 
 echo '---- TABLES -- '
 grep '^CREATE TABLE' "$@" \
-    | sed -e 's/^CREATE /ALTER EXTENSION table_version ADD /' \
-        -e 's/ IF NOT EXISTS//' \
-        -e 's/(.*/;/'
+    | sed --expression='s/^CREATE /ALTER EXTENSION table_version ADD /' \
+        --expression='s/ IF NOT EXISTS//' \
+        --expression='s/(.*/;/'
 
 echo '---- FUNCTIONS -- '
-grep -A10 '^CREATE OR REPLACE FUNCTION [^%]' "$@" \
+grep --after-context=10 '^CREATE OR REPLACE FUNCTION [^%]' "$@" \
     | tr '\n' '\r' \
     | sed \
-        -e 's/CREATE OR REPLACE/\nALTER EXTENSION table_version ADD/g' \
-        -e 's/ IF NOT EXISTS//g' \
-        -e 's/)[^\r]*\r/);\n/g' \
+        --expression='s/CREATE OR REPLACE/\nALTER EXTENSION table_version ADD/g' \
+        --expression='s/ IF NOT EXISTS//g' \
+        --expression='s/)[^\r]*\r/);\n/g' \
     | grep '^ALTER EXTENSION' \
     | sed \
-        -e 's/\r/ /g' \
-        -e 's/  */ /g' \
-        -e 's/ DEFAULT [^,)]*//g' \
-        -e 's/ = [^,)]*//g'
+        --expression='s/\r/ /g' \
+        --expression='s/  */ /g' \
+        --expression='s/ DEFAULT [^,)]*//g' \
+        --expression='s/ = [^,)]*//g'

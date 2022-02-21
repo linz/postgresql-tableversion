@@ -1,7 +1,7 @@
 EXTVERSION   = 1.10.0dev
 
 META         = META.json
-EXTENSION    = $(shell grep -m 1 '"name":' $(META).in | sed -e 's/[[:space:]]*"name":[[:space:]]*"\([^"]*\)",/\1/')
+EXTENSION    = $(shell grep --max-count=1 '"name":' $(META).in | sed --expression='s/[[:space:]]*"name":[[:space:]]*"\([^"]*\)",/\1/')
 
 DISTFILES = \
 	doc \
@@ -104,16 +104,16 @@ $(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
 	cp $< $@
 
 %.sql: %.sql.in
-	sed -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
+	sed --expression='s/@@VERSION@@/$(EXTVERSION)/' $< > $@
 
 %.pg: %.pg.in
-	sed -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
+	sed --expression='s/@@VERSION@@/$(EXTVERSION)/' $< > $@
 
 $(META): $(META).in
-	sed -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
+	sed --expression='s/@@VERSION@@/$(EXTVERSION)/' $< > $@
 
 $(EXTENSION).control: $(EXTENSION).control.in
-	sed -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
+	sed --expression='s/@@VERSION@@/$(EXTVERSION)/' $< > $@
 
 # This is phony because it depends on env variables
 .PHONY: test/sql/preparedb
@@ -166,16 +166,16 @@ installcheck-loader-upgrade: $(TESTS_built) table_version-loader
 	TABLE_VERSION_EXT_DIR=$(PREPAREDB_UPGRADE_FROM_EXT_DIR) \
 	    table_version-loader --version $(PREPAREDB_UPGRADE_FROM) \
         $(TABLE_VERSION_OPTS) contrib_regression
-	psql -f test/sql/preparedb contrib_regression
+	psql --file=test/sql/preparedb contrib_regression
 	rm -rf test/sql-loader-upgrade
 	cp -a test/sql test/sql-loader-upgrade
-	psql -f test/sql/preparedb contrib_regression
-	psql -f test/sql/upgrade-pre.sql contrib_regression
+	psql --file=test/sql/preparedb contrib_regression
+	psql --file=test/sql/upgrade-pre.sql contrib_regression
 	PATH="$$PATH:$(LOCAL_BINDIR)" \
 		table_version-loader --version $(EXTVERSION) \
 		$(TABLE_VERSION_OPTS) contrib_regression
-	psql -f test/sql/upgrade-post.sql contrib_regression
-	sed -ie 's/^\\i test.sql.preparedb//' test/sql-loader-upgrade/base.pg
+	psql --file=test/sql/upgrade-post.sql contrib_regression
+	sed --in-place --expression='s/^\\i test.sql.preparedb//' test/sql-loader-upgrade/base.pg
 	pg_prove --dbname=contrib_regression --verbose test/sql-loader-upgrade
 	dropdb contrib_regression
 
@@ -207,7 +207,7 @@ $(EXTENSION)-$(EXTVERSION).sql.tpl: $(EXTENSION)--$(EXTVERSION).sql sql/noextens
 	./create-version-template.bash < $< > $@
 
 $(EXTENSION)-loader: $(EXTENSION)-loader.bash
-	sed 's|@@LOCAL_SHAREDIR@@|$(LOCAL_SHAREDIR)|' $< > $@
+	sed --expression='s|@@LOCAL_SHAREDIR@@|$(LOCAL_SHAREDIR)|' $< > $@
 	chmod +x $@
 
 all: $(LOCAL_BINS) $(LOCAL_SHARES)
