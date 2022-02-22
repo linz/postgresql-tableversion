@@ -1,7 +1,7 @@
 EXTVERSION   = 1.10.0dev
 
 META         = META.json
-EXTENSION    = $(shell grep --max-count=1 '"name":' $(META).in | sed --expression='s/[[:space:]]*"name":[[:space:]]*"\([^"]*\)",/\1/')
+EXTENSION    = $(shell jq --raw-output .name $(META).in)
 
 DISTFILES = \
 	doc \
@@ -19,7 +19,7 @@ DISTFILES = \
 # to upgrade automatically from.
 UPGRADEABLE_VERSIONS = \
     1.9.0dev 1.9.0 \
-    1.10.0dev
+    $(EXTVERSION)
 
 SQLSCRIPTS_built = sql/20-version.sql
 
