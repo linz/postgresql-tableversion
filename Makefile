@@ -134,13 +134,13 @@ $(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
 
 %.pg: %.pg.in Makefile
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/;s|@@REVISION@@|$(REVISION)|' $< > $@
-	
+
 $(META): $(META).in Makefile
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
 
 $(EXTENSION).control: $(EXTENSION).control.in Makefile
 	$(SED) -e 's/@@VERSION@@/$(EXTVERSION)/' $< > $@
-	
+
 .PHONY: check_control
 check_control:
 	grep -q "pgTAP" $(META)
