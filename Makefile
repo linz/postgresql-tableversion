@@ -57,8 +57,6 @@ TESTS        = \
 INSTALL ?= install
 PG_CONFIG    ?= pg_config
 
-EXTNDIR     = $(shell $(PG_CONFIG) --sharedir)
-
 PREFIX ?= /usr/local
 LOCAL_BINDIR = $(PREFIX)/bin
 LOCAL_SHAREDIR = $(PREFIX)/share/$(EXTENSION)
