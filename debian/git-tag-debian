@@ -1,9 +1,9 @@
 #!/bin/sh
 
-DEBSOURCE="$(dpkg-parsechangelog | sed -ne '/^Source:/{s/Source:[[:space:]][[:space:]]*//p;q}')"
-DEBVERSION="$(dpkg-parsechangelog | sed -ne '/^Version:/{s/Version:[[:space:]][[:space:]]*//p;q}')"
-DEBDIST="$(dpkg-parsechangelog | sed -ne '/^Distribution:/{s/Distribution:[[:space:]][[:space:]]*//p;q}')"
-DEBURGENCY="$(dpkg-parsechangelog | sed -ne '/^Urgency:/{s/Urgency:[[:space:]][[:space:]]*//p;q}')"
+DEBSOURCE="$(dpkg-parsechangelog | sed --quiet --expression='/^Source:/{s/Source:[[:space:]][[:space:]]*//p;q}')"
+DEBVERSION="$(dpkg-parsechangelog | sed --quiet --expression='/^Version:/{s/Version:[[:space:]][[:space:]]*//p;q}')"
+DEBDIST="$(dpkg-parsechangelog | sed --quiet --expression='/^Distribution:/{s/Distribution:[[:space:]][[:space:]]*//p;q}')"
+DEBURGENCY="$(dpkg-parsechangelog | sed --quiet --expression='/^Urgency:/{s/Urgency:[[:space:]][[:space:]]*//p;q}')"
 
 if [ -z "$DEBSOURCE" ] || [ -z "$DEBVERSION" ] || \
    [ -z "$DEBDIST" ] || [ -z "$DEBURGENCY" ]; then
@@ -13,5 +13,4 @@ fi
 
 echo "Tagging ${DEBSOURCE}-${DEBVERSION} (dist=${DEBDIST}, urgency=${DEBURGENCY}) as 'debian/${DEBSOURCE}-${DEBVERSION}'"
 
-git tag -s "debian/${DEBSOURCE}-${DEBVERSION}" -m "${DEBSOURCE}-${DEBVERSION} (dist=${DEBDIST}, urgency=${DEBURGENCY})"
-
+git tag --sign "debian/${DEBSOURCE}-${DEBVERSION}" --message="${DEBSOURCE}-${DEBVERSION} (dist=${DEBDIST}, urgency=${DEBURGENCY})"

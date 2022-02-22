@@ -64,3 +64,4 @@ debian/.debhelper/
 ehthumbs.db
 Thumbs.db
 
+/.idea/
