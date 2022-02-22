@@ -35,7 +35,7 @@ UPGRADEABLE_VERSIONS = \
     1.7.0dev 1.7.0 \
     1.8.0dev 1.8.0 \
     1.9.0dev 1.9.0 \
-    1.10.0dev
+    $(EXTVERSION)
 
 SQLSCRIPTS_built = \
     sql/20-version.sql \
