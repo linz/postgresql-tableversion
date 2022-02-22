@@ -13,8 +13,7 @@ DISTFILES = \
 	$(META).in \
 	README.md \
 	table_version-loader.bash \
-	table_version.control.in \
-	$(NULL)
+	table_version.control.in
 
 # List of known versions from which we're capable
 # to upgrade automatically from.
@@ -56,8 +55,6 @@ TESTS        = \
 
 INSTALL ?= install
 PG_CONFIG    ?= pg_config
-
-EXTNDIR     = $(shell $(PG_CONFIG) --sharedir)
 
 PREFIX ?= /usr/local
 LOCAL_BINDIR = $(PREFIX)/bin
