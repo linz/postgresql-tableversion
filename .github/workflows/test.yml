@@ -6,12 +6,10 @@ on:
     branches:
       - master
       - packagecloud
-      - 'release-*'
     tags-ignore:
       - 'debian/*'
   pull_request:
-    branches:
-      - '*'
+    types: [labeled, synchronize]
   schedule:
     - cron: '0 12 * * 0'
 
