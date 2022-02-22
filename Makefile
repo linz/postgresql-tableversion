@@ -1,7 +1,7 @@
 EXTVERSION   = 1.10.0dev
 
 META         = META.json
-EXTENSION    = $(shell grep --max-count=1 '"name":' $(META).in | sed --expression='s/[[:space:]]*"name":[[:space:]]*"\([^"]*\)",/\1/')
+EXTENSION    = $(shell jq --raw-output .name $(META).in)
 
 DISTFILES = \
 	doc \
