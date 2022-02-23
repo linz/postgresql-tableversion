@@ -1,4 +1,4 @@
-EXTVERSION   = 1.10.0dev
+EXTVERSION   = 1.10.1dev
 
 META         = META.json
 EXTENSION    = $(shell jq --raw-output .name $(META).in)
