@@ -2,6 +2,40 @@
 
 All notable changes for the PostgreSQL table version extension are documented in this file.
 
+## [1.10.1] - 2022-02-23
+
+### Added
+
+- Package for Ubuntu 20.04 (Focal)
+- Support PostgreSQL 13 and 14
+- Enable automerge with Kodiak
+- Enable automatic GitHub action upgrades with Dependabot
+- Upgraded GitHub actions
+- Lint using nixpkgs-fmt, Prettier, and ShellCheck in a Nix shell
+- Run pipeline weekly for sanity check
+- Run tests for recent versions of the package
+- Merge in 1.9.0 release branch
+
+### Removed
+
+- Remove Travis CI configuration
+- Avoid referencing Git revision in package versions
+- Remove unreachable/redundant code
+- Remove reference to PostgreSQL 9
+- Only build/test the two most recent versions
+
+### Improved
+
+- Build package using the linz-software-repository action rather that a Makefile target
+- Modify a copy of the repo rather than the original repo during tests
+- Use strong Bash safety pragmas
+- Use more modern Bash syntax
+- Use consistent script formatting
+- Split and document pipeline steps
+- Pull out scripts for complex Makefile targets
+- Sort tags by version, so that 1.10 comes after 1.9
+- Make test output more verbose for debugging purposes
+
 ## [1.10.0] (_broken_) - 2021-12-09
 
 ### Added
