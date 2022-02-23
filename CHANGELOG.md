@@ -2,7 +2,7 @@
 
 All notable changes for the PostgreSQL table version extension are documented in this file.
 
-## [1.10.0] - 2021-12-09
+## [1.10.0] (_broken_) - 2021-12-09
 
 ### Added
 
