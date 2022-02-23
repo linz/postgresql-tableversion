@@ -2,6 +2,12 @@
 # Configuration file for pre-commit (https://pre-commit.com/)
 
 repos:
+  - repo: https://github.com/hadolint/hadolint
+    rev: 398770ffc62290dd59b4f0847522796b1f44bcd7 # v2.8.0
+    hooks:
+      - id: hadolint-docker
+        stages: [commit]
+
   - repo: https://github.com/nix-community/nixpkgs-fmt
     rev: 148ec47877499e3d671f6366f9eed812db181b40 # v1.2.0
     hooks:
@@ -20,3 +26,4 @@ repos:
     hooks:
       - id: shellcheck
         stages: [commit]
+        args: ['--external-sources']
