@@ -18,6 +18,7 @@ All notable changes for the PostgreSQL table version extension are documented in
 
 ### Removed
 
+- Remove broken release 1.10.0
 - Remove Travis CI configuration
 - Avoid referencing Git revision in package versions
 - Remove unreachable/redundant code
