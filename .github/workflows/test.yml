@@ -216,13 +216,7 @@ jobs:
       fail-fast: false
       matrix:
         pg: ['10', '12', '14']
-        include:
-          - os: ubuntu-18.04
-            release: bionic
-          - os: ubuntu-20.04
-            release: focal
-          - os: ubuntu-latest
-            release: focal
+        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-latest]
     env:
       # Set PATH as postgresql-server-dev-all pretends version is 11
       PATH: /usr/lib/postgresql/${{ matrix.pg }}/bin:/bin:/usr/bin:/usr/local/bin
@@ -288,7 +282,7 @@ jobs:
       - name: Build local debian package
         uses: linz/linz-software-repository@v9
         with:
-          release: ${{ matrix.release }}
+          release: ${{ steps.distro.outputs.codename }}
           packages: jq
         env:
           PG_SUPPORTED_VERSIONS: ${{ matrix.pg }}
@@ -314,7 +308,7 @@ jobs:
       - name: Build packages for all supported versions
         uses: linz/linz-software-repository@v9
         with:
-          release: ${{ matrix.release }}
+          release: ${{ steps.distro.outputs.codename }}
           packages: jq
 
       - name: Test package
