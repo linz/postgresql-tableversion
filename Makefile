@@ -113,7 +113,7 @@ $(EXTENSION).control: $(EXTENSION).control.in
 # This is phony because it depends on env variables
 .PHONY: test/sql/preparedb
 test/sql/preparedb: test/sql/preparedb.in
-	./create-prepare-db-sql.bash "$(PREPAREDB_UPGRADE)" "$(PREPAREDB_UPGRADE_FROM)" "$(PREPAREDB_NOEXTENSION)" "$(EXTVERSION)" < $< > $@
+	./create-prepare-db-sql.bash "$(PREPAREDB_UPGRADE_FROM)" "$(PREPAREDB_NOEXTENSION)" "$(EXTVERSION)" < $< > $@
 
 installcheck: $(TESTS_built)
 	$(MAKE) test/sql/preparedb
@@ -130,9 +130,6 @@ check: $(TESTS_built) table_version-loader
 		./table_version-loader --no-extension contrib_regression
 	pg_prove --dbname=contrib_regression --verbose test/sql
 	dropdb contrib_regression
-
-installcheck-upgrade:
-	PREPAREDB_UPGRADE=1 $(MAKE) installcheck
 
 installcheck-loader: $(TESTS_built) table_version-loader
 	PREPAREDB_NOEXTENSION=1 $(MAKE) test/sql/preparedb

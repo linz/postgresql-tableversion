@@ -7,4 +7,4 @@ script_dir="$(dirname "${BASH_SOURCE[0]}")"
 
 make install
 # shellcheck disable=SC2154
-make PREPAREDB_UPGRADE_FROM="$installed_package_version" installcheck-upgrade
+make PREPAREDB_UPGRADE_FROM="$installed_package_version" installcheck
