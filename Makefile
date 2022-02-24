@@ -115,8 +115,6 @@ $(EXTENSION).control: $(EXTENSION).control.in
 test/sql/preparedb: test/sql/preparedb.in
 	./create-prepare-db-sql.bash "$(PREPAREDB_UPGRADE)" "$(PREPAREDB_UPGRADE_FROM)" "$(PREPAREDB_NOEXTENSION)" "$(EXTVERSION)" < $< > $@
 
-check: check-noext
-
 installcheck: $(TESTS_built)
 	$(MAKE) test/sql/preparedb
 	dropdb --if-exists contrib_regression
@@ -124,7 +122,7 @@ installcheck: $(TESTS_built)
 	pg_prove --dbname=contrib_regression --verbose test/sql
 	dropdb contrib_regression
 
-check-noext: $(TESTS_built) table_version-loader
+check: $(TESTS_built) table_version-loader
 	PREPAREDB_NOEXTENSION=1 $(MAKE) test/sql/preparedb
 	dropdb --if-exists contrib_regression
 	createdb contrib_regression
