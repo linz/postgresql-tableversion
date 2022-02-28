@@ -36,6 +36,7 @@ All notable changes for the PostgreSQL table version extension are documented in
 - Pull out scripts for complex Makefile targets
 - Sort tags by version, so that 1.10 comes after 1.9
 - Make test output more verbose for debugging purposes
+- Run tests in Docker containers
 
 ## [1.10.0] (_broken_) - 2021-12-09
 
