@@ -28,6 +28,7 @@ in
 pkgs.mkShell {
   buildInputs = [
     pkgs.cacert
+    pkgs.cargo
     pkgs.docker
     pkgs.gitFull
     pkgs.gnumake

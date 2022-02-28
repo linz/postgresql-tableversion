@@ -2,6 +2,17 @@
 
 All notable changes for the PostgreSQL table version extension are documented in this file.
 
+## [1.10.0] (_broken_) - 2021-12-09
+
+### Added
+
+- Support PostgreSQL 11.
+- Run tests on Ubuntu 20.04.
+
+### Removed
+
+- Dropped support for PostgreSQL 9.
+
 ## [1.9.0] - 2021-01-05
 
 ### Added

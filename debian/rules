@@ -15,7 +15,7 @@ override_dh_auto_build:
 override_dh_auto_test:
 	# nothing to do here, see debian/tests/* instead
 
-NEWEST_POSTGRES_VERSION = $(shell pg_buildext supported-versions $(CURDIR) | tail -1)
+NEWEST_POSTGRES_VERSION = $(shell pg_buildext supported-versions $(CURDIR) | sort --version-sort | tail --lines=1)
 
 override_dh_auto_install:
 	+pg_buildext install $(CURDIR) . postgresql-%v-tableversion
