@@ -94,7 +94,7 @@ https://wiki.postgresql.org/wiki/Apt)
 
 ## Installing the extension in a database
 
-# As an extension
+### As an extension
 
 Once `table_version` is installed, you can add it to a database. If you're running PostgreSQL 9.1.0
 or greater, it's a simple as connecting to a database as a super user and running:
@@ -120,7 +120,7 @@ unpackaged) and upgrade the extension in an existing database. To use it run:
 
         table_version-loader <dbname>
 
-# As a set of scripts
+### As a set of scripts
 
 If it is not possible to install `table_version` as an extension in your database cluster system you
 can still use it by loading the support scripts in your database. The `table_version-loader` script
@@ -134,6 +134,11 @@ environment variables PGHOST, PGPORT, PGUSER, PGPASSWORD.
 ## Dependencies
 
 The `table_version` extension has no dependencies other than PL/PgSQL.
+
+## Test
+
+Installation and upgrade tests use Docker containers. See `.github/workflows/test.yml` for how to
+test various aspects.
 
 ## License
 

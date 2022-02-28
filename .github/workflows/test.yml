@@ -6,12 +6,10 @@ on:
     branches:
       - master
       - packagecloud
-      - 'release-*'
     tags-ignore:
       - 'debian/*'
   pull_request:
-    branches:
-      - '*'
+    types: [labeled, synchronize]
   schedule:
     - cron: '0 12 * * 0'
 
@@ -30,8 +28,88 @@ jobs:
       - name: Run pre-commit hooks
         run: nix-shell --pure --run 'pre-commit run --all-files'
 
-  test-source:
-    name: Test PostgreSQL ${{ matrix.pg }} source install on ${{ matrix.os }}
+  test-install-from-source:
+    name: Test PostgreSQL ${{ matrix.pg }} source install on Ubuntu ${{ matrix.release }}
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        pg: ['10', '11', '12', '13', '14']
+        release: [bionic, focal]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2.4.0
+
+      - name: Build Docker container
+        run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
+
+      - name: Install from source
+        run: docker run --rm tester ./test/ci/install-from-source.bash ${{ matrix.pg }}
+
+  test-upgrade:
+    name: Test PostgreSQL ${{ matrix.pg }} package upgrade on Ubuntu ${{ matrix.release }}
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        pg: ['10', '11']
+        include:
+          - release: bionic
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2.4.0
+
+      - name: Build Docker container
+        run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
+
+      - name: Upgrade from latest release
+        run: docker run --rm tester ./test/ci/upgrade.bash ${{ matrix.pg }}
+
+  test-upgrade-using-loader:
+    name:
+      Test PostgreSQL ${{ matrix.pg }} package upgrade using loader on Ubuntu ${{ matrix.release }}
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        pg: ['10', '11']
+        include:
+          - release: bionic
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2.4.0
+
+      - name: Build Docker container
+        run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
+
+      - name: Upgrade from latest release
+        run: docker run --rm tester ./test/ci/upgrade-using-loader.bash ${{ matrix.pg }}
+
+  test-upgrade-using-loader-without-extension-support:
+    name:
+      Test PostgreSQL ${{ matrix.pg }} package upgrade using loader without extension support on
+      Ubuntu ${{ matrix.release }}
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        pg: ['10', '11']
+        include:
+          - release: bionic
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2.4.0
+
+      - name: Build Docker container
+        run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
+
+      - name: Upgrade from latest release
+        run:
+          docker run --rm tester ./test/ci/upgrade-using-loader-without-extension-support.bash ${{
+          matrix.pg }}
+
+  test-package:
+    name: Test PostgreSQL ${{ matrix.pg }} package install on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -100,197 +178,11 @@ jobs:
       - name: Setup PostgreSQL root user
         run: sudo --user=postgres createuser --superuser root
 
-      - name: Build
-        run: make
-
-      - name: Test build
-        run: make check
-
-      - name: Install
-        run: sudo env "PATH=$PATH" make install
-
-      - name: Test installation
-        run: make installcheck
-
-      - name: Test loader
-        run: make installcheck-loader
-
-      - name: Test loader without extension
-        run: make installcheck-loader-noext
-
-      - name: Test upgrades from all tagged versions
-        run: sudo env "PATH=$PATH" test/ci/test_all_upgrades.bash
-
-      - name: Uninstall directly installed files
-        run: sudo make uninstall
-
-  test-source-without-git-metadata:
-    name: Test PostgreSQL ${{ matrix.pg }} source install without Git metadata on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        pg: ['14']
-        os: [ubuntu-latest]
-    env:
-      # Set PATH as postgresql-server-dev-all pretends version is 11
-      PATH: /usr/lib/postgresql/${{ matrix.pg }}/bin:/bin:/usr/bin:/usr/local/bin
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v2.4.0
-
-      - name: Remove conflicting packages
-        run: |
-          sudo apt-get -qqy --purge remove \
-              libpq5 \
-              libpq-dev \
-              *php* \
-              postgresql \
-              postgresql-client-common \
-              postgresql-common
-
-      - name: Remove PostgreSQL install files
-        run: sudo rm --force --recursive /var/lib/postgresql
-
-      - name: Update package database
-        run: sudo apt-get update
-
-      - name: Install setup dependencies
-        run: sudo apt-get install curl ca-certificates gnupg
-
-      - name: Trust PostgreSQL repository key
-        run: curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-
-      - name: Get release codename
-        id: distro
-        run: echo "::set-output name=codename::$(lsb_release --codename --short)"
-
-      - name: Add PostgreSQL APT repo
-        run:
-          echo "deb http://apt.postgresql.org/pub/repos/apt/ ${{ steps.distro.outputs.codename
-          }}-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
-
-      - name: Update package database with PostgreSQL repo
-        run: sudo apt-get update
-
-      - name: Install test dependencies
-        run: |
-          sudo apt-get install --assume-yes \
-              debhelper \
-              fakeroot \
-              libtap-parser-sourcehandler-pgtap-perl \
-              pgxnclient \
-              postgresql-client-${{ matrix.pg }} \
-              postgresql-${{ matrix.pg }} \
-              postgresql-${{ matrix.pg }}-pgtap \
-              postgresql-server-dev-all \
-              postgresql-server-dev-${{ matrix.pg }}
-
-      - name: Setup current user as PostgreSQL superuser
-        run: sudo --user=postgres createuser --superuser "$USER"
-
-      - name: Setup PostgreSQL root user
-        run: sudo --user=postgres createuser --superuser root
-
-      - name: Remove Git metadata
-        run: rm --recursive .git
-
-      - name: Install
-        run: sudo env "PATH=$PATH" make install
-
-      - name: Test installation
-        run: make installcheck
-
-      - name: Test loader
-        run: make installcheck-loader
-
-      - name: Test loader without extension
-        run: make installcheck-loader-noext
-
-      - name: Uninstall
-        run: sudo make uninstall
-
-  test-package:
-    name: Test PostgreSQL ${{ matrix.pg }} package install on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        pg: ['10', '12', '14']
-        include:
-          - os: ubuntu-18.04
-            release: bionic
-          - os: ubuntu-20.04
-            release: focal
-          - os: ubuntu-latest
-            release: focal
-    env:
-      # Set PATH as postgresql-server-dev-all pretends version is 11
-      PATH: /usr/lib/postgresql/${{ matrix.pg }}/bin:/bin:/usr/bin:/usr/local/bin
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v2.4.0
-        with:
-          fetch-depth: 0
-
-      - name: Remove conflicting packages
-        run: |
-          sudo apt-get -qqy --purge remove \
-              libpq5 \
-              libpq-dev \
-              *php* \
-              postgresql \
-              postgresql-client-common \
-              postgresql-common
-
-      - name: Remove PostgreSQL install files
-        run: sudo rm -rf /var/lib/postgresql
-
-      - name: Update package database
-        run: sudo apt-get update
-
-      - name: Install setup dependencies
-        run: sudo apt-get install curl ca-certificates gnupg
-
-      - name: Trust PostgreSQL repository key
-        run: curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-
-      - name: Get release codename
-        id: distro
-        run: echo "::set-output name=codename::$(lsb_release --codename --short)"
-
-      - name: Add PostgreSQL APT repo
-        run:
-          echo "deb http://apt.postgresql.org/pub/repos/apt/ ${{ steps.distro.outputs.codename
-          }}-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
-
-      - name: Update package database with PostgreSQL repo
-        run: sudo apt-get update
-
-      - name: Install test dependencies
-        run: |
-          sudo apt-get install --assume-yes \
-              debhelper \
-              fakeroot \
-              libtap-parser-sourcehandler-pgtap-perl \
-              pgxnclient \
-              postgresql-client-${{ matrix.pg }} \
-              postgresql-${{ matrix.pg }} \
-              postgresql-${{ matrix.pg }}-pgtap \
-              postgresql-server-dev-all \
-              postgresql-server-dev-${{ matrix.pg }}
-
-      - name: Setup current user as PostgreSQL superuser
-        run: sudo --user=postgres createuser --superuser "$USER"
-
-      - name: Setup PostgreSQL root user
-        run: sudo --user=postgres createuser --superuser root
-
       - name: Build local debian package
-        uses: linz/linz-software-repository@v8
+        uses: linz/linz-software-repository@v9
         with:
-          release: ${{ matrix.release }}
+          release: ${{ steps.distro.outputs.codename }}
+          packages: jq
         env:
           PG_SUPPORTED_VERSIONS: ${{ matrix.pg }}
 
@@ -313,9 +205,10 @@ jobs:
         run: make installcheck-loader
 
       - name: Build packages for all supported versions
-        uses: linz/linz-software-repository@v8
+        uses: linz/linz-software-repository@v9
         with:
-          release: ${{ matrix.release }}
+          release: ${{ steps.distro.outputs.codename }}
+          packages: jq
 
       - name: Test package
         run: make deb-check
@@ -323,8 +216,11 @@ jobs:
   package:
     needs:
       - lint
-      - test-source
+      - test-install-from-source
       - test-package
+      - test-upgrade
+      - test-upgrade-using-loader
+      - test-upgrade-using-loader-without-extension-support
     name: Package for Debian
     runs-on: ubuntu-20.04
     strategy:
@@ -357,8 +253,9 @@ jobs:
           echo "REPO=$REPO" | tee -a $GITHUB_ENV
 
       - name: Upload to Packagecloud
-        uses: linz/linz-software-repository@v8
+        uses: linz/linz-software-repository@v9
         with:
           release: ${{ matrix.distro }}
+          packages: jq
           packagecloud_token: ${{ secrets.LINZCI_PACKAGECLOUD_TOKEN }}
           packagecloud_repository: ${{ env.REPO }}
