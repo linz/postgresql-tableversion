@@ -135,6 +135,11 @@ environment variables PGHOST, PGPORT, PGUSER, PGPASSWORD.
 
 The `table_version` extension has no dependencies other than PL/PgSQL.
 
+## Test
+
+Installation and upgrade tests use Docker containers. See `.github/workflows/test.yml` for how to
+test various aspects.
+
 ## License
 
 This project is under 3-clause BSD License, except where otherwise specified. See the LICENSE file
