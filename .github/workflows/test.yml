@@ -178,7 +178,7 @@ jobs:
       - name: Setup PostgreSQL root user
         run: sudo --user=postgres createuser --superuser root
 
-      - name: Build local debian package
+      - name: Build PostgreSQL extension package
         uses: linz/linz-software-repository@v9
         with:
           release: ${{ steps.distro.outputs.codename }}
@@ -204,7 +204,7 @@ jobs:
       - name: Test loader
         run: make installcheck-loader
 
-      - name: Build packages for all supported versions
+      - name: Build non-extension package
         uses: linz/linz-software-repository@v9
         with:
           release: ${{ steps.distro.outputs.codename }}
@@ -252,7 +252,7 @@ jobs:
           fi
           echo "REPO=$REPO" | tee -a $GITHUB_ENV
 
-      - name: Upload to Packagecloud
+      - name: Build and release package
         uses: linz/linz-software-repository@v9
         with:
           release: ${{ matrix.distro }}
