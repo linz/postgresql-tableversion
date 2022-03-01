@@ -187,16 +187,16 @@ jobs:
           PG_SUPPORTED_VERSIONS: ${{ matrix.pg }}
 
       - name: Install postgresql-agnostic tableversion package
-        run: sudo dpkg -i build-area/tableversion_*.deb
+        run: sudo dpkg --install build-area/tableversion_*.deb
 
       - name: Show package contents
-        run: dpkg -L tableversion
+        run: dpkg --listfiles tableversion
 
       - name: Run post-install postgresql-agnostic tests
         run: make installcheck-loader-noext
 
       - name: Install postgresql-specific tableversion package
-        run: sudo dpkg -i build-area/postgresql-${{ matrix.pg }}-tableversion_*.deb
+        run: sudo dpkg --install build-area/postgresql-${{ matrix.pg }}-tableversion_*.deb
 
       - name: Test installation
         run: make installcheck
