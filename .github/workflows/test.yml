@@ -178,13 +178,11 @@ jobs:
       - name: Setup PostgreSQL root user
         run: sudo --user=postgres createuser --superuser root
 
-      - name: Build PostgreSQL extension package
+      - name: Build package
         uses: linz/linz-software-repository@v9
         with:
           release: ${{ steps.distro.outputs.codename }}
           packages: jq
-        env:
-          PG_SUPPORTED_VERSIONS: ${{ matrix.pg }}
 
       - name: Install postgresql-agnostic tableversion package
         run: sudo dpkg --install build-area/tableversion_*.deb
@@ -203,12 +201,6 @@ jobs:
 
       - name: Test loader
         run: make installcheck-loader
-
-      - name: Build non-extension package
-        uses: linz/linz-software-repository@v9
-        with:
-          release: ${{ steps.distro.outputs.codename }}
-          packages: jq
 
       - name: Test package
         run: make deb-check
