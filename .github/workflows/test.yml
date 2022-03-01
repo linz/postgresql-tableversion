@@ -63,7 +63,9 @@ jobs:
         run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
 
       - name: Upgrade from latest release
-        run: docker run --rm tester ./test/ci/upgrade.bash ${{ matrix.pg }}
+        run:
+          docker run --rm --volume="${PWD}/build-area:/packages" tester ./test/ci/upgrade.bash ${{
+          matrix.pg }}
 
       - name: Archive generated packages in case of failure
         uses: actions/upload-artifact@v3
