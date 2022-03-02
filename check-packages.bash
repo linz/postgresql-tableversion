@@ -8,8 +8,10 @@ cleanup() {
 }
 trap cleanup EXIT
 working_dir="$(mktemp --directory)"
+readonly working_dir
 
 contains_loader() {
+    local package_contents
     package_contents="${working_dir}/package_contents.txt"
     set +o noclobber
     dpkg --contents "$1" > "$package_contents" || return 0
