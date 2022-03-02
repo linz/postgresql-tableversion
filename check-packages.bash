@@ -8,6 +8,7 @@ cleanup() {
 }
 trap cleanup EXIT
 working_dir="$(mktemp --directory)"
+readonly working_dir
 
 contains_loader() {
     local package_contents

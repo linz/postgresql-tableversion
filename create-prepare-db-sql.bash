@@ -7,15 +7,16 @@ upgrade="$1"
 upgrade_from="$2"
 preparedb_noextension="$3"
 extversion="$4"
+readonly upgrade upgrade_from preparedb_noextension extversion
 
 if [[ "$upgrade" -eq 1 ]]
 then
     if [[ -n "$upgrade_from" ]]
     then
-        upgrade_from="version '${upgrade_from}'"
+        replacement_upgrade_from="version '${upgrade_from}'"
     fi
 
-    sed --expression='s/^--UPGRADE-- //' --expression="s/@@FROM_VERSION@@/${upgrade_from-}/"
+    sed --expression='s/^--UPGRADE-- //' --expression="s/@@FROM_VERSION@@/${replacement_upgrade_from-}/"
 elif [[ "$preparedb_noextension" -eq 1 ]]
 then
     grep --invert-match table_version
