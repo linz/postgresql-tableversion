@@ -14,7 +14,7 @@ contains_loader() {
     local package_contents
     package_contents="${working_dir}/package_contents.txt"
     set +o noclobber
-    dpkg --contents "$1" > "$package_contents" || return 0
+    dpkg --contents "$1" > "$package_contents"
     set -o noclobber
     grep --quiet loader "$package_contents"
 }
