@@ -1,6 +1,3 @@
-set -o errexit -o noclobber -o nounset -o pipefail -o xtrace
-shopt -s failglob inherit_errexit
-
 postgresql_version="$1"
 
 export DEBIAN_FRONTEND=noninteractive
