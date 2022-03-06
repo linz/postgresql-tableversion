@@ -185,8 +185,6 @@ upgrade_scripts: upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql
 upgrade_scripts: $(EXTENSION)--$(EXTVERSION).sql
 	./create-upgrade-scripts.bash $< $(EXTENSION) $(EXTVERSION) $(UPGRADEABLE_VERSIONS)
 
-all: upgrade_scripts
-
 deb-check:
 	./check-packages.bash
 
@@ -202,8 +200,6 @@ $(EXTENSION)-$(EXTVERSION).sql.tpl: $(EXTENSION)--$(EXTVERSION).sql sql/noextens
 $(EXTENSION)-loader: $(EXTENSION)-loader.bash
 	sed --expression='s|@@LOCAL_SHAREDIR@@|$(LOCAL_SHAREDIR)|' $< > $@
 	chmod +x $@
-
-all: $(LOCAL_BINS) $(LOCAL_SHARES)
 
 install: local-install
 uninstall: local-uninstall
