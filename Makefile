@@ -182,8 +182,6 @@ upgrade_scripts: upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql
 upgrade_scripts: $(EXTENSION)--$(EXTVERSION).sql
 	./create-upgrade-scripts.bash $< $(EXTENSION) $(EXTVERSION) $(UPGRADEABLE_VERSIONS)
 
-all: upgrade_scripts
-
 deb-check:
 	./check-packages.bash
 
