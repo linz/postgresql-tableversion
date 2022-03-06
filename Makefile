@@ -78,7 +78,7 @@ EXTRA_CLEAN = \
     $(TESTS_built) \
     $(LOCAL_BINS) \
     sql/$(EXTENSION)--$(EXTVERSION).sql \
-    sql/$(EXTENSION).sql \
+    $(EXTENSION)--$(EXTVERSION).sql \
     $(EXTENSION).control \
     upgrade-scripts \
     *.tpl \
@@ -88,15 +88,12 @@ EXTRA_CLEAN = \
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
 
-sql/$(EXTENSION).sql: $(SQLSCRIPTS)
+$(EXTENSION)--$(EXTVERSION).sql: $(SQLSCRIPTS)
 	./create-extension-sql.bash $(EXTENSION) $(SQLSCRIPTS) > $@
 
-upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql: sql/$(EXTENSION).sql
+upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql: $(EXTENSION)--$(EXTVERSION).sql
 	mkdir -p upgrade-scripts
 	./create-update-script-sql.bash $(EXTENSION) $< > $@
-
-$(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
-	cp $< $@
 
 %.sql: %.sql.in
 	sed --expression='s/@@VERSION@@/$(EXTVERSION)/' $< > $@
