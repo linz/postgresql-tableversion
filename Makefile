@@ -178,7 +178,6 @@ installcheck-loader-upgrade-noext:
 $(UPGRADE_SCRIPTS_BUILT): upgrade_scripts
 
 .PHONY: upgrade_scripts
-upgrade_scripts: upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql
 upgrade_scripts: $(EXTENSION)--$(EXTVERSION).sql
 	./create-upgrade-scripts.bash $< $(EXTENSION) $(EXTVERSION) $(UPGRADEABLE_VERSIONS)
 
