@@ -65,6 +65,13 @@ jobs:
       - name: Upgrade from latest release
         run: docker run --rm tester ./test/ci/upgrade.bash ${{ matrix.pg }}
 
+      - name: Archive generated packages in case of failure
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: PostgreSQL ${{ matrix.pg }} packages for Ubuntu ${{ matrix.release }}
+          path: 'build-area/*.deb'
+
   test-upgrade-using-loader:
     name:
       Test PostgreSQL ${{ matrix.pg }} package upgrade using loader on Ubuntu ${{ matrix.release }}
