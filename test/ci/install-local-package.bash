@@ -10,13 +10,17 @@ readonly postgresql_version
 script_dir="$(dirname "${BASH_SOURCE[0]}")"
 readonly script_dir
 
-# shellcheck source=test/ci/setup-postgresql.bash
+# shellcheck source=test/ci/setup-postgresql.bash disable=SC2154
 . "${script_dir}/setup-postgresql.bash"
 
-make
-make check
-make install
-make installcheck
-make installcheck-loader
+dpkg --install /packages/tableversion_*.deb
+
 make installcheck-loader-noext
-make uninstall
+
+dpkg --install "/packages/postgresql-${postgresql_version}-tableversion_"*.deb
+
+make installcheck
+
+make installcheck-loader
+
+make deb-check
