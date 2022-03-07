@@ -150,6 +150,7 @@ jobs:
       fail-fast: false
       matrix:
         distro: [bionic, focal]
+      max-parallel: 1
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
