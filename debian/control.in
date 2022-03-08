@@ -1,7 +1,7 @@
 Source: postgresql-tableversion
 Section: database
 Priority: extra
-Build-Depends: debhelper (>= 7),
+Build-Depends: debhelper,
                postgresql-server-dev-all
 Standards-Version: 3.9.5
 Maintainer: Ivan Mincik <imincik@linz.govt.nz>
