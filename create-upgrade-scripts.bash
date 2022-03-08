@@ -6,9 +6,11 @@ shopt -s failglob inherit_errexit
 path="$1"
 extension="$2"
 version="$3"
+readonly path extension version
 shift 3
 
 output_directory='upgrade-scripts'
+readonly output_directory
 mkdir -p "$output_directory"
 
 for old_version
