@@ -149,7 +149,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [bionic, focal]
+        release: [bionic, focal]
       max-parallel: 1
     steps:
       - name: Check out repository
@@ -179,7 +179,7 @@ jobs:
       - name: Build and release package
         uses: linz/linz-software-repository@v9
         with:
-          release: ${{ matrix.distro }}
+          release: ${{ matrix.release }}
           packages: jq
           packagecloud_token: ${{ secrets.LINZCI_PACKAGECLOUD_TOKEN }}
           packagecloud_repository: ${{ env.REPO }}
