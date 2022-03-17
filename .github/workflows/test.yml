@@ -123,7 +123,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build package
-        uses: linz/linz-software-repository@v9
+        uses: linz/linz-software-repository@v10
         with:
           release: ${{ matrix.release }}
           packages: jq
@@ -177,7 +177,7 @@ jobs:
           echo "REPO=$REPO" | tee -a $GITHUB_ENV
 
       - name: Build and release package
-        uses: linz/linz-software-repository@v9
+        uses: linz/linz-software-repository@v10
         with:
           release: ${{ matrix.release }}
           packages: jq
