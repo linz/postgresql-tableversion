@@ -149,7 +149,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [bionic, focal]
+        release: [bionic, focal]
       max-parallel: 1
     steps:
       - name: Check out repository
@@ -179,7 +179,13 @@ jobs:
       - name: Build and release package
         uses: linz/linz-software-repository@v10
         with:
-          release: ${{ matrix.distro }}
+          release: ${{ matrix.release }}
           packages: jq
           packagecloud_token: ${{ secrets.LINZCI_PACKAGECLOUD_TOKEN }}
           packagecloud_repository: ${{ env.REPO }}
+
+      - name: Archive generated packages
+        uses: actions/upload-artifact@v3
+        with:
+          name: PostgreSQL ${{ matrix.pg }} packages for Ubuntu ${{ matrix.release }}
+          path: 'build-area/*.deb'
