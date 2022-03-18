@@ -23,9 +23,6 @@ or sudo pgxn load -d my_db table_version
 
 ## Installation via apt-get
 
-At the moment apt packages are available for Ubuntu Trusty (14.04) and Xenial (16.04). Bionic
-(18.04) packages are in "test" repository.
-
 Add apt repository:
 
     # Enable fetching packages from packagecloud
