@@ -6,8 +6,6 @@ on:
     branches:
       - master
       - packagecloud
-    tags-ignore:
-      - 'debian/*'
   pull_request:
     types: [opened, synchronize]
   schedule:
