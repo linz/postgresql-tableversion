@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - master
-      - packagecloud
   pull_request:
     types: [opened, synchronize]
   schedule:
