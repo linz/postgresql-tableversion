@@ -1,3 +1,9 @@
+postgresql-tableversion (1.10.2-linz~bionic) bionic; urgency=medium
+
+  * New version
+
+ -- Victor Engmark <vengmark@linz.govt.nz>  Sun, 20 Mar 2022 23:04:14 +0000
+
 postgresql-tableversion (1.10.1-linz~bionic) bionic; urgency=medium
 
   * New version
