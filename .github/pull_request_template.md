@@ -17,6 +17,7 @@
 - [ ] Wait for the package to appear in the [test repository](https://packagecloud.io/linz/test).
 - [ ] Manually promote the package from the test repository to production.
 - [ ] Wait for the pull request to build with the Debian packaging changelog commit and merge it.
+- [ ] Bump the Makefile version to the next patch.
 -->
 
 <!-- External issues which had to be resolved or worked around to get through this work. Uncomment this section if relevant.
