@@ -14,8 +14,8 @@
 - [ ] Wait for the pull request to build.
 - [ ] Tag the final commit on the branch with `X.Y.Z`, for example, `1.10.2`.
 - [ ] `git push origin TAG` with the tag created above.
-- [ ] Wait for the package to appear in the [test repository](https://packagecloud.io/linz/test).
-- [ ] Manually promote the package from the test repository to production.
+- [ ] Wait for the package to appear in the [test repository](https://packagecloud.io/app/linz/test/search?q=tableversion_X.Y.Z&filter=all&filter=all&dist=).
+- [ ] Manually promote the package repository to the "prod" repository.
 - [ ] Wait for the pull request to build with the Debian packaging changelog commit and merge it.
 -->
 
