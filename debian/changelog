@@ -1,3 +1,9 @@
+postgresql-tableversion (1.10.2-linz~focal) focal; urgency=medium
+
+  * New version
+
+ -- Victor Engmark <vengmark@linz.govt.nz>  Sun, 20 Mar 2022 23:06:32 +0000
+
 postgresql-tableversion (1.10.2-linz~bionic) bionic; urgency=medium
 
   * New version
