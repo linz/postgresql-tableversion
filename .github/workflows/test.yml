@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - master
+    tags-ignore:
+      - 'debian/*'
   pull_request:
     types: [opened, reopened, synchronize]
   schedule:
