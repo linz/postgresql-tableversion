@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install Nix
-        uses: cachix/install-nix-action@v16
+        uses: cachix/install-nix-action@v17
 
       - name: Run pre-commit hooks
         run: nix-shell --pure --run 'pre-commit run --all-files'
@@ -122,7 +122,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build package
-        uses: linz/linz-software-repository@v11
+        uses: linz/linz-software-repository@v12
         with:
           release: ${{ matrix.release }}
           packages: jq
@@ -176,7 +176,7 @@ jobs:
           echo "REPO=$REPO" | tee -a $GITHUB_ENV
 
       - name: Build and release package
-        uses: linz/linz-software-repository@v11
+        uses: linz/linz-software-repository@v12
         with:
           release: ${{ matrix.release }}
           packages: jq
