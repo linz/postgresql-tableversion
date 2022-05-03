@@ -2,6 +2,12 @@
 
 All notable changes for the PostgreSQL table version extension are documented in this file.
 
+## [1.10.3] - 2022-05-03
+
+### Fixed
+
+- Force pushing changes to origin remote
+
 ## [1.10.2] - 2022-03-21
 
 ### Improved

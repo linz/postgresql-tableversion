@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - master
+    tags-ignore:
+      - 'debian/*'
   pull_request:
     types: [opened, reopened, synchronize]
   schedule:
@@ -180,6 +182,7 @@ jobs:
           packages: jq
           packagecloud_token: ${{ secrets.LINZCI_PACKAGECLOUD_TOKEN }}
           packagecloud_repository: ${{ env.REPO }}
+          push_to_git_remote: origin
 
       - name: Archive generated packages
         uses: actions/upload-artifact@v3
