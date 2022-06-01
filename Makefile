@@ -1,4 +1,4 @@
-EXTVERSION   = dev
+EXTVERSION   = 1.10.3
 
 META         = META.json
 EXTENSION    = $(shell jq --raw-output .name $(META).in)
@@ -19,6 +19,7 @@ DISTFILES = \
 # to upgrade automatically from.
 UPGRADEABLE_VERSIONS = \
     1.9.0dev 1.9.0 \
+    1.10.2dev 1.10.2 \
     $(EXTVERSION)
 
 SQLSCRIPTS_built = sql/20-version.sql
@@ -78,7 +79,7 @@ EXTRA_CLEAN = \
     $(TESTS_built) \
     $(LOCAL_BINS) \
     sql/$(EXTENSION)--$(EXTVERSION).sql \
-    sql/$(EXTENSION).sql \
+    $(EXTENSION)--$(EXTVERSION).sql \
     $(EXTENSION).control \
     upgrade-scripts \
     *.tpl \
@@ -88,15 +89,12 @@ EXTRA_CLEAN = \
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
 
-sql/$(EXTENSION).sql: $(SQLSCRIPTS)
+$(EXTENSION)--$(EXTVERSION).sql: $(SQLSCRIPTS)
 	./create-extension-sql.bash $(EXTENSION) $(SQLSCRIPTS) > $@
 
-upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql: sql/$(EXTENSION).sql
+upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql: $(EXTENSION)--$(EXTVERSION).sql
 	mkdir -p upgrade-scripts
 	./create-update-script-sql.bash $(EXTENSION) $< > $@
-
-$(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
-	cp $< $@
 
 %.sql: %.sql.in
 	sed --expression='s/@@VERSION@@/$(EXTVERSION)/' $< > $@
@@ -181,11 +179,8 @@ installcheck-loader-upgrade-noext:
 $(UPGRADE_SCRIPTS_BUILT): upgrade_scripts
 
 .PHONY: upgrade_scripts
-upgrade_scripts: upgrade-scripts/$(EXTENSION)--unpackaged--$(EXTVERSION).sql
 upgrade_scripts: $(EXTENSION)--$(EXTVERSION).sql
 	./create-upgrade-scripts.bash $< $(EXTENSION) $(EXTVERSION) $(UPGRADEABLE_VERSIONS)
-
-all: upgrade_scripts
 
 deb-check:
 	./check-packages.bash

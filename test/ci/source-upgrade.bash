@@ -10,13 +10,9 @@ readonly postgresql_version
 script_dir="$(dirname "${BASH_SOURCE[0]}")"
 readonly script_dir
 
-# shellcheck source=test/ci/setup-postgresql.bash
-. "${script_dir}/setup-postgresql.bash"
+# shellcheck source=test/ci/install-latest.bash
+. "${script_dir}/install-latest.bash"
 
-make
-make check
 make install
-make installcheck
-make installcheck-loader
-make installcheck-loader-noext
-make uninstall
+# shellcheck disable=SC2154
+make PREPAREDB_UPGRADE_FROM="$installed_package_version" installcheck-upgrade
