@@ -23,9 +23,6 @@ or sudo pgxn load -d my_db table_version
 
 ## Installation via apt-get
 
-At the moment apt packages are available for Ubuntu Trusty (14.04) and Xenial (16.04). Bionic
-(18.04) packages are in "test" repository.
-
 Add apt repository:
 
     # Enable fetching packages from packagecloud
@@ -80,17 +77,6 @@ If you encounter an error such as:
 You need to run the test suite using a super user, such as the default "postgres" super user:
 
     make installcheck PGUSER=postgres
-
-## Building Debian packaging
-
-Build the Debian packages using the following command:
-
-    make deb
-
-The number of packages built will depend on the number of supported PostgreSQL versions on your
-system. Make sure to install the postgresql-server-dev-all package, and consider adding the
-postgresql.org apt repository to get the most versions out of it (see
-https://wiki.postgresql.org/wiki/Apt)
 
 ## Installing the extension in a database
 

@@ -2,7 +2,29 @@
 
 All notable changes for the PostgreSQL table version extension are documented in this file.
 
-## [1.10.1] - 2022-02-23
+## [1.10.4] - YYYY-MM-DD
+
+### Added
+
+- Test upgrade between Debian packages
+
+## [1.10.3] - 2022-05-03
+
+### Fixed
+
+- Force pushing changes to origin remote
+
+## [1.10.2] - 2022-03-21
+
+### Improved
+
+- Update GitHub actions
+- Remove obsolete docs
+- Fixed parallel release run issue
+- Simplify Makefile
+- Use linz-software-repository to test packaging
+
+## [1.10.1] (_broken_) - 2022-02-23
 
 ### Added
 

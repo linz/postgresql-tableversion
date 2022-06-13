@@ -5,11 +5,10 @@ on:
   push:
     branches:
       - master
-      - packagecloud
     tags-ignore:
       - 'debian/*'
   pull_request:
-    types: [labeled, synchronize]
+    types: [opened, reopened, synchronize]
   schedule:
     - cron: '0 12 * * 0'
 
@@ -23,7 +22,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install Nix
-        uses: cachix/install-nix-action@v16
+        uses: cachix/install-nix-action@v17
 
       - name: Run pre-commit hooks
         run: nix-shell --pure --run 'pre-commit run --all-files'
@@ -46,8 +45,44 @@ jobs:
       - name: Install from source
         run: docker run --rm tester ./test/ci/install-from-source.bash ${{ matrix.pg }}
 
-  test-upgrade:
+  test-package-upgrade:
     name: Test PostgreSQL ${{ matrix.pg }} package upgrade on Ubuntu ${{ matrix.release }}
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        pg: ['10', '11']
+        include:
+          - release: bionic
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Build package
+        uses: linz/linz-software-repository@v13
+        with:
+          release: ${{ matrix.release }}
+          packages: jq
+
+      - name: Build Docker container
+        run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
+
+      - name: Upgrade from latest release
+        run:
+          docker run --rm --volume="${PWD}/build-area:/packages" tester
+          ./test/ci/package-upgrade.bash ${{ matrix.pg }}
+
+      - name: Archive generated packages
+        uses: actions/upload-artifact@v3
+        with:
+          name: PostgreSQL ${{ matrix.pg }} packages for Ubuntu ${{ matrix.release }}
+          path: 'build-area/*.deb'
+        if: failure()
+
+  test-source-upgrade:
+    name: Test PostgreSQL ${{ matrix.pg }} source upgrade on Ubuntu ${{ matrix.release }}
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
@@ -62,10 +97,10 @@ jobs:
       - name: Build Docker container
         run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
 
-      - name: Upgrade from latest release
-        run: docker run --rm tester ./test/ci/upgrade.bash ${{ matrix.pg }}
+      - name: Upgrade from source
+        run: docker run --rm tester ./test/ci/source-upgrade.bash ${{ matrix.pg }}
 
-  test-upgrade-using-loader:
+  test-source-upgrade-using-loader:
     name:
       Test PostgreSQL ${{ matrix.pg }} package upgrade using loader on Ubuntu ${{ matrix.release }}
     runs-on: ubuntu-20.04
@@ -83,9 +118,9 @@ jobs:
         run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
 
       - name: Upgrade from latest release
-        run: docker run --rm tester ./test/ci/upgrade-using-loader.bash ${{ matrix.pg }}
+        run: docker run --rm tester ./test/ci/source-upgrade-using-loader.bash ${{ matrix.pg }}
 
-  test-upgrade-using-loader-without-extension-support:
+  test-source-upgrade-using-loader-without-extension-support:
     name:
       Test PostgreSQL ${{ matrix.pg }} package upgrade using loader without extension support on
       Ubuntu ${{ matrix.release }}
@@ -105,8 +140,8 @@ jobs:
 
       - name: Upgrade from latest release
         run:
-          docker run --rm tester ./test/ci/upgrade-using-loader-without-extension-support.bash ${{
-          matrix.pg }}
+          docker run --rm tester
+          ./test/ci/source-upgrade-using-loader-without-extension-support.bash ${{ matrix.pg }}
 
   test-package:
     name: Test PostgreSQL ${{ matrix.pg }} package install on ${{ matrix.os }}
@@ -123,7 +158,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build package
-        uses: linz/linz-software-repository@v9
+        uses: linz/linz-software-repository@v13
         with:
           release: ${{ matrix.release }}
           packages: jq
@@ -141,15 +176,16 @@ jobs:
       - lint
       - test-install-from-source
       - test-package
-      - test-upgrade
-      - test-upgrade-using-loader
-      - test-upgrade-using-loader-without-extension-support
+      - test-package-upgrade
+      - test-source-upgrade
+      - test-source-upgrade-using-loader
+      - test-source-upgrade-using-loader-without-extension-support
     name: Package for Debian
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
-        distro: [bionic, focal]
+        release: [bionic, focal]
       max-parallel: 1
     steps:
       - name: Check out repository
@@ -177,9 +213,10 @@ jobs:
           echo "REPO=$REPO" | tee -a $GITHUB_ENV
 
       - name: Build and release package
-        uses: linz/linz-software-repository@v9
+        uses: linz/linz-software-repository@v13
         with:
-          release: ${{ matrix.distro }}
+          release: ${{ matrix.release }}
           packages: jq
           packagecloud_token: ${{ secrets.LINZCI_PACKAGECLOUD_TOKEN }}
           packagecloud_repository: ${{ env.REPO }}
+          push_to_git_remote: origin
