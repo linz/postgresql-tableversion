@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3.0.2
 
       - name: Install Nix
         uses: cachix/install-nix-action@v17
@@ -35,7 +35,7 @@ jobs:
         release: [bionic, focal]
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3.0.2
 
       - name: Build Docker container
         run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
@@ -54,7 +54,7 @@ jobs:
           - release: bionic
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3.0.2
         with:
           fetch-depth: 0
 
@@ -73,7 +73,7 @@ jobs:
           ./test/ci/package-upgrade.bash ${{ matrix.pg }}
 
       - name: Archive generated packages
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.1.0
         with:
           name: PostgreSQL ${{ matrix.pg }} packages for Ubuntu ${{ matrix.release }}
           path: 'build-area/*.deb'
@@ -90,7 +90,7 @@ jobs:
           - release: bionic
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3.0.2
 
       - name: Build Docker container
         run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
@@ -110,7 +110,7 @@ jobs:
           - release: bionic
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3.0.2
 
       - name: Build Docker container
         run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
@@ -131,7 +131,7 @@ jobs:
           - release: bionic
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3.0.2
 
       - name: Build Docker container
         run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
@@ -151,7 +151,7 @@ jobs:
         release: [bionic, focal]
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3.0.2
         with:
           fetch-depth: 0
 
@@ -187,7 +187,7 @@ jobs:
       max-parallel: 1
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3.0.2
         with:
           fetch-depth: 0
 
