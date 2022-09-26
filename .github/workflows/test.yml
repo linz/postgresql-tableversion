@@ -9,8 +9,6 @@ on:
       - 'debian/*'
   pull_request:
     types: [opened, reopened, synchronize]
-  schedule:
-    - cron: '0 12 * * 0'
 
 jobs:
   lint:
