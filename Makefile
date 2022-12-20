@@ -1,4 +1,4 @@
-EXTVERSION   = 1.10.3
+EXTVERSION   = 1.10.4
 
 META         = META.json
 EXTENSION    = $(shell jq --raw-output .name $(META).in)
@@ -20,6 +20,7 @@ DISTFILES = \
 UPGRADEABLE_VERSIONS = \
     1.9.0dev 1.9.0 \
     1.10.2dev 1.10.2 \
+    1.10.3dev 1.10.3 \
     $(EXTVERSION)
 
 SQLSCRIPTS_built = sql/20-version.sql

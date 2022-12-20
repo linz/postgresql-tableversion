@@ -2,11 +2,12 @@
 
 All notable changes for the PostgreSQL table version extension are documented in this file.
 
-## [1.10.4] - YYYY-MM-DD
+## [1.10.4] - 2022-12-20
 
-### Added
+### Improved
 
 - Test upgrade between Debian packages
+- Release for Ubuntu 22.04 (Jammy)
 
 ## [1.10.3] - 2022-05-03
 
