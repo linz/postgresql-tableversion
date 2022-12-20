@@ -14,7 +14,7 @@
 - [ ] Wait for the pull request to build.
 - [ ] Tag the final commit on the branch with `X.Y.Z`, for example, `1.10.2`.
 - [ ] `git push origin TAG` with the tag created above.
-- [ ] Wait for the package to appear in the [test repository](https://packagecloud.io/app/linz/test/search?q=tableversion_X.Y.Z&filter=all&filter=all&dist=).
+- [ ] Wait for the [tag job](https://github.com/linz/postgresql-tableversion/actions?query=branch%3AX.Y.Z) to finish and the package to appear in the [test repository](https://packagecloud.io/app/linz/test/search?q=tableversion_X.Y.Z&filter=all&filter=all&dist=) (replace `X.Y.Z` with the tag in the links).
 - [ ] Manually promote the package repository to the "prod" repository.
 - [ ] Wait for the pull request to build with the Debian packaging changelog commit and merge it.
 - [ ] Bump the Makefile version to the next patch.
