@@ -207,7 +207,7 @@ jobs:
               REPO=dev
             fi
           fi
-          echo "REPO=$REPO" | tee -a $GITHUB_ENV
+          echo "REPO=$REPO" | tee --append $GITHUB_ENV
 
       - name: Build and release package
         uses: linz/linz-software-repository@v15
