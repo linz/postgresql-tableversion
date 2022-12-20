@@ -16,7 +16,7 @@
 - [ ] `git push origin TAG` with the tag created above.
 - [ ] Wait for the package to appear in the [test repository](https://packagecloud.io/app/linz/test/search?q=tableversion_X.Y.Z&filter=all&filter=all&dist=).
 - [ ] Manually promote the package repository to the "prod" repository.
-- [ ] Wait for the pull request to build with the Debian packaging changelog commit and merge it.
+- [ ] Manually trigger the PR pipeline to work around a [GitHub limitation](https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#triggering-a-workflow-from-a-workflow)
 - [ ] Bump the Makefile version to the next patch.
 -->
 
