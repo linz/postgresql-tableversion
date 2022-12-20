@@ -16,8 +16,8 @@
 - [ ] `git push origin TAG` with the tag created above.
 - [ ] Wait for the [tag job](https://github.com/linz/postgresql-tableversion/actions?query=branch%3AX.Y.Z) to finish and the package to appear in the [test repository](https://packagecloud.io/app/linz/test/search?q=tableversion_X.Y.Z&filter=all&filter=all&dist=) (replace `X.Y.Z` with the tag in the links).
 - [ ] Manually promote the package repository to the "prod" repository.
-- [ ] Wait for the pull request to build with the Debian packaging changelog commit and merge it.
-- [ ] Bump the Makefile version to the next patch.
+- [ ] Manually trigger the PR pipeline to work around a [GitHub limitation](https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#triggering-a-workflow-from-a-workflow)
+- [ ] Wait for the pull request to build and merge it.
 -->
 
 <!-- External issues which had to be resolved or worked around to get through this work. Uncomment this section if relevant.
