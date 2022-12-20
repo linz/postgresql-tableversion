@@ -18,7 +18,6 @@ DISTFILES = \
 # List of known versions from which we're capable
 # to upgrade automatically from.
 UPGRADEABLE_VERSIONS = \
-    1.9.0dev 1.9.0 \
     1.10.2dev 1.10.2 \
     1.10.3dev 1.10.3 \
     $(EXTVERSION)
