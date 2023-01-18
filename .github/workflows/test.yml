@@ -30,8 +30,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pg: ['10', '11', '12', '13', '14']
-        release: [bionic, focal]
+        pg: ['11', '12', '13', '14', '15']
+        release: [bionic, focal, jammy]
     steps:
       - name: Check out repository
         uses: actions/checkout@v3.3.0
@@ -48,9 +48,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pg: ['10', '11']
-        include:
-          - release: bionic
+        pg: ['11', '12', '13', '14'] # TODO: '15'
+        release: [bionic, focal] # TODO: jammy
     steps:
       - name: Check out repository
         uses: actions/checkout@v3.3.0
@@ -84,9 +83,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pg: ['10', '11']
-        include:
-          - release: bionic
+        pg: ['11', '12', '13', '14'] # TODO: '15'
+        release: [bionic, focal] # TODO: jammy
     steps:
       - name: Check out repository
         uses: actions/checkout@v3.3.0
@@ -104,9 +102,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pg: ['10', '11']
-        include:
-          - release: bionic
+        pg: ['11', '12', '13', '14'] # TODO: '15'
+        release: [bionic, focal] # TODO: jammy
     steps:
       - name: Check out repository
         uses: actions/checkout@v3.3.0
@@ -125,9 +122,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pg: ['10', '11']
-        include:
-          - release: bionic
+        pg: ['11', '12', '13', '14'] # TODO: '15'
+        release: [bionic, focal] # TODO: jammy
     steps:
       - name: Check out repository
         uses: actions/checkout@v3.3.0
@@ -146,8 +142,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pg: ['10', '11', '12', '13', '14']
-        release: [bionic, focal]
+        pg: ['11', '12', '13', '14'] # TODO: '15'
+        release: [bionic, focal] # TODO: jammy
     steps:
       - name: Check out repository
         uses: actions/checkout@v3.3.0
@@ -182,7 +178,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        release: [bionic, focal]
+        release: [bionic, focal, jammy]
       max-parallel: 1
     steps:
       - name: Check out repository
