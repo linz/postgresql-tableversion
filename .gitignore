@@ -35,6 +35,7 @@ debian/tableversion.debhelper
 debian/debhelper-build-stamp
 debian/files
 debian/.debhelper/
+/build-area/
 
 # Packages #
 ############
@@ -51,6 +52,7 @@ debian/.debhelper/
 
 # Logs and databases #
 ######################
+log.*
 *.log
 *.sqlite
 
