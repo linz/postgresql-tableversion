@@ -213,3 +213,22 @@ jobs:
           packagecloud_token: ${{ secrets.LINZCI_PACKAGECLOUD_TOKEN }}
           packagecloud_repository: ${{ env.REPO }}
           push_to_git_remote: origin
+
+  finalise:
+    name: Verify all dependencies passed
+    if: always()
+    needs:
+      - lint
+      - package
+      - test-install-from-source
+      - test-package
+      - test-package-upgrade
+      - test-source-upgrade
+      - test-source-upgrade-using-loader
+      - test-source-upgrade-using-loader-without-extension-support
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@v1.2.2
+        with:
+          jobs: ${{ toJSON(needs) }}
