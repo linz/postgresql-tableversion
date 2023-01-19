@@ -137,7 +137,7 @@ jobs:
           ./test/ci/source-upgrade-using-loader-without-extension-support.bash ${{ matrix.pg }}
 
   test-package:
-    name: Test PostgreSQL ${{ matrix.pg }} package install on ${{ matrix.os }}
+    name: Test PostgreSQL ${{ matrix.pg }} package install on ${{ matrix.release }}
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
