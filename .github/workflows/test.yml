@@ -173,7 +173,7 @@ jobs:
       - test-source-upgrade
       - test-source-upgrade-using-loader
       - test-source-upgrade-using-loader-without-extension-support
-    name: Package for Debian
+    name: Package for Ubuntu ${{ matrix.release }}
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
