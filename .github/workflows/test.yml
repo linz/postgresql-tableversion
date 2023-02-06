@@ -30,8 +30,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pg: ['10', '11', '12', '13', '14']
-        release: [bionic, focal]
+        pg: ['11', '12', '13', '14', '15']
+        release: [bionic, focal, jammy]
     steps:
       - name: Check out repository
         uses: actions/checkout@v3.3.0
@@ -48,9 +48,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pg: ['10', '11']
-        include:
-          - release: bionic
+        pg: ['11', '12', '13', '14'] # TODO: '15'
+        release: [bionic, focal] # TODO: jammy
     steps:
       - name: Check out repository
         uses: actions/checkout@v3.3.0
@@ -84,9 +83,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pg: ['10', '11']
-        include:
-          - release: bionic
+        pg: ['11', '12', '13', '14'] # TODO: '15'
+        release: [bionic, focal] # TODO: jammy
     steps:
       - name: Check out repository
         uses: actions/checkout@v3.3.0
@@ -104,9 +102,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pg: ['10', '11']
-        include:
-          - release: bionic
+        pg: ['11', '12', '13', '14'] # TODO: '15'
+        release: [bionic, focal] # TODO: jammy
     steps:
       - name: Check out repository
         uses: actions/checkout@v3.3.0
@@ -125,9 +122,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pg: ['10', '11']
-        include:
-          - release: bionic
+        pg: ['11', '12', '13', '14'] # TODO: '15'
+        release: [bionic, focal] # TODO: jammy
     steps:
       - name: Check out repository
         uses: actions/checkout@v3.3.0
@@ -141,13 +137,13 @@ jobs:
           ./test/ci/source-upgrade-using-loader-without-extension-support.bash ${{ matrix.pg }}
 
   test-package:
-    name: Test PostgreSQL ${{ matrix.pg }} package install on ${{ matrix.os }}
+    name: Test PostgreSQL ${{ matrix.pg }} package install on ${{ matrix.release }}
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
-        pg: ['10', '11', '12', '13', '14']
-        release: [bionic, focal]
+        pg: ['11', '12', '13', '14'] # TODO: '15'
+        release: [bionic, focal] # TODO: jammy
     steps:
       - name: Check out repository
         uses: actions/checkout@v3.3.0
@@ -177,12 +173,12 @@ jobs:
       - test-source-upgrade
       - test-source-upgrade-using-loader
       - test-source-upgrade-using-loader-without-extension-support
-    name: Package for Debian
+    name: Package for Ubuntu ${{ matrix.release }}
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
-        release: [bionic, focal]
+        release: [bionic, focal, jammy]
       max-parallel: 1
     steps:
       - name: Check out repository
@@ -217,3 +213,22 @@ jobs:
           packagecloud_token: ${{ secrets.LINZCI_PACKAGECLOUD_TOKEN }}
           packagecloud_repository: ${{ env.REPO }}
           push_to_git_remote: origin
+
+  finalise:
+    name: Verify all dependencies passed
+    if: always()
+    needs:
+      - lint
+      - package
+      - test-install-from-source
+      - test-package
+      - test-package-upgrade
+      - test-source-upgrade
+      - test-source-upgrade-using-loader
+      - test-source-upgrade-using-loader-without-extension-support
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@v1.2.2
+        with:
+          jobs: ${{ toJSON(needs) }}
