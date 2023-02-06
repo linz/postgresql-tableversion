@@ -2,7 +2,7 @@
 ## Checklist
 
 - [ ] Update local tags using `git fetch --tags`.
-- [ ] Check `git tag` for the latest released version.
+- [ ] Check `git tag --sort=version:refname` for the latest released version.
 - [ ] Depending on whether this is a major (X+1.0.0), minor (X.Y+1.0), or patch (X.Y.Z+1) release:
    - If this is a major or minor release, create a `release-X.Y` branch.
    - If this is a patch release, check out the existing `release-X.Y` branch.
