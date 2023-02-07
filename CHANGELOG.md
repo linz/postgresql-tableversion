@@ -8,6 +8,11 @@ All notable changes for the PostgreSQL table version extension are documented in
 
 - Test upgrade between Debian packages
 
+### Removed
+
+- Drop Ubuntu 18.04 support after
+  [GitHub dropped their runner support](https://github.com/actions/runner-images/issues/6002).
+
 ## [1.10.3] - 2022-05-03
 
 ### Fixed
