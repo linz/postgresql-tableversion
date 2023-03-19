@@ -1,14 +1,6 @@
 let
-  pkgs =
-    import
-      (
-        fetchTarball (
-          builtins.fromJSON (
-            builtins.readFile ./nixpkgs.json
-          )
-        )
-      )
-      { };
+  sources = import ./nix/sources.nix;
+  pkgs = import sources.nixpkgs { };
   postgresql = pkgs.postgresql;
   pg_prove = pkgs.stdenv.mkDerivation {
     name = "pg_prove";
