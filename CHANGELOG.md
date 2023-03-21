@@ -2,7 +2,7 @@
 
 All notable changes for the PostgreSQL table version extension are documented in this file.
 
-## [1.10.4] - 2022-12-20
+## [1.10.4] - 2023-03-22
 
 ### Improved
 
