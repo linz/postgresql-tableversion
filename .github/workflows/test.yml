@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.5.0
+        uses: actions/checkout@v3.5.1
 
       - name: Install Nix
         uses: cachix/install-nix-action@v20
@@ -34,7 +34,7 @@ jobs:
         release: [focal, jammy]
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.5.0
+        uses: actions/checkout@v3.5.1
 
       - name: Build Docker container
         run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
@@ -52,7 +52,7 @@ jobs:
         release: [focal] # TODO: jammy
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.5.0
+        uses: actions/checkout@v3.5.1
         with:
           fetch-depth: 0
 
@@ -87,7 +87,7 @@ jobs:
         release: [focal] # TODO: jammy
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.5.0
+        uses: actions/checkout@v3.5.1
 
       - name: Build Docker container
         run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
@@ -106,7 +106,7 @@ jobs:
         release: [focal] # TODO: jammy
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.5.0
+        uses: actions/checkout@v3.5.1
 
       - name: Build Docker container
         run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
@@ -126,7 +126,7 @@ jobs:
         release: [focal] # TODO: jammy
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.5.0
+        uses: actions/checkout@v3.5.1
 
       - name: Build Docker container
         run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
@@ -146,7 +146,7 @@ jobs:
         release: [focal] # TODO: jammy
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.5.0
+        uses: actions/checkout@v3.5.1
         with:
           fetch-depth: 0
 
@@ -182,7 +182,7 @@ jobs:
       max-parallel: 1
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.5.0
+        uses: actions/checkout@v3.5.1
         with:
           fetch-depth: 0
 
