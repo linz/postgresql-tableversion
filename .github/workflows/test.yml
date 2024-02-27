@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@v4.1.1
       - name: Install python
         uses: actions/setup-python@v3
       - name: Run pre-commit hooks
@@ -28,16 +28,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pg: ['12', '13', '14', '15', '16']
-        release: [20.04, 22.04]
+        pg: ['11', '12', '13', '14', '15']
+        release: [focal, jammy]
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@v4.1.1
 
       - name: Build Docker container
-        run:
-          docker build --build-arg=RELEASE=${{ matrix.release }} --build-arg="PG_VERSION=${{
-          matrix.pg }}" --tag=tester .
+        run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
 
       - name: Install from source
         run: docker run --rm tester ./test/ci/install-from-source.bash
