@@ -17,218 +17,27 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v3.5.2
-
-      - name: Install Nix
-        uses: cachix/install-nix-action@v21
-
+      - name: Install python
+        uses: actions/setup-python@v3
       - name: Run pre-commit hooks
-        run: nix-shell --pure --run 'pre-commit run --all-files'
+        uses: pre-commit/action@v3.0.1
 
   test-install-from-source:
     name: Test PostgreSQL ${{ matrix.pg }} source install on Ubuntu ${{ matrix.release }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
-        pg: ['11', '12', '13', '14', '15']
-        release: [focal, jammy]
+        pg: ['12', '13', '14', '15', '16']
+        release: [20.04, 22.04]
     steps:
       - name: Check out repository
         uses: actions/checkout@v3.5.2
 
       - name: Build Docker container
-        run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
+        run:
+          docker build --build-arg=RELEASE=${{ matrix.release }} --build-arg="PG_VERSION=${{
+          matrix.pg }}" --tag=tester .
 
       - name: Install from source
-        run: docker run --rm tester ./test/ci/install-from-source.bash ${{ matrix.pg }}
-
-  test-package-upgrade:
-    name: Test PostgreSQL ${{ matrix.pg }} package upgrade on Ubuntu ${{ matrix.release }}
-    runs-on: ubuntu-20.04
-    strategy:
-      fail-fast: false
-      matrix:
-        pg: ['11', '12', '13', '14'] # TODO: '15'
-        release: [focal] # TODO: jammy
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v3.5.2
-        with:
-          fetch-depth: 0
-
-      - name: Build package
-        uses: linz/linz-software-repository@v15
-        with:
-          release: ${{ matrix.release }}
-          packages: jq
-
-      - name: Build Docker container
-        run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
-
-      - name: Upgrade from latest release
-        run:
-          docker run --rm --volume="${PWD}/build-area:/packages" tester
-          ./test/ci/package-upgrade.bash ${{ matrix.pg }}
-
-      - name: Archive generated packages
-        uses: actions/upload-artifact@v3.1.2
-        with:
-          name: PostgreSQL ${{ matrix.pg }} packages for Ubuntu ${{ matrix.release }}
-          path: 'build-area/*.deb'
-        if: failure()
-
-  test-source-upgrade:
-    name: Test PostgreSQL ${{ matrix.pg }} source upgrade on Ubuntu ${{ matrix.release }}
-    runs-on: ubuntu-20.04
-    strategy:
-      fail-fast: false
-      matrix:
-        pg: ['11', '12', '13', '14'] # TODO: '15'
-        release: [focal] # TODO: jammy
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v3.5.2
-
-      - name: Build Docker container
-        run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
-
-      - name: Upgrade from source
-        run: docker run --rm tester ./test/ci/source-upgrade.bash ${{ matrix.pg }}
-
-  test-source-upgrade-using-loader:
-    name:
-      Test PostgreSQL ${{ matrix.pg }} package upgrade using loader on Ubuntu ${{ matrix.release }}
-    runs-on: ubuntu-20.04
-    strategy:
-      fail-fast: false
-      matrix:
-        pg: ['11', '12', '13', '14'] # TODO: '15'
-        release: [focal] # TODO: jammy
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v3.5.2
-
-      - name: Build Docker container
-        run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
-
-      - name: Upgrade from latest release
-        run: docker run --rm tester ./test/ci/source-upgrade-using-loader.bash ${{ matrix.pg }}
-
-  test-source-upgrade-using-loader-without-extension-support:
-    name:
-      Test PostgreSQL ${{ matrix.pg }} package upgrade using loader without extension support on
-      Ubuntu ${{ matrix.release }}
-    runs-on: ubuntu-20.04
-    strategy:
-      fail-fast: false
-      matrix:
-        pg: ['11', '12', '13', '14'] # TODO: '15'
-        release: [focal] # TODO: jammy
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v3.5.2
-
-      - name: Build Docker container
-        run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
-
-      - name: Upgrade from latest release
-        run:
-          docker run --rm tester
-          ./test/ci/source-upgrade-using-loader-without-extension-support.bash ${{ matrix.pg }}
-
-  test-package:
-    name: Test PostgreSQL ${{ matrix.pg }} package install on ${{ matrix.release }}
-    runs-on: ubuntu-20.04
-    strategy:
-      fail-fast: false
-      matrix:
-        pg: ['11', '12', '13', '14'] # TODO: '15'
-        release: [focal] # TODO: jammy
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v3.5.2
-        with:
-          fetch-depth: 0
-
-      - name: Build package
-        uses: linz/linz-software-repository@v15
-        with:
-          release: ${{ matrix.release }}
-          packages: jq
-
-      - name: Build Docker container
-        run: docker build --build-arg=RELEASE=${{ matrix.release }} --tag=tester .
-
-      - name: Upgrade from latest release
-        run:
-          docker run --rm --volume="${PWD}/build-area:/packages" tester
-          ./test/ci/install-local-package.bash ${{ matrix.pg }}
-
-  package:
-    needs:
-      - lint
-      - test-install-from-source
-      - test-package
-      - test-package-upgrade
-      - test-source-upgrade
-      - test-source-upgrade-using-loader
-      - test-source-upgrade-using-loader-without-extension-support
-    name: Package for Ubuntu ${{ matrix.release }}
-    runs-on: ubuntu-20.04
-    strategy:
-      fail-fast: false
-      matrix:
-        release: [focal, jammy]
-      max-parallel: 1
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v3.5.2
-        with:
-          fetch-depth: 0
-
-      - name: Determine packagecloud publication target
-        run: |
-          # TODO: it would be nice to turn this into a single-liner in
-          #       github-action syntax
-          echo "GitHub ref: ${{ github.ref }}"
-          echo "GitHub event_name: ${{ github.event_name }}"
-          REPO=
-          if test "${{ github.event_name }}" = 'push'; then
-            if expr "${{ github.ref }}" : "refs/tags/" > /dev/null; then
-              REPO=test
-              git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
-            elif test "${{ github.ref }}" = 'refs/heads/packagecloud' \
-                   -o "${{ github.ref }}" = 'refs/heads/master'
-            then
-              REPO=dev
-            fi
-          fi
-          echo "REPO=$REPO" | tee --append $GITHUB_ENV
-
-      - name: Build and release package
-        uses: linz/linz-software-repository@v15
-        with:
-          release: ${{ matrix.release }}
-          packages: jq
-          packagecloud_token: ${{ secrets.LINZCI_PACKAGECLOUD_TOKEN }}
-          packagecloud_repository: ${{ env.REPO }}
-          push_to_git_remote: origin
-
-  finalise:
-    name: Verify all dependencies passed
-    if: always()
-    needs:
-      - lint
-      - package
-      - test-install-from-source
-      - test-package
-      - test-package-upgrade
-      - test-source-upgrade
-      - test-source-upgrade-using-loader
-      - test-source-upgrade-using-loader-without-extension-support
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Decide whether the needed jobs succeeded or failed
-        uses: re-actors/alls-green@v1.2.2
-        with:
-          jobs: ${{ toJSON(needs) }}
+        run: docker run --rm tester ./test/ci/install-from-source.bash

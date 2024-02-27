@@ -22,12 +22,9 @@ BEGIN
         RETURN FALSE;
     END IF;
 
-    IF @extschema@._ver_get_reversion_temp_table('_changeset_revision')
+    IF coalesce(current_setting('table_version.current_revision', TRUE), '') <> ''
     THEN
-        IF EXISTS (
-            SELECT * FROM _changeset_revision
-            WHERE revision = p_revision
-        ) THEN
+        IF current_setting('table_version.current_revision', TRUE)::INTEGER = p_revision THEN
             RAISE WARNING 'Revision % is in progress, please complete it'
                           ' before attempting to delete it.', p_revision;
             RETURN FALSE;

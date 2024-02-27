@@ -97,21 +97,17 @@ CREATE OR REPLACE FUNCTION %revision_table%() RETURNS trigger AS $TRIGGER$
             RAISE EXCEPTION 'TRUNCATE is not supported on versioned tables';
         END IF;
 
-        BEGIN
-            SELECT
-                max(VER.revision)
-            INTO
-                v_revision
-            FROM
-                _changeset_revision VER;
-
-            IF v_revision IS NULL THEN
-                RAISE EXCEPTION 'Versioning system information is missing';
+        IF coalesce(current_setting('table_version.manual_revision', TRUE), '') = '' THEN 
+            IF coalesce(current_setting('table_version.last_txid', TRUE), '') = '' OR
+               current_setting('table_version.last_txid', TRUE)::INTEGER <> txid_current()
+            THEN
+                PERFORM table_version._ver_create_revision('Auto Txn ' ||  txid_current());
+                PERFORM set_config('table_version.last_txid', txid_current()::VARCHAR, false);
             END IF;
-        EXCEPTION
-            WHEN undefined_table THEN
-                RAISE EXCEPTION 'To begin editing %full_table_name% you need to create a revision';
-        END;
+        END IF;
+
+        v_revision := current_setting('table_version.current_revision', TRUE)::INTEGER;
+        assert v_revision IS NOT NULL, 'Versioning system information is missing';
 
         SELECT
             VTB.id

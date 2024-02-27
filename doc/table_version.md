@@ -160,7 +160,7 @@ upgrade it to a properly packaged extension with:
 
     CREATE EXTENSION table_version FROM unpackaged;
 
-## Usage
+## General Usage
 
 Take the following example. We have a table `bar` in schema `foo` and insert some data:
 
@@ -260,6 +260,57 @@ function:
 Finally if you would like to remove versioning for the table call:
 
     SELECT table_version.ver_disable_versioning('foo', 'bar');
+
+## Auto revisions
+
+You can if you don't want to call the API functions of `ver_create_revision` and
+`ver_complete_revision` explicitly. This can be useful if your application can't use the call the
+API functions before editing. e.g. ongoing logical replication.
+
+Under this auto-revision mode, revision edits are grouped by transactions.
+
+    CREATE EXTENSION table_version;
+
+    CREATE SCHEMA foo;
+
+    CREATE TABLE foo.bar (
+        id INTEGER NOT NULL PRIMARY KEY,
+        baz TEXT
+    );
+
+    SELECT table_version.ver_enable_versioning('foo', 'bar');
+
+    BEGIN;
+    INSERT INTO foo.bar (id, baz) VALUES (1, 'foo bar 1');
+    INSERT INTO foo.bar (id, baz) VALUES (2, 'foo bar 2');
+    INSERT INTO foo.bar (id, baz) VALUES (3, 'foo bar 3');
+    COMMIT;
+
+    BEGIN;
+    UPDATE foo.bar
+    SET    baz = 'foo bar 1 edit'
+    WHERE  id = 1;
+    COMMIT;
+
+
+    SELECT * FROM table_version.foo_bar_revision;
+
+     _revision_created | _revision_expired | id |       baz
+    -------------------+-------------------+----+----------------
+                  1001 |                   |  2 | foo bar 2
+                  1001 |                   |  3 | foo bar 3
+                  1001 |              1002 |  1 | foo bar 1
+                  1002 |                   |  1 | foo bar 1 edit
+
+    (3 row)
+
+The revision message will be automatically created for you based on the transaction ID.
+
+      id  |       revision_time        |         start_time         | user_name | schema_change |    comment
+    ------+----------------------------+----------------------------+-----------+---------------+---------------
+     1001 | 2024-02-26 22:10:30.751895 | 2024-02-26 22:10:30.758708 | postgres  | f             | Auto Txn 4859
+     1002 | 2024-02-27 08:38:44.548215 | 2024-02-27 08:38:44.556542 | root      | f             | Auto Txn 4860
+    (2 rows)
 
 ## Replicate data using table differences
 
