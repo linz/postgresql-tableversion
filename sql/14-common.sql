@@ -137,41 +137,6 @@ RETURNS VARCHAR AS $$
 $$ LANGUAGE sql IMMUTABLE;
 
 /**
-* Determine if a temp table exists within the current SQL session.
-*
-* @param p_table_name     The name of the temp table
-* @return                 If true if the table exists.
-*/
-CREATE OR REPLACE FUNCTION _ver_get_reversion_temp_table(
-    p_table_name NAME
-)
-RETURNS BOOLEAN AS
-$$
-DECLARE
-    v_exists BOOLEAN;
-BEGIN
-    SELECT
-        TRUE
-    INTO
-        v_exists
-    FROM
-        pg_catalog.pg_class c
-        LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-    WHERE
-        n.nspname LIKE 'pg_temp_%' AND
-        pg_catalog.pg_table_is_visible(c.oid) AND
-        c.relkind = 'r' AND
-        c.relname = p_table_name;
-
-    IF v_exists IS NULL THEN
-        v_exists := FALSE;
-    END IF;
-
-    RETURN v_exists;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-/**
 * Get the owner for a table
 *
 * @param p_table          The table

@@ -120,14 +120,8 @@ BEGIN
     INTO v_table_has_data;
     
     IF v_table_has_data THEN
-        IF @extschema@._ver_get_reversion_temp_table('_changeset_revision') THEN
-            SELECT
-                max(VER.revision)
-            INTO
-                v_revision
-            FROM
-                _changeset_revision VER;
-            
+        IF coalesce(current_setting('table_version.current_revision', TRUE), '') <> '' THEN
+            v_revision := current_setting('table_version.current_revision', TRUE)::INTEGER;
             v_revision_exists := TRUE;
         ELSE
             SELECT @extschema@.ver_create_revision(

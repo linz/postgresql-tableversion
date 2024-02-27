@@ -17,7 +17,7 @@
 
 BEGIN;
 
-SELECT plan(181);
+SELECT plan(190);
 
 SELECT has_schema( 'table_version' );
 SELECT has_table( 'table_version', 'revision', 'Should have revision table' );
@@ -696,6 +696,8 @@ SELECT throws_like(
   'Table % is already versioned',
   'ver_enable_versioning throws when called on already-versioned table');
 
+SELECT table_version.ver_disable_versioning('foo.dropme');
+
 SELECT has_function( 'table_version', 'ver_version'::name );
 
 SELECT has_function( 'table_version', 'ver_enable_versioning', ARRAY['regclass'] );
@@ -762,6 +764,8 @@ PREPARE "test2" AS SELECT T.id, T.code
 
 SELECT lives_ok('"test1"','1. Request char/integer set result');
 SELECT lives_ok('"test2"','2. Request char/varchar set result');
+
+DROP SCHEMA test_schema CASCADE;
 
 ---------------------------------------
 -- Test for ver_fix_revision_disorder
@@ -913,6 +917,88 @@ SELECT results_eq($$
     SELECT table_version.ver_delete_revision(max(id))
     FROM table_version.revision
 $$, $$ VALUES (TRUE) $$ );
+
+RESET SESSION AUTHORIZATION;
+DROP SCHEMA foo CASCADE;
+DROP ROLE test_owner;
+DROP ROLE test_user;
+
+COMMIT;
+
+-------------------------------------------------------------
+-- Test for without explicitly calling ver_create_revision/
+-- ver_complete_revision
+-------------------------------------------------------------
+
+CREATE SCHEMA auto;
+
+SELECT lives_ok('CREATE TABLE auto.revision (id int primary key, d1 text)');
+SELECT lives_ok($$ SELECT table_version.ver_enable_versioning('auto','revision') $$);
+
+SELECT table_version.ver_get_last_revision() + 2 as last_revision \gset
+
+-- First create a revision via create complete APIs
+
+SELECT is(table_version.ver_create_revision('Manual edit 1'),
+    :last_revision, 'Create edit 1 revision');
+INSERT INTO auto.revision (id, d1) VALUES (1, 'manual 1');
+SELECT ok(table_version.ver_complete_revision(), 'Complete edit 1 revision');
+
+-- Now try a auto revision.
+BEGIN;
+
+INSERT INTO auto.revision (id, d1) VALUES (2, 'auto 2');
+INSERT INTO auto.revision (id, d1) VALUES (3, 'auto 3');
+INSERT INTO auto.revision (id, d1) VALUES (4, 'auto 4');
+
+COMMIT;
+
+\set last_revision :last_revision + 1
+
+SELECT results_eq(
+    format($$
+        SELECT * FROM table_version.ver_get_auto_revision_diff(%1$s-1, %1$s)
+        ORDER BY id$$, :last_revision),
+    $$VALUES ('I'::char, 2, 'auto 2'),
+             ('I'::char, 3, 'auto 3'),
+             ('I'::char, 4, 'auto 4')$$,
+    'Ensure that updates are grouped by transaction #1'
+);
+
+-- Do another insert and ensure it's in a new transaction
+BEGIN;
+
+UPDATE auto.revision
+SET    d1 = 'auto 1 edit'
+WHERE  id = 1;
+
+\set last_revision :last_revision + 1
+
+COMMIT;
+
+SELECT results_eq(
+    format($$
+        SELECT * FROM table_version.ver_get_auto_revision_diff(%1$s-1, %1$s)
+        ORDER BY id$$, :last_revision),
+    $$VALUES ('U'::char, 1, 'auto 1 edit')$$,
+    'Ensure that updates are grouped by transaction #2'
+);
+
+-- End with a revision via create complete APIs to ensure no
+-- effects from the auto revision mode
+
+\set last_revision :last_revision + 1
+
+SELECT is(table_version.ver_create_revision('Manual edit 2'),
+    :last_revision, 'Create edit 2 revision');
+UPDATE auto.revision
+SET    d1 = 'manual 2 edit'
+WHERE  id = 2;
+SELECT ok(table_version.ver_complete_revision(), 'Complete edit 2 revision');
+
+SELECT ok(table_version.ver_disable_versioning('auto', 'revision'), 'Disable versioning on auto.revision');
+
+DROP SCHEMA auto CASCADE;
 
 ---------------------------------------
 -- End of tests
