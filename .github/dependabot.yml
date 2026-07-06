@@ -6,3 +6,11 @@ updates:
       interval: daily
     commit-message:
       prefix: 'build(deps)'
+    ignore:
+      - dependency-name: pkg:localrepo/localrepo/local?repository_url=target
+      - dependency-name: pkg:localrepo/localrepo/local?repository_url=target
+      - dependency-name: pkg:localrepo/localrepo/local?repository_url=target
+      - dependency-name: pkg:localrepo/localrepo/local?repository_url=target
+      - dependency-name: pkg:localrepo/localrepo/local?repository_url=target
+    cooldown:
+      default-days: 15
